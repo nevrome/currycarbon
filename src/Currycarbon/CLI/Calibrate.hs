@@ -19,6 +19,19 @@ data CalibrateOptions = CalibrateOptions {
 
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
-    hPutStrLn stderr "test"
+    hPutStrLn stderr $ show $ uncalToPDF (UncalC14 2000 50)
     return ()
+
+uncalToPDF :: UncalC14 -> UncalPDF
+uncalToPDF (UncalC14 mean std) = 
+    let years = V.fromList $ reverse [(mean-std) .. (mean+std)]
+        probabilities = V.map (dnorm mean std) years 
+    in UncalPDF $ V.zip years probabilities
+
+dnorm :: Double -> Double -> Double -> Double 
+dnorm mu sigma x = a * b
+  where
+    a = recip (sqrt (2 * pi * sigma2))
+    b = exp ((-(realToFrac x - realToFrac mu)^2) / (2 * sigma2))
+    sigma2 = realToFrac sigma^2
 
