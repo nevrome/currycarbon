@@ -7,9 +7,7 @@ import           Currycarbon.Utils
 import           Control.Exception              (catch, throwIO, Exception)
 import           Control.Monad                  (forM, guard)
 import           Data.List                      (nub, tails, sortBy, intersect, maximumBy, group, sort, intercalate, elemIndex, elemIndices, unfoldr)
-import           Data.Matrix                    as M
 import           Data.Maybe                     (isJust, fromMaybe, catMaybes, fromJust)
-import qualified Data.Vector                    as V
 import           System.FilePath                ((<.>), (</>))
 import           System.IO                      (hPutStrLn, stderr, hPutStr)
 
@@ -20,28 +18,30 @@ data CalibrateOptions = CalibrateOptions {
 
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
-    hPutStrLn stderr $ show $ uncalToPDF (UncalC14 2000 50)
+    --hPutStrLn stderr $ show $ uncalToPDF $ UncalC14 2000 50
+    hPutStrLn stderr $ show $ projectUncalOverCalCurve calCurveMatrix (uncalToPDF $ UncalC14 2000 50) 
     return ()
 
-projectUncalOverCalCurve :: CalCurveSegment -> UncalPDF -> CalPDF
-projectUncalOverCalCurve (CalCurveSegment calCurveMatrix) (UncalPDF pdf) =
-    let years = V.map (\(x, y) -> x) pdf
-        probabilities = V.map (\(x, y) -> y) pdf
-        vectorMatrixMultiplication = map (M.mapCol (\row x -> x + probabilities V.! row)) [0 .. (M.ncols calCurveMatrix - 1)]
-        colSum = map sum $ map (\(x) -> getCol x vectorMatrixMultiplication) [0 .. (M.ncols calCurveMatrix - 1)]
-    in CalPDF years colSum
-    
+projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
+projectUncalOverCalCurve (CalCurveMatrix matrix) (UncalPDF years probabilities) =
+    CalPDF years (matrixColSum $ vectorMatrixMult probabilities matrix)
+
+matrixColSum :: [[Double]] -> [Double]
+matrixColSum = map sum 
+
+vectorMatrixMult :: [Double] -> [[Double]] -> [[Double]]
+vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
 
 --calCurveMatrix :: UncalPDF -> Matrix
-calCurveMatrix :: CalCurveSegment
+calCurveMatrix :: CalCurveMatrix
 calCurveMatrix = 
-    CalCurveSegment $ M.matrix 101 101 $ \(i,j) -> 1
+    CalCurveMatrix $ replicate 101 $ replicate 101 1
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
-    let years = V.fromList $ reverse [(mean-std) .. (mean+std)]
-        probabilities = V.map (dnorm mean std) years 
-    in UncalPDF $ V.zip years probabilities
+    let years = reverse [(mean-std) .. (mean+std)]
+        probabilities = map (dnorm mean std) years 
+    in UncalPDF years probabilities
 
 dnorm :: Double -> Double -> Double -> Double 
 dnorm mu sigma x = a * b

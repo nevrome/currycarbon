@@ -14,7 +14,7 @@ extra-source-files:  README.md,
 library
     exposed-modules:    Currycarbon.Parsers, Currycarbon.Types, Currycarbon.Utils, Currycarbon.CLI.Calibrate
     hs-source-dirs:     src
-    build-depends:      base, filepath, vector, parsec, parsec3-numbers, matrix
+    build-depends:      base, filepath, parsec, parsec3-numbers
     default-language:   Haskell2010
 
 executable currycarbon
