@@ -18,8 +18,10 @@ data CalibrateOptions = CalibrateOptions {
 
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
+    calCurve <- readCalCurve
+    hPutStrLn stderr $ show $ calCurve
     --hPutStrLn stderr $ show $ uncalToPDF $ UncalC14 2000 50
-    hPutStrLn stderr $ show $ projectUncalOverCalCurve calCurveMatrix (uncalToPDF $ UncalC14 2000 50) 
+    --hPutStrLn stderr $ show $ projectUncalOverCalCurve calCurveMatrix (uncalToPDF $ UncalC14 2000 50) 
     return ()
 
 projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
@@ -27,7 +29,7 @@ projectUncalOverCalCurve (CalCurveMatrix matrix) (UncalPDF years probabilities) 
     CalPDF years (matrixColSum $ vectorMatrixMult probabilities matrix)
 
 matrixColSum :: [[Double]] -> [Double]
-matrixColSum = map sum 
+matrixColSum = map sum
 
 vectorMatrixMult :: [Double] -> [[Double]] -> [[Double]]
 vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
