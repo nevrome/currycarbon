@@ -13,6 +13,7 @@ data CalPDF = CalPDF
     deriving Show
 
 newtype CalCurveMatrix = CalCurveMatrix [[Double]]
+    deriving Show
 
 data CalCurve = CalCurve 
                 [Double] -- BP

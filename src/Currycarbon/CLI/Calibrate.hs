@@ -19,14 +19,27 @@ data CalibrateOptions = CalibrateOptions {
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
     calCurve <- readCalCurve
-    hPutStrLn stderr $ show $ calCurve
-    --hPutStrLn stderr $ show $ uncalToPDF $ UncalC14 2000 50
-    --hPutStrLn stderr $ show $ projectUncalOverCalCurve calCurveMatrix (uncalToPDF $ UncalC14 2000 50) 
+    hPutStrLn stderr $ show $ getInBetweenPoints (0,0) (10,-20) 9
+    -- hPutStrLn stderr $ show $ calCurveMatrix
+    -- hPutStrLn stderr $ show $ calCurve
+    -- hPutStrLn stderr $ show $ uncalToPDF $ UncalC14 2000 50
+    -- hPutStrLn stderr $ show $ projectUncalOverCalCurve calCurveMatrix (uncalToPDF $ UncalC14 2000 50) 
     return ()
 
 projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
 projectUncalOverCalCurve (CalCurveMatrix matrix) (UncalPDF years probabilities) =
     CalPDF years (matrixColSum $ vectorMatrixMult probabilities matrix)
+
+completeCalCurveMatrix :: CalCurveMatrix -> CalCurveMatrix
+completeCalCurveMatrix mat = undefined 
+
+getInBetweenPoints :: (Double, Double) -> (Double, Double) -> Double -> (Double, Double)
+getInBetweenPoints (x1,y1) (x2,y2) xPred =
+    let yDiff = y2 - y1
+        xDiff = abs $ x1 - x2
+        yDiffPerxDiff = yDiff/xDiff
+        xPredRel = xPred - x1
+    in (xPred, y1 + xPredRel * yDiffPerxDiff)
 
 matrixColSum :: [[Double]] -> [Double]
 matrixColSum = map sum
@@ -37,7 +50,7 @@ vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
 --calCurveMatrix :: UncalPDF -> Matrix
 calCurveMatrix :: CalCurveMatrix
 calCurveMatrix = 
-    CalCurveMatrix $ replicate 101 $ replicate 101 1
+    CalCurveMatrix [[1,0,0,0,0], [0,0,0,0,0], [0,1,0,0,0], [0,0,0,0,0], [0,0,0,0,1]]
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
