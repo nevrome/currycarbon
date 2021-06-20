@@ -19,6 +19,8 @@ data CalibrateOptions = CalibrateOptions {
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
     calCurve <- readCalCurve
+
+    let uncalC14 = UncalC14 (fromIntegral c14Age) (fromIntegral c14Std)
     hPutStrLn stderr $ show $ getInBetweenPoints (0,0) (10,-20) 9
     -- hPutStrLn stderr $ show $ calCurveMatrix
     -- hPutStrLn stderr $ show $ calCurve
@@ -30,8 +32,24 @@ projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
 projectUncalOverCalCurve (CalCurveMatrix matrix) (UncalPDF years probabilities) =
     CalPDF years (matrixColSum $ vectorMatrixMult probabilities matrix)
 
-completeCalCurveMatrix :: CalCurveMatrix -> CalCurveMatrix
-completeCalCurveMatrix mat = undefined 
+completeCalCurve :: CalCurve -> CalCurve
+completeCalCurve (CalCurve bp calBP) = 
+    let newBP = [(last bp)..(head bp)]
+        newCalBP = map (curveInterpol bp calBP) newBP
+    in CalCurve newBP newCalBP
+
+curveInterpol :: [Double] -> [Double] -> Double -> Double
+curveInterpol curveBP curveCalBP predBP = undefined
+    let (smaller,bigger) splitWhen (< predBP) curveBP
+        -- TODO
+
+splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
+splitWhen _ [] = ([],[])
+splitWhen pre [x] = if pre x then ([x],[]) else ([],[x])
+splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
+    where
+        combine :: ([a],[a]) -> ([a],[a]) -> ([a],[a])
+        combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
 
 getInBetweenPoints :: (Double, Double) -> (Double, Double) -> Double -> (Double, Double)
 getInBetweenPoints (x1,y1) (x2,y2) xPred =
