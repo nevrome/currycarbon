@@ -19,9 +19,10 @@ data CalibrateOptions = CalibrateOptions {
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
     calCurve <- readCalCurve
+    let completedCalCurve = completeCalCurve calCurve
     let date = uncalToPDF $ UncalC14 c14Age c14Std
     print date
-    let calCurveMatrix = createRelevantCalCurveMatrix calCurve date
+    let calCurveMatrix = createRelevantCalCurveMatrix completedCalCurve date
     print calCurveMatrix
     let calPDF = projectUncalOverCalCurve calCurveMatrix date
     print calPDF      
@@ -33,9 +34,7 @@ projectUncalOverCalCurve (CalCurveMatrix _ cal matrix) (UncalPDF uncalBP probabi
 
 createRelevantCalCurveMatrix :: CalCurve -> UncalPDF -> CalCurveMatrix
 createRelevantCalCurveMatrix calCurve (UncalPDF bpDate _) =
-    let filteredCalCurve = filterCalCurve (\(x,_) -> x `elem` bpDate) calCurve
-        completedCalCurve = completeCalCurve filteredCalCurve
-    in makeCalCurveMatrix completedCalCurve
+    makeCalCurveMatrix $ filterCalCurve (\(x,_) -> x `elem` bpDate) calCurve
 
 filterCalCurve :: ((Int,Int) -> Bool) -> CalCurve -> CalCurve 
 filterCalCurve pre (CalCurve curve) = CalCurve $ filter pre curve
@@ -50,13 +49,13 @@ makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
 makeCalCurveMatrix calCurve =
     let bps = getBPs calCurve
         cals = getCals calCurve
-        bpMatrix = [(minimum bps)..(maximum bps)]
-        calMatrix = [(minimum cals)..(maximum cals)]
-    in CalCurveMatrix bpMatrix calMatrix $ map (\x -> map (huhu calCurve x) bpMatrix) calMatrix
+        bpsMatrix = [(minimum bps)..(maximum bps)]
+        calsMatrix = [(minimum cals)..(maximum cals)]
+    in CalCurveMatrix bpsMatrix calsMatrix $ map (\x -> map (huhu calCurve x) bpsMatrix) calsMatrix
     where 
         huhu :: CalCurve -> Int -> Int -> Double
         huhu (CalCurve curve) matrixPosBP matrixPosCal =
-            if (matrixPosBP,matrixPosCal) `elem` curve
+            if (matrixPosCal,matrixPosBP) `elem` curve -- why is it this way round?
             then 1
             else 0
 
