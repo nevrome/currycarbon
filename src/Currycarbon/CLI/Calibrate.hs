@@ -6,7 +6,7 @@ import           Currycarbon.Utils
 
 import           Control.Exception              (catch, throwIO, Exception)
 import           Control.Monad                  (forM, guard)
-import           Data.List                      (nub, tails, sortBy, intersect, maximumBy, group, sort, intercalate, elemIndex, elemIndices, unfoldr)
+import           Data.List                      (nub, tails, sortBy, intersect, maximumBy, group, sort, intercalate, elemIndex, elemIndices, unfoldr, findIndices)
 import           Data.Maybe                     (isJust, fromMaybe, catMaybes, fromJust)
 import           System.FilePath                ((<.>), (</>))
 import           System.IO                      (hPutStrLn, stderr, hPutStr)
@@ -19,24 +19,34 @@ data CalibrateOptions = CalibrateOptions {
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
     calCurve <- readCalCurve
-
-    let uncalC14 = UncalC14 (fromIntegral c14Age) (fromIntegral c14Std)
-    hPutStrLn stderr $ show $ getInBetweenPoints (0,0) (10,-20) 9
-    -- hPutStrLn stderr $ show $ calCurveMatrix
-    -- hPutStrLn stderr $ show $ calCurve
-    -- hPutStrLn stderr $ show $ uncalToPDF $ UncalC14 2000 50
-    -- hPutStrLn stderr $ show $ projectUncalOverCalCurve calCurveMatrix (uncalToPDF $ UncalC14 2000 50) 
     return ()
 
 projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
-projectUncalOverCalCurve (CalCurveMatrix matrix) (UncalPDF years probabilities) =
-    CalPDF years (matrixColSum $ vectorMatrixMult probabilities matrix)
+projectUncalOverCalCurve (CalCurveMatrix _ calBP matrix) (UncalPDF uncalBP probabilities) =
+    CalPDF calBP (matrixColSum $ vectorMatrixMult probabilities matrix)
+
+createRelevantCalCurveMatrix :: CalCurve -> UncalPDF -> CalCurveMatrix
+createRelevantCalCurveMatrix (CalCurve ccBP ccCalBP) (UncalPDF bp _) =
+    let iInRange = findIndices (`elem` bp) ccBP
+        filteredCalCurve = CalCurve (map (ccBP !!) iInRange) (map (ccCalBP !!) iInRange)
+        completedCalCurve = completeCalCurve filteredCalCurve
+    in makeCalCurveMatrix completedCalCurve
+
+makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
+makeCalCurveMatrix = undefined
 
 completeCalCurve :: CalCurve -> CalCurve
 completeCalCurve (CalCurve bp calBP) = 
-    let newBP = [(last bp)..(head bp)]
-        newCalBP = map (curveInterpol bp calBP) newBP
+    let newBP = [(minimum bp)..(maximum bp)]
+        newCalBP = map (curveInterpolInt bp calBP) newBP
     in CalCurve newBP newCalBP
+
+curveInterpolInt :: [Int] -> [Int] -> Int -> Int
+curveInterpolInt xs ys xPred = 
+    let xsDouble = map fromIntegral xs
+        ysDouble = map fromIntegral ys
+        xPredDouble = fromIntegral xPred
+    in round $ curveInterpol xsDouble ysDouble xPredDouble
 
 curveInterpol :: [Double] -> [Double] -> Double -> Double
 curveInterpol xs ys xPred =
@@ -69,16 +79,18 @@ matrixColSum = map sum
 vectorMatrixMult :: [Double] -> [[Double]] -> [[Double]]
 vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
 
---calCurveMatrix :: UncalPDF -> Matrix
-calCurveMatrix :: CalCurveMatrix
-calCurveMatrix = 
-    CalCurveMatrix [[1,0,0,0,0], [0,0,0,0,0], [0,1,0,0,0], [0,0,0,0,0], [0,0,0,0,1]]
-
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
     let years = reverse [(mean-std) .. (mean+std)]
-        probabilities = map (dnorm mean std) years 
+        probabilities = map (dnormInt mean std) years
     in UncalPDF years probabilities
+
+dnormInt :: Int -> Int -> Int -> Double
+dnormInt mu sigma x =
+    let muDouble = fromIntegral mu
+        sigmaDouble = fromIntegral sigma
+        xDouble = fromIntegral x
+    in dnorm muDouble sigmaDouble xDouble
 
 dnorm :: Double -> Double -> Double -> Double 
 dnorm mu sigma x = a * b

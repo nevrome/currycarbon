@@ -1,21 +1,26 @@
 module Currycarbon.Types where
 
-data UncalC14 = UncalC14 Double Double
+data UncalC14 = UncalC14 
+                Int -- mean
+                Int -- std
 
 data UncalPDF = UncalPDF 
-                [Double] -- BP
+                [Int] -- BP
                 [Double] -- probability
     deriving Show
 
 data CalPDF = CalPDF 
-                [Double] -- calBP
+                [Int] -- calBP
                 [Double] -- probability
     deriving Show
 
-newtype CalCurveMatrix = CalCurveMatrix [[Double]]
+data CalCurveMatrix = CalCurveMatrix 
+                [Int] -- BP
+                [Int] -- calBP
+                [[Double]] -- matrix
     deriving Show
 
 data CalCurve = CalCurve 
-                [Double] -- BP
-                [Double] -- calBP
+                [Int] -- BP
+                [Int] -- calBP
     deriving Show
