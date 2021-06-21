@@ -39,9 +39,13 @@ completeCalCurve (CalCurve bp calBP) =
     in CalCurve newBP newCalBP
 
 curveInterpol :: [Double] -> [Double] -> Double -> Double
-curveInterpol curveBP curveCalBP predBP = undefined
-    let (smaller,bigger) splitWhen (< predBP) curveBP
-        -- TODO
+curveInterpol xs ys xPred =
+    let (xsLeft,xsRight) = splitWhen (< xPred) xs
+        xLeft = maximum xsLeft
+        xRight = minimum xsRight
+        iLeft = head $ elemIndices xLeft xs
+        iRight = head $ elemIndices xRight xs
+    in snd $ getInBetweenPoints (xs !! iLeft, ys !! iLeft) (xs !! iRight, ys !! iRight) xPred
 
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])
