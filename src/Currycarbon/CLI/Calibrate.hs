@@ -32,30 +32,41 @@ projectUncalOverCalCurve (CalCurveMatrix _ cal matrix) (UncalPDF uncalBP probabi
     CalPDF cal (matrixColSum $ vectorMatrixMult probabilities matrix)
 
 createRelevantCalCurveMatrix :: CalCurve -> UncalPDF -> CalCurveMatrix
-createRelevantCalCurveMatrix (CalCurve bp cal) (UncalPDF bpDate _) =
-    let iInRange = findIndices (`elem` bp) bpDate
-        filteredCalCurve = CalCurve (map (bp !!) iInRange) (map (cal !!) iInRange)
+createRelevantCalCurveMatrix calCurve (UncalPDF bpDate _) =
+    let filteredCalCurve = filterCalCurve (\(x,_) -> x `elem` bpDate) calCurve
         completedCalCurve = completeCalCurve filteredCalCurve
     in makeCalCurveMatrix completedCalCurve
 
+filterCalCurve :: ((Int,Int) -> Bool) -> CalCurve -> CalCurve 
+filterCalCurve pre (CalCurve curve) = CalCurve $ filter pre curve
+
+getBPs :: CalCurve -> [Int]
+getBPs (CalCurve curve) = map fst curve
+
+getCals :: CalCurve -> [Int]
+getCals (CalCurve curve) = map snd curve
+
 makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
-makeCalCurveMatrix (CalCurve bp cal) =
-    let bpMatrix = [(minimum bp)..(maximum bp)]
-        calMatrix = [(minimum cal)..(maximum cal)]
-    in CalCurveMatrix bpMatrix calMatrix $ map (\x -> map (huhu (CalCurve bp cal) x) bpMatrix) calMatrix
+makeCalCurveMatrix calCurve =
+    let bps = getBPs calCurve
+        cals = getCals calCurve
+        bpMatrix = [(minimum bps)..(maximum bps)]
+        calMatrix = [(minimum cals)..(maximum cals)]
+    in CalCurveMatrix bpMatrix calMatrix $ map (\x -> map (huhu calCurve x) bpMatrix) calMatrix
     where 
         huhu :: CalCurve -> Int -> Int -> Double
-        huhu (CalCurve bp cal) matrixPosBP matrixPosCal =
-            let range = elemIndices matrixPosBP bp
-            in if matrixPosCal `elem` map (cal !!) range
-               then 1
-               else 0
+        huhu (CalCurve curve) matrixPosBP matrixPosCal =
+            if (matrixPosBP,matrixPosCal) `elem` curve
+            then 1
+            else 0
 
 completeCalCurve :: CalCurve -> CalCurve
-completeCalCurve (CalCurve bp cal) = 
-    let newBP = [(minimum bp)..(maximum bp)]
-        newCal = map (curveInterpolInt bp cal) newBP
-    in CalCurve newBP newCal
+completeCalCurve calCurve = 
+    let bps = getBPs calCurve
+        cals = getCals calCurve
+        newBP = [(minimum bps)..(maximum bps)]
+        newCal = map (curveInterpolInt bps cals) newBP
+    in CalCurve $ zip newBP newCal
 
 curveInterpolInt :: [Int] -> [Int] -> Int -> Int
 curveInterpolInt xs ys xPred = 
@@ -65,13 +76,15 @@ curveInterpolInt xs ys xPred =
     in round $ curveInterpol xsDouble ysDouble xPredDouble
 
 curveInterpol :: [Double] -> [Double] -> Double -> Double
-curveInterpol xs ys xPred =
-    let (xsLeft,xsRight) = splitWhen (< xPred) xs
-        xLeft = maximum xsLeft
-        xRight = minimum xsRight
-        iLeft = head $ elemIndices xLeft xs
-        iRight = head $ elemIndices xRight xs
-    in snd $ getInBetweenPoints (xs !! iLeft, ys !! iLeft) (xs !! iRight, ys !! iRight) xPred
+curveInterpol xs ys xPred 
+    | xPred `elem` xs = ys !! head (xPred `elemIndices` xs)
+    | otherwise =
+        let (xsLeft,xsRight) = splitWhen (< xPred) xs
+            xLeft = maximum xsLeft
+            xRight = minimum xsRight
+            iLeft = head $ elemIndices xLeft xs
+            iRight = head $ elemIndices xRight xs
+        in snd $ getInBetweenPoints (xs !! iLeft, ys !! iLeft) (xs !! iRight, ys !! iRight) xPred
 
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])

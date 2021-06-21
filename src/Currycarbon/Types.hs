@@ -20,7 +20,5 @@ data CalCurveMatrix = CalCurveMatrix
                 [[Double]] -- matrix
     deriving Show
 
-data CalCurve = CalCurve 
-                [Int] -- BP
-                [Int] -- calBP
+newtype CalCurve = CalCurve [(Int, Int)] -- BP, calBP
     deriving Show

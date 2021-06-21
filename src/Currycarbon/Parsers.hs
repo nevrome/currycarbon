@@ -14,7 +14,7 @@ readCalCurve = do
     intcal20 <- readFile "data/intcal20.14c"
     case P.runParser calCurveFileParser () "" intcal20 of
         Left p  -> error $ "This should never happen." ++ show p
-        Right x -> return $ uncurry CalCurve $ unzip x
+        Right x -> return $ CalCurve x
 
 calCurveFileParser :: P.Parser [(Int, Int)]
 calCurveFileParser = do
