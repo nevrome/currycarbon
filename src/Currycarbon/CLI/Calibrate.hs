@@ -19,27 +19,43 @@ data CalibrateOptions = CalibrateOptions {
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
     calCurve <- readCalCurve
+    let date = uncalToPDF $ UncalC14 c14Age c14Std
+    print date
+    let calCurveMatrix = createRelevantCalCurveMatrix calCurve date
+    print calCurveMatrix
+    let calPDF = projectUncalOverCalCurve calCurveMatrix date
+    print calPDF      
     return ()
 
 projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
-projectUncalOverCalCurve (CalCurveMatrix _ calBP matrix) (UncalPDF uncalBP probabilities) =
-    CalPDF calBP (matrixColSum $ vectorMatrixMult probabilities matrix)
+projectUncalOverCalCurve (CalCurveMatrix _ cal matrix) (UncalPDF uncalBP probabilities) =
+    CalPDF cal (matrixColSum $ vectorMatrixMult probabilities matrix)
 
 createRelevantCalCurveMatrix :: CalCurve -> UncalPDF -> CalCurveMatrix
-createRelevantCalCurveMatrix (CalCurve ccBP ccCalBP) (UncalPDF bp _) =
-    let iInRange = findIndices (`elem` bp) ccBP
-        filteredCalCurve = CalCurve (map (ccBP !!) iInRange) (map (ccCalBP !!) iInRange)
+createRelevantCalCurveMatrix (CalCurve bp cal) (UncalPDF bpDate _) =
+    let iInRange = findIndices (`elem` bp) bpDate
+        filteredCalCurve = CalCurve (map (bp !!) iInRange) (map (cal !!) iInRange)
         completedCalCurve = completeCalCurve filteredCalCurve
     in makeCalCurveMatrix completedCalCurve
 
 makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
-makeCalCurveMatrix = undefined
+makeCalCurveMatrix (CalCurve bp cal) =
+    let bpMatrix = [(minimum bp)..(maximum bp)]
+        calMatrix = [(minimum cal)..(maximum cal)]
+    in CalCurveMatrix bpMatrix calMatrix $ map (\x -> map (huhu (CalCurve bp cal) x) bpMatrix) calMatrix
+    where 
+        huhu :: CalCurve -> Int -> Int -> Double
+        huhu (CalCurve bp cal) matrixPosBP matrixPosCal =
+            let range = elemIndices matrixPosBP bp
+            in if matrixPosCal `elem` map (cal !!) range
+               then 1
+               else 0
 
 completeCalCurve :: CalCurve -> CalCurve
-completeCalCurve (CalCurve bp calBP) = 
+completeCalCurve (CalCurve bp cal) = 
     let newBP = [(minimum bp)..(maximum bp)]
-        newCalBP = map (curveInterpolInt bp calBP) newBP
-    in CalCurve newBP newCalBP
+        newCal = map (curveInterpolInt bp cal) newBP
+    in CalCurve newBP newCal
 
 curveInterpolInt :: [Int] -> [Int] -> Int -> Int
 curveInterpolInt xs ys xPred = 
