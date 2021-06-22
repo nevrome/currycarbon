@@ -17,3 +17,10 @@ packages:
       sha256: a3d23f56cc2a9d17ed24ac5119a7b2102d40c0afeed5271f6b41b7597f181df0
       size: 264
     hackage: parsec3-numbers-0.1.0@sha256:2f32295f9f4023f7f97da851549aaaf5e72866e98bf016a1ac3c6e8715bbaf8a,685
+- original:
+    hackage: textPlot-1.0@sha256:adcb61573078b42034f2d191a26971a752ce82fe7f572943f6d26865fc374c78,650
+  completed:
+    pantry-tree:
+      sha256: 55330c58a0e10a1855ea0ab9160c4f20326100159d88a58c8fb0b10ce3b26651
+      size: 203
+    hackage: textPlot-1.0@sha256:adcb61573078b42034f2d191a26971a752ce82fe7f572943f6d26865fc374c78,650

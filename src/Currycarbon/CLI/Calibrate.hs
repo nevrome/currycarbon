@@ -10,6 +10,7 @@ import           Data.List                      (nub, tails, sortBy, intersect, 
 import           Data.Maybe                     (isJust, fromMaybe, catMaybes, fromJust)
 import           System.FilePath                ((<.>), (</>))
 import           System.IO                      (hPutStrLn, stderr, hPutStr)
+import           TextPlot
 
 data CalibrateOptions = CalibrateOptions {   
       _calibrateC14Age :: Int,
@@ -26,7 +27,13 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
     print calCurveMatrix
     let calPDF = projectUncalOverCalCurve calCurveMatrix date
     print calPDF
+    let plot = emptyXYPlot `thenPlot` (getCalPDFValue calPDF) `xlim` (914, 953) `ylim` (0,0.2)
+    printPlot plot
     return ()
+
+getCalPDFValue :: CalPDF -> Function
+getCalPDFValue (CalPDF obs) x
+  = snd $ head $ filter (\(y, _) -> round x == y) obs
 
 projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
 projectUncalOverCalCurve (CalCurveMatrix _ cal matrix) uncalPDF =
