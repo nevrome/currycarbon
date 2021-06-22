@@ -27,7 +27,7 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
     print calCurveMatrix
     let calPDF = projectUncalOverCalCurve calCurveMatrix date
     print calPDF
-    let plot = emptyXYPlot `thenPlot` (getCalPDFValue calPDF) `xlim` (914, 953) `ylim` (0,0.2)
+    let plot = emptyXYPlot `thenPlot` (getCalPDFValue calPDF) `xlim` (791, 968) `ylim` (0,0.1)
     printPlot plot
     return ()
 
@@ -122,7 +122,7 @@ vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
-    let years = reverse [(mean-std) .. (mean+std)]
+    let years = reverse [(mean-3*std) .. (mean+3*std)]
         probabilities = map (dnormInt mean std) years
     in UncalPDF $ zip years probabilities
 
