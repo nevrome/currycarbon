@@ -25,16 +25,16 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
     -- prepare relevant segment of the calcurve
     calCurve <- readCalCurve
     let calCurveSegment = makeBCCalCurve $
-                            fillCalInCalCurve $ 
-                            getRelevantCalCurveSegment uncalPDF $ 
+                            fillCalInCalCurve $
+                            getRelevantCalCurveSegment uncalPDF $
                             interpolateCalCurve calCurve
     -- perform projection (aka calibration)
-    let calPDF = makeBCCalPDF $ 
-                            projectUncalOverCalCurve uncalPDF $ 
+    let calPDF = projectUncalOverCalCurve uncalPDF $
                             makeCalCurveMatrix calCurveSegment
     -- plots
     plotCalCurveSegment calCurveSegment
     plotCalPDF calPDF
+    return ()
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
@@ -94,12 +94,13 @@ getRelevantCalCurveSegment uncalPDF =
         filterCalCurve :: ((Int,Int) -> Bool) -> CalCurve -> CalCurve 
         filterCalCurve pre (CalCurve curve) = CalCurve $ filter pre curve
 
+-- this can probably be done simpler
 fillCalInCalCurve :: CalCurve -> CalCurve
 fillCalInCalCurve (CalCurve obs) =
     let minCalCalCurve = minimum $ map snd obs
         maxCalCalCurve = maximum $ map snd obs
         missing = filter (\x -> x `notElem` map snd obs) [minCalCalCurve..maxCalCalCurve]
-    in CalCurve $ insertManyIntoList obs missing
+    in CalCurve $ sortBy (\(x,_) (y,_) -> compare x y) $ insertManyIntoList obs missing -- do we actually need a sorted list?
     where
         insertManyIntoList :: [(Int, Int)] -> [Int] -> [(Int, Int)]
         insertManyIntoList obs [] = obs
@@ -111,7 +112,7 @@ fillCalInCalCurve (CalCurve obs) =
                 leftValue = if null beforeInsert
                             then fst $ head afterInsert
                             else fst $ last beforeInsert
-            in beforeInsert ++ [(leftValue, insert)] ++ afterInsert
+            in beforeInsert ++ [(leftValue, insert)] ++ afterInsert -- is an ordered insert even necessary?
 
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])
