@@ -38,7 +38,7 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
-    let years = reverse [(mean-3*std) .. (mean+3*std)]
+    let years = reverse [(mean-4*std) .. (mean+4*std)]
         probabilities = map (dnormInt mean std) years
     in UncalPDF $ zip years probabilities
     where
@@ -99,16 +99,27 @@ fillCalInCalCurve (CalCurve obs) =
     let minCalCalCurve = minimum $ map snd obs
         maxCalCalCurve = maximum $ map snd obs
         missing = filter (\x -> x `notElem` map snd obs) [minCalCalCurve..maxCalCalCurve]
-    in CalCurve $ recursiveFill obs missing
-    where 
-        recursiveFill :: [(Int, Int)] -> [Int] -> [(Int, Int)]
-        recursiveFill obs [] = obs
-        recursiveFill obs [x] = completeList obs x
-        recursiveFill obs (x:xs) = recursiveFill (completeList obs x) xs
-        completeList :: [(Int, Int)] -> Int -> [(Int, Int)]
-        completeList obs insert =
+    in CalCurve $ insertManyIntoList obs missing
+    where
+        insertManyIntoList :: [(Int, Int)] -> [Int] -> [(Int, Int)]
+        insertManyIntoList obs [] = obs
+        insertManyIntoList obs [x] = insertOneIntoList obs x
+        insertManyIntoList obs (x:xs) = insertManyIntoList (insertOneIntoList obs x) xs
+        insertOneIntoList :: [(Int, Int)] -> Int -> [(Int, Int)]
+        insertOneIntoList obs insert =
             let (beforeInsert, afterInsert) = splitWhen (\(_,x) -> x < insert) obs
-            in beforeInsert ++ [(fst $ last beforeInsert, insert)] ++ afterInsert
+                leftValue = if null beforeInsert
+                            then fst $ head afterInsert
+                            else fst $ last beforeInsert
+            in beforeInsert ++ [(leftValue, insert)] ++ afterInsert
+
+splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
+splitWhen _ [] = ([],[])
+splitWhen pre [x] = if pre x then ([x],[]) else ([],[x])
+splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
+    where
+        combine :: ([a],[a]) -> ([a],[a]) -> ([a],[a])
+        combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
 
 makeBCCalCurve :: CalCurve -> CalCurve
 makeBCCalCurve calCurve = CalCurve $ zip (getBPs calCurve) (map (\x -> x - 1950) $ getCals calCurve)
@@ -138,14 +149,6 @@ projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
         vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
         matrixColSum :: [[Double]] -> [Double]
         matrixColSum = map sum
-
-splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
-splitWhen _ [] = ([],[])
-splitWhen pre [x] = if pre x then ([x],[]) else ([],[x])
-splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
-    where
-        combine :: ([a],[a]) -> ([a],[a]) -> ([a],[a])
-        combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
 
 plotCalCurveSegment :: CalCurve -> IO ()
 plotCalCurveSegment calCurveSegment = do
