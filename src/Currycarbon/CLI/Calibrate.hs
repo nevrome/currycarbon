@@ -19,32 +19,40 @@ data CalibrateOptions = CalibrateOptions {
 
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions c14Age c14Std) = do
+    -- prepare date
+    let uncalDate = UncalC14 c14Age c14Std
+        uncalPDF = uncalToPDF uncalDate
+    -- prepare relevant segment of the calcurve
     calCurve <- readCalCurve
-    let completedCalCurve = completeCalCurve calCurve
-    let date = uncalToPDF $ UncalC14 c14Age c14Std
-    -- print date
-    let relevantCalCurve = fillCalInCalCurve $ filterCalCurve (\(x,_) -> x `elem` getBPsUncal date) completedCalCurve
-    let bcCalCurve = makeBCCalCurve relevantCalCurve
-    -- print relevantCalCurve
-    --let calCurveMatrix = createRelevantCalCurveMatrix completedCalCurve date
-    let calCurveMatrix = makeCalCurveMatrix $ relevantCalCurve
-    -- print calCurveMatrix
-    let calPDF = makeBC $ projectUncalOverCalCurve calCurveMatrix date
-    --print calPDF
-    let maxCalBP = fromIntegral $ maximum $ getBPsCal calPDF
-    let minCalBP = fromIntegral $ minimum $ getBPsCal calPDF
-    let maxBP = fromIntegral $ maximum $ getBPs bcCalCurve
-    let minBP = fromIntegral $ minimum $ getBPs bcCalCurve
-    let maxCalCalCurve = fromIntegral $ maximum $ getCals bcCalCurve
-    let minCalCalCurve  = fromIntegral $ minimum $ getCals bcCalCurve
-    let plot1 = emptyXYPlot `thenPlot` getCalPDFValue calPDF `xlim` (maxCalBP, minCalBP) `ylim` (0 , maximum $ getProbsCal calPDF)
-    let plot2 = emptyXYPlot `thenPlot` getCalCurveValue bcCalCurve `xlim` (maxCalCalCurve, minCalCalCurve) `ylim` (minBP, maxBP)
-    printPlot plot2
-    printPlot plot1
-    return ()
+    let calCurveSegment = makeBCCalCurve $
+                            fillCalInCalCurve $ 
+                            getRelevantCalCurveSegment uncalPDF $ 
+                            interpolateCalCurve calCurve
+    -- perform projection (aka calibration)
+    let calPDF = makeBCCalPDF $ 
+                            projectUncalOverCalCurve uncalPDF $ 
+                            makeCalCurveMatrix calCurveSegment
+    -- plot calcurveSegmemt
+    let maxBPCalCurve =     fromIntegral $ maximum $ getBPs calCurveSegment
+        minBPCalCurve =     fromIntegral $ minimum $ getBPs calCurveSegment
+        maxCalCalCurve =    fromIntegral $ maximum $ getCals calCurveSegment
+        minCalCalCurve =    fromIntegral $ minimum $ getCals calCurveSegment
+    printPlot $ 
+        emptyXYPlot 
+        `thenPlot` getCalCurveValue calCurveSegment 
+        `xlim` (maxCalCalCurve, minCalCalCurve) 
+        `ylim` (minBPCalCurve, maxBPCalCurve)
+    -- plot calPDF
+    let maxBPCalPDF =       fromIntegral $ maximum $ getBPsCal calPDF
+        minBPCalPDF =       fromIntegral $ minimum $ getBPsCal calPDF
+    printPlot $ 
+        emptyXYPlot 
+        `thenPlot` getCalPDFValue calPDF 
+        `xlim` (maxBPCalPDF, minBPCalPDF) 
+        `ylim` (0 , maximum $ getProbsCal calPDF)
 
-makeBC :: CalPDF -> CalPDF
-makeBC calPDF = CalPDF $ zip (map (\x -> x - 1950) $ getBPsCal calPDF) (getProbsCal calPDF)
+makeBCCalPDF :: CalPDF -> CalPDF
+makeBCCalPDF calPDF = CalPDF $ zip (map (\x -> x - 1950) $ getBPsCal calPDF) (getProbsCal calPDF)
 
 makeBCCalCurve :: CalCurve -> CalCurve
 makeBCCalCurve calCurve = CalCurve $ zip (getBPs calCurve) (map (\x -> x - 1950) $ getCals calCurve)
@@ -57,13 +65,13 @@ getCalPDFValue :: CalPDF -> Function
 getCalPDFValue (CalPDF obs) x
   = snd $ head $ filter (\(y, _) -> round x == y) obs
 
-projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
-projectUncalOverCalCurve (CalCurveMatrix _ cal matrix) uncalPDF =
+projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
+projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
     CalPDF $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
 
-createRelevantCalCurveMatrix :: CalCurve -> UncalPDF -> CalCurveMatrix
-createRelevantCalCurveMatrix calCurve uncalPDF =
-    makeCalCurveMatrix $ filterCalCurve (\(x,_) -> x `elem` getBPsUncal uncalPDF) calCurve
+getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
+getRelevantCalCurveSegment uncalPDF calCurve =
+    filterCalCurve (\(x,_) -> x `elem` getBPsUncal uncalPDF) calCurve
 
 filterCalCurve :: ((Int,Int) -> Bool) -> CalCurve -> CalCurve 
 filterCalCurve pre (CalCurve curve) = CalCurve $ filter pre curve
@@ -100,11 +108,10 @@ makeCalCurveMatrix calCurve =
             then 1
             else 0
 
-completeCalCurve :: CalCurve -> CalCurve
-completeCalCurve calCurve = 
+interpolateCalCurve :: CalCurve -> CalCurve
+interpolateCalCurve calCurve = 
     let bps = getBPs calCurve
         cals = getCals calCurve
-        -- interpolate calBP for each BP
         newBP = [(minimum bps)..(maximum bps)]
         newCal = map (curveInterpolInt bps cals) newBP
     in CalCurve $ zip newBP newCal
