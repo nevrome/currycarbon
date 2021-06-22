@@ -4,14 +4,10 @@ data UncalC14 = UncalC14
                 Int -- mean
                 Int -- std
 
-data UncalPDF = UncalPDF 
-                [Int] -- BP
-                [Double] -- probability
+newtype UncalPDF = UncalPDF [(Int, Double)] -- BP, probability
     deriving Show
 
-data CalPDF = CalPDF 
-                [Int] -- calBP
-                [Double] -- probability
+newtype CalPDF = CalPDF [(Int, Double)] -- calBP, probability
     deriving Show
 
 data CalCurveMatrix = CalCurveMatrix 

@@ -25,25 +25,31 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
     let calCurveMatrix = createRelevantCalCurveMatrix completedCalCurve date
     print calCurveMatrix
     let calPDF = projectUncalOverCalCurve calCurveMatrix date
-    print calPDF      
+    print calPDF
     return ()
 
 projectUncalOverCalCurve :: CalCurveMatrix -> UncalPDF -> CalPDF
-projectUncalOverCalCurve (CalCurveMatrix _ cal matrix) (UncalPDF uncalBP probabilities) =
-    CalPDF cal (matrixColSum $ vectorMatrixMult probabilities matrix)
+projectUncalOverCalCurve (CalCurveMatrix _ cal matrix) uncalPDF =
+    CalPDF $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
 
 createRelevantCalCurveMatrix :: CalCurve -> UncalPDF -> CalCurveMatrix
-createRelevantCalCurveMatrix calCurve (UncalPDF bpDate _) =
-    makeCalCurveMatrix $ filterCalCurve (\(x,_) -> x `elem` bpDate) calCurve
+createRelevantCalCurveMatrix calCurve uncalPDF =
+    makeCalCurveMatrix $ filterCalCurve (\(x,_) -> x `elem` getBPsUncal uncalPDF) calCurve
 
 filterCalCurve :: ((Int,Int) -> Bool) -> CalCurve -> CalCurve 
 filterCalCurve pre (CalCurve curve) = CalCurve $ filter pre curve
 
+getBPsUncal :: UncalPDF -> [Int]
+getBPsUncal (UncalPDF obs) = map fst obs
+
+getProbsUncal :: UncalPDF -> [Double]
+getProbsUncal (UncalPDF obs) = map snd obs
+
 getBPs :: CalCurve -> [Int]
-getBPs (CalCurve curve) = map fst curve
+getBPs (CalCurve obs) = map fst obs
 
 getCals :: CalCurve -> [Int]
-getCals (CalCurve curve) = map snd curve
+getCals (CalCurve obs) = map snd obs
 
 makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
 makeCalCurveMatrix calCurve =
@@ -51,10 +57,10 @@ makeCalCurveMatrix calCurve =
         cals = getCals calCurve
         bpsMatrix = [(minimum bps)..(maximum bps)]
         calsMatrix = [(minimum cals)..(maximum cals)]
-    in CalCurveMatrix bpsMatrix calsMatrix $ map (\x -> map (huhu calCurve x) bpsMatrix) calsMatrix
+    in CalCurveMatrix bpsMatrix calsMatrix $ map (\x -> map (fillCell calCurve x) bpsMatrix) calsMatrix
     where 
-        huhu :: CalCurve -> Int -> Int -> Double
-        huhu (CalCurve curve) matrixPosBP matrixPosCal =
+        fillCell :: CalCurve -> Int -> Int -> Double
+        fillCell (CalCurve curve) matrixPosBP matrixPosCal =
             if (matrixPosCal,matrixPosBP) `elem` curve -- why is it this way round?
             then 1
             else 0
@@ -111,7 +117,7 @@ uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
     let years = reverse [(mean-std) .. (mean+std)]
         probabilities = map (dnormInt mean std) years
-    in UncalPDF years probabilities
+    in UncalPDF $ zip years probabilities
 
 dnormInt :: Int -> Int -> Int -> Double
 dnormInt mu sigma x =
