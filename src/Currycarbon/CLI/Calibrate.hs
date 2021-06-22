@@ -22,14 +22,17 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
     calCurve <- readCalCurve
     let completedCalCurve = completeCalCurve calCurve
     let date = uncalToPDF $ UncalC14 c14Age c14Std
-    print date
+    -- print date
     let calCurveMatrix = createRelevantCalCurveMatrix completedCalCurve date
-    print calCurveMatrix
-    let calPDF = projectUncalOverCalCurve calCurveMatrix date
+    -- print calCurveMatrix
+    let calPDF = makeBC $ projectUncalOverCalCurve calCurveMatrix date
     print calPDF
-    let plot = emptyXYPlot `thenPlot` (getCalPDFValue calPDF) `xlim` (791, 968) `ylim` (0,0.1)
+    let plot = emptyXYPlot `thenPlot` getCalPDFValue calPDF `xlim` (fromIntegral $ maximum $ getBPsCal calPDF, fromIntegral $ minimum $ getBPsCal calPDF) `ylim` (0 , maximum $ getProbsCal calPDF)
     printPlot plot
     return ()
+
+makeBC :: CalPDF -> CalPDF
+makeBC calPDF = CalPDF $ zip (map (\x -> x - 1950) $ getBPsCal calPDF) (getProbsCal calPDF)
 
 getCalPDFValue :: CalPDF -> Function
 getCalPDFValue (CalPDF obs) x
@@ -45,6 +48,12 @@ createRelevantCalCurveMatrix calCurve uncalPDF =
 
 filterCalCurve :: ((Int,Int) -> Bool) -> CalCurve -> CalCurve 
 filterCalCurve pre (CalCurve curve) = CalCurve $ filter pre curve
+
+getBPsCal :: CalPDF -> [Int]
+getBPsCal (CalPDF obs) = map fst obs
+
+getProbsCal :: CalPDF -> [Double]
+getProbsCal (CalPDF obs) = map snd obs
 
 getBPsUncal :: UncalPDF -> [Int]
 getBPsUncal (UncalPDF obs) = map fst obs
