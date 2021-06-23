@@ -24,16 +24,21 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
         uncalPDF = uncalToPDF uncalDate
     -- prepare relevant segment of the calcurve
     calCurve <- readCalCurve
-    let calCurveSegment = makeBCCalCurve $
+    let calCurveSegment = --makeBCCalCurve $
                             interpolateCalCurve $
                             getRelevantCalCurveSegment uncalPDF calCurve
     -- perform projection (aka calibration)
     let calPDF = projectUncalOverCalCurve uncalPDF $
                             makeCalCurveMatrix calCurveSegment
     -- plots
-    plotCalCurveSegment calCurveSegment
-    plotCalPDF calPDF
+    --plotCalCurveSegment calCurveSegment
+    --plotCalPDF calPDF
+    writeCalPDF calPDF
     return ()
+
+writeCalPDF :: CalPDF -> IO ()
+writeCalPDF (CalPDF obs) =
+    writeFile "test.txt" $ concatMap (\(year,prob) -> show year ++ "," ++ show prob ++ "\n") obs
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
