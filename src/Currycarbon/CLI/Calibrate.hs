@@ -25,9 +25,8 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
     -- prepare relevant segment of the calcurve
     calCurve <- readCalCurve
     let calCurveSegment = makeBCCalCurve $
-                            fillCalInCalCurve $
-                            getRelevantCalCurveSegment uncalPDF $
-                            interpolateCalCurve calCurve
+                            interpolateCalCurve $
+                            getRelevantCalCurveSegment uncalPDF calCurve
     -- perform projection (aka calibration)
     let calPDF = projectUncalOverCalCurve uncalPDF $
                             makeCalCurveMatrix calCurveSegment
@@ -88,11 +87,12 @@ interpolateCalCurve calCurve =
             in (xPred, y1 + xPredRel * yDiffPerxDiff)
 
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
-getRelevantCalCurveSegment uncalPDF = 
-    filterCalCurve (\(x,_) -> x `elem` getBPsUncal uncalPDF)
-    where 
-        filterCalCurve :: ((Int,Int) -> Bool) -> CalCurve -> CalCurve 
-        filterCalCurve pre (CalCurve curve) = CalCurve $ filter pre curve
+getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
+    let minSearchBP = minimum $ getBPsUncal uncalPDF
+        maxSearchBP = maximum $ getBPsUncal uncalPDF
+        (smallerMin,biggerMin) = splitWhen (\(x,_) -> x <= minSearchBP) obs
+        (biggerMax,smallerMax) = splitWhen (\(x,_) -> x >= maxSearchBP) (last smallerMin : biggerMin)
+    in CalCurve (smallerMax ++ [head biggerMax])
 
 -- this can probably be done simpler
 fillCalInCalCurve :: CalCurve -> CalCurve
