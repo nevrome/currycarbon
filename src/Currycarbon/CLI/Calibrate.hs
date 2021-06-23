@@ -27,9 +27,11 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
     let calCurveSegment = makeBCCalCurve $
                             interpolateCalCurve $
                             getRelevantCalCurveSegment uncalPDF calCurve
+    --print $ makeCalCurveMatrix calCurveSegment
     -- perform projection (aka calibration)
     let calPDF = projectUncalOverCalCurve uncalPDF $
                             makeCalCurveMatrix calCurveSegment
+    --print calPDF
     -- plots
     plotCalCurveSegment calCurveSegment
     plotCalPDF calPDF
@@ -40,19 +42,19 @@ uncalToPDF (UncalC14 mean std) =
     let years = reverse [(mean-4*std) .. (mean+4*std)]
         probabilities = map (dnormInt mean std) years
     in UncalPDF $ zip years probabilities
-    where
-        dnormInt :: Int -> Int -> Int -> Double
-        dnormInt mu sigma x =
-            let muDouble = fromIntegral mu
-                sigmaDouble = fromIntegral sigma
-                xDouble = fromIntegral x
-            in dnorm muDouble sigmaDouble xDouble
-        dnorm :: Double -> Double -> Double -> Double 
-        dnorm mu sigma x = 
-            let a = recip (sqrt (2 * pi * sigma2))
-                b = exp ((-(realToFrac x - realToFrac mu)^2) / (2 * sigma2))
-                sigma2 = realToFrac sigma^2
-            in a * b
+
+dnormInt :: Int -> Int -> Int -> Double
+dnormInt mu sigma x =
+    let muDouble = fromIntegral mu
+        sigmaDouble = fromIntegral sigma
+        xDouble = fromIntegral x
+    in dnorm muDouble sigmaDouble xDouble
+dnorm :: Double -> Double -> Double -> Double 
+dnorm mu sigma x = 
+    let a = recip (sqrt (2 * pi * sigma2))
+        b = exp ((-(realToFrac x - realToFrac mu)^2) / (2 * sigma2))
+        sigma2 = realToFrac sigma^2
+    in a * b
 
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
@@ -69,10 +71,10 @@ interpolateCalCurve calCurve =
         sigmas = getCalSigmas calCurve
         fillBPBPs = filter (`notElem` bps) [(minimum bps)..(maximum bps)]
         fillBPCals = map (curveInterpolInt bps cals) fillBPBPs
-        fillBPCalSigmas = map (curveInterpolInt cals sigmas) fillBPCals
+        fillBPCalSigmas = map (curveInterpolInt bps sigmas) fillBPBPs
         fillCalCals = filter (`notElem` cals ++ fillBPCals) [(minimum cals)..(maximum cals)]
         fillCalBPs = map (curveInterpolInt cals bps) fillCalCals
-        fillCalCalSigmas = map (curveInterpolInt cals sigmas) fillCalCals
+        fillCalCalSigmas = map (curveInterpolInt bps sigmas) fillCalBPs
     in CalCurve $ sort $
         zip3 bps cals sigmas ++
         zip3 fillBPBPs fillBPCals fillBPCalSigmas ++ 
@@ -85,7 +87,7 @@ interpolateCalCurve calCurve =
                 xPredDouble = fromIntegral xPred
             in round $ curveInterpol xsDouble ysDouble xPredDouble
         curveInterpol :: [Double] -> [Double] -> Double -> Double
-        curveInterpol xs ys xPred 
+        curveInterpol xs ys xPred
             | xPred `elem` xs = ys !! head (xPred `elemIndices` xs)
             | otherwise =
                 let (xsLeft,xsRight) = splitWhen (< xPred) xs
@@ -124,15 +126,20 @@ makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
 makeCalCurveMatrix calCurve =
     let bps = getBPs calCurve
         cals = getCals calCurve
+        sigmas = getCalSigmas calCurve
         bpsMatrix = [(minimum bps)..(maximum bps)]
         calsMatrix = [(minimum cals)..(maximum cals)]
     in CalCurveMatrix bpsMatrix calsMatrix $ map (\x -> map (fillCell calCurve x) bpsMatrix) calsMatrix
     where 
         fillCell :: CalCurve -> Int -> Int -> Double
-        fillCell calCurve matrixPosBP matrixPosCal =
-            if (matrixPosCal,matrixPosBP) `elem` zip (getBPs calCurve) (getCals calCurve) -- why is it this way round?
-            then 1
-            else 0
+        fillCell calCurve matrixPosCal matrixPosBP =
+            let bps = getBPs calCurve
+                cals = getCals calCurve
+                sigmas = getCalSigmas calCurve
+                relevantIndex = head $ elemIndices matrixPosCal cals
+                mean = bps !! relevantIndex
+                sigma = sigmas !! relevantIndex
+            in dnormInt mean sigma matrixPosBP
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
