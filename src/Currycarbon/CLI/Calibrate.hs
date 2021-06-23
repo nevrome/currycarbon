@@ -27,11 +27,9 @@ runCalibrate (CalibrateOptions c14Age c14Std) = do
     let calCurveSegment = makeBCCalCurve $
                             interpolateCalCurve $
                             getRelevantCalCurveSegment uncalPDF calCurve
-    --print $ makeCalCurveMatrix calCurveSegment
     -- perform projection (aka calibration)
     let calPDF = projectUncalOverCalCurve uncalPDF $
                             makeCalCurveMatrix calCurveSegment
-    --print calPDF
     -- plots
     plotCalCurveSegment calCurveSegment
     plotCalPDF calPDF
@@ -49,12 +47,13 @@ dnormInt mu sigma x =
         sigmaDouble = fromIntegral sigma
         xDouble = fromIntegral x
     in dnorm muDouble sigmaDouble xDouble
-dnorm :: Double -> Double -> Double -> Double 
-dnorm mu sigma x = 
-    let a = recip (sqrt (2 * pi * sigma2))
-        b = exp ((-(realToFrac x - realToFrac mu)^2) / (2 * sigma2))
-        sigma2 = realToFrac sigma^2
-    in a * b
+    where
+        dnorm :: Double -> Double -> Double -> Double 
+        dnorm mu sigma x = 
+            let a = recip (sqrt (2 * pi * sigma2))
+                b = exp ((-(realToFrac x - realToFrac mu)^2) / (2 * sigma2))
+                sigma2 = realToFrac sigma^2
+            in a * b
 
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
@@ -66,16 +65,20 @@ getRelevantCalCurveSegment uncalPDF (CalCurve obs) =
 
 interpolateCalCurve :: CalCurve -> CalCurve
 interpolateCalCurve calCurve = 
-    let bps = getBPs calCurve
+    let -- input observations
+        bps = getBPs calCurve
         cals = getCals calCurve
         sigmas = getCalSigmas calCurve
+        -- find and fill missing uncalBP years
         fillBPBPs = filter (`notElem` bps) [(minimum bps)..(maximum bps)]
         fillBPCals = map (curveInterpolInt bps cals) fillBPBPs
         fillBPCalSigmas = map (curveInterpolInt bps sigmas) fillBPBPs
+        -- find and fill missing calBP years
         fillCalCals = filter (`notElem` cals ++ fillBPCals) [(minimum cals)..(maximum cals)]
         fillCalBPs = map (curveInterpolInt cals bps) fillCalCals
         fillCalCalSigmas = map (curveInterpolInt bps sigmas) fillCalBPs
-    in CalCurve $ sort $
+    in -- merge observations and interpolated values
+        CalCurve $ sort $
         zip3 bps cals sigmas ++
         zip3 fillBPBPs fillBPCals fillBPCalSigmas ++ 
         zip3 fillCalBPs fillCalCals fillCalCalSigmas
