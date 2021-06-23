@@ -9,9 +9,24 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Text.Parsec.Number             as P
 
-writeCalPDF :: CalPDF -> IO ()
-writeCalPDF (CalPDF obs) =
-    writeFile "test.txt" $ concatMap (\(year,prob) -> show year ++ "," ++ show prob ++ "\n") obs
+readUncalC14String :: String -> Either String [UncalC14]
+readUncalC14String s = case P.runParser uncalC14Parser () "" s of
+    Left p  -> Left (show p)
+    Right x -> Right x
+
+uncalC14Parser :: P.Parser [UncalC14]
+uncalC14Parser = P.try (P.sepBy parseOneUncalC14 (P.char ';' <* P.spaces))
+
+parseOneUncalC14 :: P.Parser UncalC14
+parseOneUncalC14 = do
+    mean <- read <$> P.many1 P.digit
+    _ <- P.oneOf "+"
+    std <- read <$> P.many1 P.digit
+    return (UncalC14 mean std)
+
+writeCalPDF :: FilePath -> CalPDF -> IO ()
+writeCalPDF path (CalPDF obs) =
+    writeFile path $ concatMap (\(year,prob) -> show year ++ "," ++ show prob ++ "\n") obs
 
 readCalCurve :: IO CalCurve 
 readCalCurve = do

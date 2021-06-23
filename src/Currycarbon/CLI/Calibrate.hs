@@ -5,21 +5,23 @@ import           Currycarbon.Parsers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
+import           Control.Monad (when)
 import           TextPlot
 
 data CalibrateOptions = CalibrateOptions {
-      _calibrateC14Age :: Int,
-      _calibrateC14Std :: Int
+      _calibrateUncalC14 :: [UncalC14],
+      _calibateShowPlots :: Bool,
+      _calibrateOutFile :: FilePath
     }
 
 runCalibrate :: CalibrateOptions -> IO ()
-runCalibrate (CalibrateOptions c14Age c14Std) = do
+runCalibrate (CalibrateOptions uncalC14 showPlots outFile) = do
     calCurve <- readCalCurve
-    let calPDF = calibrate calCurve (UncalC14 c14Age c14Std)
-    -- plots
-    --plotCalCurveSegment calCurveSegment
-    --plotCalPDF calPDF
-    writeCalPDF calPDF
+    let (calPDF,calCurveSegment) = calibrate calCurve (head uncalC14)
+    when showPlots $ do
+        plotCalCurveSegment calCurveSegment
+        plotCalPDF calPDF
+    writeCalPDF outFile calPDF
     return ()
 
 plotCalCurveSegment :: CalCurve -> IO ()

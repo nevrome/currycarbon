@@ -44,19 +44,25 @@ optParser = OP.subparser (
         (OP.progDesc "...")
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> parseC14Age
-                                      <*> parseC14Std
+calibrateOptParser = CalibrateOptions <$> parseUncalC14
+                                      <*> parseShowPlots
+                                      <*> parseOutFile
 
-parseC14Age :: OP.Parser Int
-parseC14Age = OP.option OP.auto (
-    OP.short 'c' <>
-    OP.long "c14age" <> 
-    OP.help "..."
+parseUncalC14 :: OP.Parser [UncalC14]
+parseUncalC14 = OP.argument (OP.eitherReader readUncalC14String) (
+    OP.metavar "DATES" <>
+    OP.help "\"4000+50;3000+25;1000+20\""
     )
 
-parseC14Std :: OP.Parser Int
-parseC14Std = OP.option OP.auto (
-    OP.short 's' <>
-    OP.long "c14std" <> 
-    OP.help "..."
+parseShowPlots :: OP.Parser Bool
+parseShowPlots = OP.switch (
+    OP.long "showPlots" <> 
+    OP.help "Show plots"
+    )
+
+parseOutFile :: OP.Parser FilePath
+parseOutFile = OP.strOption (
+    OP.long "outFile" <>
+    OP.short 'o' <>
+    OP.help "The output file path"
     )

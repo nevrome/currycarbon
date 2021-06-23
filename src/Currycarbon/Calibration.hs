@@ -6,7 +6,7 @@ import Currycarbon.Utils
 
 import Data.List (elemIndices, sort) 
 
-calibrate :: CalCurve -> UncalC14 -> CalPDF
+calibrate :: CalCurve -> UncalC14 -> (CalPDF, CalCurve)
 calibrate calCurve uncalDate =
     let -- prepare PDF for uncalibrated date
         uncalPDF = uncalToPDF uncalDate
@@ -17,7 +17,7 @@ calibrate calCurve uncalDate =
         -- perform projection (aka calibration)
         calPDF = projectUncalOverCalCurve uncalPDF $
                             makeCalCurveMatrix calCurveSegment
-    in calPDF
+    in (calPDF,calCurveSegment)
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 mean std) = 
