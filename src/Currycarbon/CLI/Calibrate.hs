@@ -54,14 +54,24 @@ uncalToPDF (UncalC14 mean std) =
                 sigma2 = realToFrac sigma^2
             in a * b
 
+getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
+getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
+    let minSearchBP = minimum $ getBPsUncal uncalPDF
+        maxSearchBP = maximum $ getBPsUncal uncalPDF
+        (smallerMin,biggerMin) = splitWhenSorted (\(x,_) -> x <= minSearchBP) obs
+        (smallerMax,biggerMax) = splitWhenSorted (\(x,_) -> x < maxSearchBP) (last smallerMin : biggerMin)
+    in CalCurve (smallerMax ++ [head biggerMax])
+
 interpolateCalCurve :: CalCurve -> CalCurve
 interpolateCalCurve calCurve = 
     let bps = getBPs calCurve
         cals = getCals calCurve
-        newBP = [(minimum bps)..(maximum bps)]
-        newCal = map (curveInterpolInt bps cals) newBP
-    in CalCurve $ zip newBP newCal
-    where 
+        newBPs = [(minimum bps)..(maximum bps)]
+        newCals = map (curveInterpolInt bps cals) newBPs
+        missingCals = filter (`notElem` newCals) [(minimum newCals)..(maximum newCals)]
+        missingBPs = map (curveInterpolInt newCals newBPs) missingCals
+    in CalCurve $ sort $ zip newBPs newCals ++ zip missingBPs missingCals
+    where
         curveInterpolInt :: [Int] -> [Int] -> Int -> Int
         curveInterpolInt xs ys xPred = 
             let xsDouble = map fromIntegral xs
@@ -86,33 +96,9 @@ interpolateCalCurve calCurve =
                 xPredRel = xPred - x1
             in (xPred, y1 + xPredRel * yDiffPerxDiff)
 
-getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
-getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
-    let minSearchBP = minimum $ getBPsUncal uncalPDF
-        maxSearchBP = maximum $ getBPsUncal uncalPDF
-        (smallerMin,biggerMin) = splitWhen (\(x,_) -> x <= minSearchBP) obs
-        (biggerMax,smallerMax) = splitWhen (\(x,_) -> x >= maxSearchBP) (last smallerMin : biggerMin)
-    in CalCurve (smallerMax ++ [head biggerMax])
-
--- this can probably be done simpler
-fillCalInCalCurve :: CalCurve -> CalCurve
-fillCalInCalCurve (CalCurve obs) =
-    let minCalCalCurve = minimum $ map snd obs
-        maxCalCalCurve = maximum $ map snd obs
-        missing = filter (\x -> x `notElem` map snd obs) [minCalCalCurve..maxCalCalCurve]
-    in CalCurve $ sortBy (\(x,_) (y,_) -> compare x y) $ insertManyIntoList obs missing -- do we actually need a sorted list?
-    where
-        insertManyIntoList :: [(Int, Int)] -> [Int] -> [(Int, Int)]
-        insertManyIntoList obs [] = obs
-        insertManyIntoList obs [x] = insertOneIntoList obs x
-        insertManyIntoList obs (x:xs) = insertManyIntoList (insertOneIntoList obs x) xs
-        insertOneIntoList :: [(Int, Int)] -> Int -> [(Int, Int)]
-        insertOneIntoList obs insert =
-            let (beforeInsert, afterInsert) = splitWhen (\(_,x) -> x < insert) obs
-                leftValue = if null beforeInsert
-                            then fst $ head afterInsert
-                            else fst $ last beforeInsert
-            in beforeInsert ++ [(leftValue, insert)] ++ afterInsert -- is an ordered insert even necessary?
+splitWhenSorted :: (Ord a) => (a -> Bool) -> [a] -> ([a],[a])
+splitWhenSorted pre xs = sortTupleLists $ splitWhen pre xs
+    where sortTupleLists (xs,ys) = (sort xs, sort ys)
 
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])
