@@ -16,17 +16,19 @@ readCalCurve = do
         Left p  -> error $ "This should never happen." ++ show p
         Right x -> return $ CalCurve x
 
-calCurveFileParser :: P.Parser [(Int, Int)]
+calCurveFileParser :: P.Parser [(Int, Int, Int)]
 calCurveFileParser = do
     P.skipMany comments
     P.sepEndBy calCurveLineParser (P.manyTill P.anyToken (P.try P.newline))
 
-calCurveLineParser :: P.Parser (Int, Int) 
+calCurveLineParser :: P.Parser (Int, Int, Int) 
 calCurveLineParser = do
   calBP <- read <$> P.many1 P.digit
   _ <- P.oneOf ","
   bp <- read <$> P.many1 P.digit
-  return (bp, calBP)
+  _ <- P.oneOf ","
+  sigma <- read <$> P.many1 P.digit
+  return (bp, calBP, sigma)
 
 comments :: P.Parser String
 comments = do 

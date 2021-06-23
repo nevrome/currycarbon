@@ -16,7 +16,7 @@ data CalCurveMatrix = CalCurveMatrix
                 [[Double]] -- matrix
     deriving Show
 
-newtype CalCurve = CalCurve [(Int, Int)] -- BP, calBP
+newtype CalCurve = CalCurve [(Int, Int, Int)] -- BP, calBP, sigma
     deriving Show
 
 -- getter functions
@@ -34,7 +34,10 @@ getProbsUncal :: UncalPDF -> [Double]
 getProbsUncal (UncalPDF obs) = map snd obs
 
 getBPs :: CalCurve -> [Int]
-getBPs (CalCurve obs) = map fst obs
+getBPs (CalCurve obs) = map (\(x,y,z) -> x) obs
 
 getCals :: CalCurve -> [Int]
-getCals (CalCurve obs) = map snd obs
+getCals (CalCurve obs) = map (\(x,y,z) -> y) obs
+
+getCalSigmas :: CalCurve -> [Int]
+getCalSigmas (CalCurve obs) = map (\(x,y,z) -> z) obs

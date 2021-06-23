@@ -58,19 +58,25 @@ getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
     let minSearchBP = minimum $ getBPsUncal uncalPDF
         maxSearchBP = maximum $ getBPsUncal uncalPDF
-        (smallerMin,biggerMin) = splitWhenSorted (\(x,_) -> x <= minSearchBP) obs
-        (smallerMax,biggerMax) = splitWhenSorted (\(x,_) -> x < maxSearchBP) (last smallerMin : biggerMin)
+        (smallerMin,biggerMin) = splitWhenSorted (\(x,_,_) -> x <= minSearchBP) obs
+        (smallerMax,biggerMax) = splitWhenSorted (\(x,_,_) -> x < maxSearchBP) (last smallerMin : biggerMin)
     in CalCurve (smallerMax ++ [head biggerMax])
 
 interpolateCalCurve :: CalCurve -> CalCurve
 interpolateCalCurve calCurve = 
     let bps = getBPs calCurve
         cals = getCals calCurve
-        newBPs = [(minimum bps)..(maximum bps)]
-        newCals = map (curveInterpolInt bps cals) newBPs
-        missingCals = filter (`notElem` newCals) [(minimum newCals)..(maximum newCals)]
-        missingBPs = map (curveInterpolInt newCals newBPs) missingCals
-    in CalCurve $ sort $ zip newBPs newCals ++ zip missingBPs missingCals
+        sigmas = getCalSigmas calCurve
+        fillBPBPs = filter (`notElem` bps) [(minimum bps)..(maximum bps)]
+        fillBPCals = map (curveInterpolInt bps cals) fillBPBPs
+        fillBPCalSigmas = map (curveInterpolInt cals sigmas) fillBPCals
+        fillCalCals = filter (`notElem` cals ++ fillBPCals) [(minimum cals)..(maximum cals)]
+        fillCalBPs = map (curveInterpolInt cals bps) fillCalCals
+        fillCalCalSigmas = map (curveInterpolInt cals sigmas) fillCalCals
+    in CalCurve $ sort $
+        zip3 bps cals sigmas ++
+        zip3 fillBPBPs fillBPCals fillBPCalSigmas ++ 
+        zip3 fillCalBPs fillCalCals fillCalCalSigmas
     where
         curveInterpolInt :: [Int] -> [Int] -> Int -> Int
         curveInterpolInt xs ys xPred = 
@@ -109,7 +115,7 @@ splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
         combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
 
 makeBCCalCurve :: CalCurve -> CalCurve
-makeBCCalCurve calCurve = CalCurve $ zip (getBPs calCurve) (map (\x -> x - 1950) $ getCals calCurve)
+makeBCCalCurve calCurve = CalCurve $ zip3 (getBPs calCurve) (map (\x -> x - 1950) $ getCals calCurve) (getCalSigmas calCurve)
 
 makeBCCalPDF :: CalPDF -> CalPDF
 makeBCCalPDF calPDF = CalPDF $ zip (map (\x -> x - 1950) $ getBPsCal calPDF) (getProbsCal calPDF)
@@ -123,8 +129,8 @@ makeCalCurveMatrix calCurve =
     in CalCurveMatrix bpsMatrix calsMatrix $ map (\x -> map (fillCell calCurve x) bpsMatrix) calsMatrix
     where 
         fillCell :: CalCurve -> Int -> Int -> Double
-        fillCell (CalCurve curve) matrixPosBP matrixPosCal =
-            if (matrixPosCal,matrixPosBP) `elem` curve -- why is it this way round?
+        fillCell calCurve matrixPosBP matrixPosCal =
+            if (matrixPosCal,matrixPosBP) `elem` zip (getBPs calCurve) (getCals calCurve) -- why is it this way round?
             then 1
             else 0
 
@@ -150,8 +156,8 @@ plotCalCurveSegment calCurveSegment = do
         `ylim` (minBPCalCurve, maxBPCalCurve)
     where
         getCalCurveValue :: CalCurve -> Function
-        getCalCurveValue (CalCurve obs) x = 
-            fromIntegral $ fst $ head $ filter (\(_, y) -> round x == y) obs
+        getCalCurveValue calCurve x = 
+            fromIntegral $ fst $ head $ filter (\(_, y) -> round x == y) $ zip (getBPs calCurve) (getCals calCurve)
 
 plotCalPDF :: CalPDF -> IO ()
 plotCalPDF calPDF = do
