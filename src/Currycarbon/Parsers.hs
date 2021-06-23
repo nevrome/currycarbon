@@ -9,6 +9,10 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Text.Parsec.Number             as P
 
+writeCalPDF :: CalPDF -> IO ()
+writeCalPDF (CalPDF obs) =
+    writeFile "test.txt" $ concatMap (\(year,prob) -> show year ++ "," ++ show prob ++ "\n") obs
+
 readCalCurve :: IO CalCurve 
 readCalCurve = do
     intcal20 <- readFile "data/intcal20.14c"
