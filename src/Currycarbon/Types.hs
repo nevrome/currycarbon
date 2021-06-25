@@ -1,13 +1,14 @@
 module Currycarbon.Types where
 
 data UncalC14 = UncalC14 
+                String -- name
                 Int -- mean
                 Int -- std
 
-newtype UncalPDF = UncalPDF [(Int, Double)] -- BP, probability
+data UncalPDF = UncalPDF String [(Int, Double)] -- Name, BP, probability
     deriving Show
 
-newtype CalPDF = CalPDF [(Int, Double)] -- calBP, probability
+data CalPDF = CalPDF String [(Int, Double)] -- Name, calBP, probability
     deriving Show
 
 data CalCurveMatrix = CalCurveMatrix 
@@ -22,16 +23,22 @@ newtype CalCurve = CalCurve [(Int, Int, Int)] -- BP, calBP, sigma
 -- getter functions
 
 getBPsCal :: CalPDF -> [Int]
-getBPsCal (CalPDF obs) = map fst obs
+getBPsCal (CalPDF _ obs) = map fst obs
 
 getProbsCal :: CalPDF -> [Double]
-getProbsCal (CalPDF obs) = map snd obs
+getProbsCal (CalPDF _ obs) = map snd obs
+
+getNameCal :: CalPDF -> String 
+getNameCal (CalPDF name _) = name
 
 getBPsUncal :: UncalPDF -> [Int]
-getBPsUncal (UncalPDF obs) = map fst obs
+getBPsUncal (UncalPDF _ obs) = map fst obs
 
 getProbsUncal :: UncalPDF -> [Double]
-getProbsUncal (UncalPDF obs) = map snd obs
+getProbsUncal (UncalPDF _ obs) = map snd obs
+
+getNameUncal :: UncalPDF -> String 
+getNameUncal (UncalPDF name _) = name
 
 getBPs :: CalCurve -> [Int]
 getBPs (CalCurve obs) = map (\(x,y,z) -> x) obs

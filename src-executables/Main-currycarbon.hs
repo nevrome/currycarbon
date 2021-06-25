@@ -51,7 +51,7 @@ calibrateOptParser = CalibrateOptions <$> parseUncalC14
 parseUncalC14 :: OP.Parser [UncalC14]
 parseUncalC14 = OP.argument (OP.eitherReader readUncalC14String) (
     OP.metavar "DATES" <>
-    OP.help "\"4000+50;3000+25;1000+20\""
+    OP.help "\"S1:4000+50;S2:3000+25;S3:1000+20\""
     )
 
 parseShowPlots :: OP.Parser Bool

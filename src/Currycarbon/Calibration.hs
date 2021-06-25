@@ -20,10 +20,10 @@ calibrate calCurve uncalDate =
     in (calPDF,calCurveSegment)
 
 uncalToPDF :: UncalC14 -> UncalPDF
-uncalToPDF (UncalC14 mean std) = 
+uncalToPDF (UncalC14 name mean std) =
     let years = reverse [(mean-4*std) .. (mean+4*std)]
         probabilities = map (dnormInt mean std) years
-    in UncalPDF $ zip years probabilities
+    in UncalPDF name $ zip years probabilities
 
 dnormInt :: Int -> Int -> Int -> Double
 dnormInt mu sigma x =
@@ -107,7 +107,7 @@ makeBCCalCurve :: CalCurve -> CalCurve
 makeBCCalCurve calCurve = CalCurve $ zip3 (getBPs calCurve) (map (\x -> x - 1950) $ getCals calCurve) (getCalSigmas calCurve)
 
 makeBCCalPDF :: CalPDF -> CalPDF
-makeBCCalPDF calPDF = CalPDF $ zip (map (\x -> x - 1950) $ getBPsCal calPDF) (getProbsCal calPDF)
+makeBCCalPDF calPDF = CalPDF (getNameCal calPDF) $ zip (map (\x -> x - 1950) $ getBPsCal calPDF) (getProbsCal calPDF)
 
 makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
 makeCalCurveMatrix calCurve =
@@ -130,7 +130,7 @@ makeCalCurveMatrix calCurve =
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
-    CalPDF $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
+    CalPDF (getNameUncal uncalPDF) $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
     where
         vectorMatrixMult :: [Double] -> [[Double]] -> [[Double]]
         vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat

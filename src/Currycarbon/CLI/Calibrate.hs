@@ -52,5 +52,5 @@ plotCalPDF calPDF = do
         `ylim` (0 , maximum $ getProbsCal calPDF)
     where
         getCalPDFValue :: CalPDF -> Function
-        getCalPDFValue (CalPDF obs) x = 
+        getCalPDFValue (CalPDF _ obs) x = 
             snd $ head $ filter (\(y,_) -> round x == y) obs
