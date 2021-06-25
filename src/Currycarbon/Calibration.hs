@@ -19,9 +19,17 @@ calibrate calCurve uncalDate =
                             interpolateCalCurve $
                             getRelevantCalCurveSegment uncalPDF calCurve
         -- perform projection (aka calibration)
-        calPDF = projectUncalOverCalCurve uncalPDF $
+        calPDF = normalizeCalPDF $
+                            projectUncalOverCalCurve uncalPDF $
                             makeCalCurveMatrix calCurveSegment
     in (calPDF,calCurveSegment)
+
+normalizeCalPDF :: CalPDF -> CalPDF
+normalizeCalPDF calPDF = 
+    let dens = getProbsCal calPDF
+        sumDens = sum $ getProbsCal calPDF
+        normalizedDens = map (/ sumDens) dens
+    in CalPDF (getNameCal calPDF) $ zip (getBPsCal calPDF) normalizedDens
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 name mean std) =

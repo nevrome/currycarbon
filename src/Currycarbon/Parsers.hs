@@ -29,7 +29,7 @@ parseOneUncalC14 = do
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 writeCalPDFs path calPDFs =
     writeFile path $ 
-        "sample,calBC,probability\n"
+        "sample,calBC,density\n"
         ++ concatMap renderCalPDF calPDFs
 
 renderCalPDF :: CalPDF -> String
