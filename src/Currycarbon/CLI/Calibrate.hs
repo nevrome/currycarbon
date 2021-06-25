@@ -1,5 +1,6 @@
 module Currycarbon.CLI.Calibrate where
 
+import           Currycarbon.CalCurves.Intcal20
 import           Currycarbon.Calibration
 import           Currycarbon.Parsers
 import           Currycarbon.Types
@@ -16,8 +17,8 @@ data CalibrateOptions = CalibrateOptions {
 
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions uncalC14 showPlots outFile) = do
-    calCurve <- readCalCurve
-    let (calPDF,calCurveSegment) = calibrate calCurve (head uncalC14)
+    let calCurve = loadCalCurve intcal20
+        (calPDF,calCurveSegment) = calibrate calCurve (head uncalC14)
     when showPlots $ do
         plotCalCurveSegment calCurveSegment
         plotCalPDF calPDF

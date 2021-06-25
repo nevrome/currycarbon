@@ -28,12 +28,11 @@ writeCalPDF :: FilePath -> CalPDF -> IO ()
 writeCalPDF path (CalPDF obs) =
     writeFile path $ concatMap (\(year,prob) -> show year ++ "," ++ show prob ++ "\n") obs
 
-readCalCurve :: IO CalCurve 
-readCalCurve = do
-    intcal20 <- readFile "data/intcal20.14c"
-    case P.runParser calCurveFileParser () "" intcal20 of
+loadCalCurve :: String -> CalCurve 
+loadCalCurve calCurveString = do
+    case P.runParser calCurveFileParser () "" calCurveString of
         Left p  -> error $ "This should never happen." ++ show p
-        Right x -> return $ CalCurve x
+        Right x -> CalCurve x
 
 calCurveFileParser :: P.Parser [(Int, Int, Int)]
 calCurveFileParser = do
