@@ -6,10 +6,26 @@ data UncalC14 = UncalC14
                 Int -- std
     deriving Show
 
-data UncalPDF = UncalPDF String [(Int, Double)] -- Name, BP, probability
+data UncalPDF = UncalPDF 
+                String -- Name
+                [(Int, Double)] -- BP, probability
     deriving Show
 
-data CalPDF = CalPDF String [(Int, Double)] -- Name, calBP, probability
+data CalPDF = CalPDF 
+                String -- Name
+                [(Int, Double)] -- calBP, probability
+    deriving Show
+
+data CalC14 = CalC14 
+                String -- Name
+                [(Int, Double, Bool, Bool)] -- calBP, probability, in 68% probability range, in 95% probability range
+                [HDR]
+    deriving Show
+
+-- https://github.com/ropensci/c14bazAAR/blob/19b3d8bd9046212caf7d125a5d88a2f92ca3ce4c/R/c14_date_list_calibrate.R#L253
+data HDR = HDR -- High density region
+                Int -- Start age calBC
+                Int -- Stop age calBC
     deriving Show
 
 data CalCurveMatrix = CalCurveMatrix 
