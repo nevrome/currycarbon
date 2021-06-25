@@ -19,9 +19,10 @@ runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions uncalC14s showPlots outFile) = do
     let calCurve = loadCalCurve intcal20
         calPDFs = calibrateMany calCurve uncalC14s
-    --when showPlots $ do
-        --plotCalCurveSegment calCurveSegment
-        --plotCalPDF calPDF
+    when showPlots $ do
+        let (calPDF,calCurveSegment) = calibrate calCurve $ head uncalC14s
+        plotCalCurveSegment calCurveSegment
+        plotCalPDF calPDF
     writeCalPDFs outFile calPDFs
     return ()
 

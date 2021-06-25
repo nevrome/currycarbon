@@ -29,7 +29,7 @@ runCmd o = case o of
 optParserInfo :: OP.ParserInfo Options
 optParserInfo = OP.info (OP.helper <*> versionOption <*> optParser) (
     OP.briefDesc <>
-    OP.progDesc "currycarbon calibrates C14 dates."
+    OP.progDesc "currycarbon calibrates C14 dates"
     )
 
 versionOption :: OP.Parser (a -> a)
@@ -41,7 +41,7 @@ optParser = OP.subparser (
     )
   where
     calibrateOptInfo = OP.info (OP.helper <*> (CmdCalibrate <$> calibrateOptParser))
-        (OP.progDesc "...")
+        (OP.progDesc "Simple intercept calibration for one or multiple radiocarbon dates")
 
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> parseUncalC14
@@ -51,13 +51,15 @@ calibrateOptParser = CalibrateOptions <$> parseUncalC14
 parseUncalC14 :: OP.Parser [UncalC14]
 parseUncalC14 = OP.argument (OP.eitherReader readUncalC14String) (
     OP.metavar "DATES" <>
-    OP.help "\"S1:4000+50;S2:3000+25;S3:1000+20\""
+    OP.help "A string with one or multiple uncalibrated dates of \
+            \ the form \"<sample name>:<mean age BP>+<one standard deviation>;...\" \
+            \ so for example \"S1:4000+50;S2:3000+25;S3:1000+20\""
     )
 
 parseShowPlots :: OP.Parser Bool
 parseShowPlots = OP.switch (
     OP.long "showPlots" <> 
-    OP.help "Show plots"
+    OP.help "Show calCurve and calDensity plots (only for the first input date)"
     )
 
 parseOutFile :: OP.Parser FilePath
