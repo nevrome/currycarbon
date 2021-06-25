@@ -4,6 +4,7 @@ data UncalC14 = UncalC14
                 String -- name
                 Int -- mean
                 Int -- std
+    deriving Show
 
 data UncalPDF = UncalPDF String [(Int, Double)] -- Name, BP, probability
     deriving Show

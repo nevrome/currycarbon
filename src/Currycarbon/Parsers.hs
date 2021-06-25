@@ -5,6 +5,7 @@ import Currycarbon.Utils
 
 import           Control.Exception              (throwIO)
 import           Control.Monad                  (guard)
+import           Data.List                      (intercalate)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Text.Parsec.Number             as P
@@ -25,9 +26,15 @@ parseOneUncalC14 = do
     std <- read <$> P.many1 P.digit
     return (UncalC14 name mean std)
 
-writeCalPDF :: FilePath -> CalPDF -> IO ()
-writeCalPDF path (CalPDF name obs) =
-    writeFile path $ concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") obs
+writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
+writeCalPDFs path calPDFs =
+    writeFile path $ 
+        "sample,calBC,probability\n"
+        ++ concatMap renderCalPDF calPDFs
+
+renderCalPDF :: CalPDF -> String
+renderCalPDF (CalPDF name obs) =
+    concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") obs
 
 loadCalCurve :: String -> CalCurve 
 loadCalCurve calCurveString = do

@@ -6,6 +6,10 @@ import Currycarbon.Utils
 
 import Data.List (elemIndices, sort) 
 
+calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
+calibrateMany calCurve =
+    map (fst . calibrate calCurve)
+
 calibrate :: CalCurve -> UncalC14 -> (CalPDF, CalCurve)
 calibrate calCurve uncalDate =
     let -- prepare PDF for uncalibrated date
