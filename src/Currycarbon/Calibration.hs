@@ -127,10 +127,13 @@ makeCalCurveMatrix calCurve =
             let bps = getBPs calCurve
                 cals = getCals calCurve
                 sigmas = getCalSigmas calCurve
-                relevantIndex = head $ elemIndices matrixPosCal cals
+                relevantIndex = middle $ elemIndices matrixPosCal cals
                 mean = bps !! relevantIndex
                 sigma = sigmas !! relevantIndex
             in dnormInt mean sigma matrixPosBP
+        middle :: [a] -> a
+        middle [x] = x
+        middle xs = xs !! ((length xs `div` 2) - 1)
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
