@@ -8,7 +8,7 @@ import           Currycarbon.Utils
 
 import           Control.Monad      (when)
 import           System.FilePath    ((</>))
-import           System.Directory   (createDirectory)
+import           System.Directory   (createDirectoryIfMissing)
 import           TextPlot
 import Data.Maybe (fromJust)
 
@@ -28,11 +28,12 @@ runCalibrate (CalibrateOptions uncalC14s outFile explore exploreDir) = do
     -- single date exploration
     when explore $ do
         let (calPDF,calCurveSegment,calCurveMatrix) = calibrate calCurve $ head uncalC14s
-        createDirectory exploreDir
+        createDirectoryIfMissing True exploreDir
         plotCalCurveSegment calCurveSegment
         plotCalPDF calPDF
+        writeCalCurve (exploreDir </> "calCurveInterpolated.csv") calCurveSegment
         writeCalCurveMatrixFile (exploreDir </> "calCurveMatrix.csv") calCurveMatrix
-
+        
 plotCalCurveSegment :: CalCurve -> IO ()
 plotCalCurveSegment calCurveSegment = do
     let maxBPCalCurve =     fromIntegral $ maximum $ getBPs calCurveSegment

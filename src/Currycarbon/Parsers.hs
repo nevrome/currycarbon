@@ -10,7 +10,7 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Text.Parsec.Number             as P
 
--- CalCurveMatrix 
+-- CalCurveMatrix
 writeCalCurveMatrixFile :: FilePath -> CalCurveMatrix -> IO ()
 writeCalCurveMatrixFile path calCurveMatrix = 
     writeFile path $ renderCalCurveMatrixFile calCurveMatrix
@@ -51,6 +51,16 @@ parseOneUncalC14 = do
     return (UncalC14 name mean std)
 
 -- CalCurve
+writeCalCurve :: FilePath -> CalCurve -> IO ()
+writeCalCurve path calCurve = 
+    writeFile path $ renderCalCurve calCurve
+
+renderCalCurve :: CalCurve -> String
+renderCalCurve (CalCurve obs) =
+    let header = "CAL BP,14C age,Sigma\n"
+        body = map (\(x,y,z) -> show x ++ "," ++ show y ++ "," ++ show z) obs
+    in header ++ intercalate "\n" body
+
 loadCalCurve :: String -> CalCurve 
 loadCalCurve calCurveString = do
     case P.runParser calCurveFileParser () "" calCurveString of
