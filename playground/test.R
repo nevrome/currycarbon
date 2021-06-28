@@ -5,7 +5,12 @@ testdate <- c(5000,50)
 system(paste0(
   "currycarbon calibrate \"1:",
   testdate[1], "+", testdate[2],
-  "\" --outFile /tmp/currycarbon.txt"))
+  "\" --outFile /tmp/currycarbon.txt --explore --exploreDir \"/tmp/currytest\""))
+
+cal_curve_matrix <- as.matrix(read.csv("/tmp/currytest/calCurveMatrix.csv", row.names = 1, header = T))
+
+image(cal_curve_matrix)
+
 test <- readr::read_csv("/tmp/currycarbon.txt")
 
 bchronRaw <- Bchron::BchronCalibrate(

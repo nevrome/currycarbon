@@ -5,11 +5,35 @@ import Currycarbon.Utils
 
 import           Control.Exception              (throwIO)
 import           Control.Monad                  (guard)
-import           Data.List                      (intercalate)
+import           Data.List                      (intercalate, transpose)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Text.Parsec.Number             as P
 
+-- CalCurveMatrix 
+writeCalCurveMatrixFile :: FilePath -> CalCurveMatrix -> IO ()
+writeCalCurveMatrixFile path calCurveMatrix = 
+    writeFile path $ renderCalCurveMatrixFile calCurveMatrix
+
+renderCalCurveMatrixFile :: CalCurveMatrix -> String
+renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
+    let header = "," ++ intercalate "," (map show cals) ++ "\n"
+        body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show bpDens)) 
+            bps (transpose curveDensities)
+    in header ++ intercalate "\n" body
+
+-- CalPDF
+writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
+writeCalPDFs path calPDFs =
+    writeFile path $ 
+        "sample,calBC,density\n"
+        ++ concatMap renderCalPDF calPDFs
+
+renderCalPDF :: CalPDF -> String
+renderCalPDF (CalPDF name obs) =
+    concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") obs
+
+-- UncalC14
 readUncalC14String :: String -> Either String [UncalC14]
 readUncalC14String s = case P.runParser uncalC14Parser () "" s of
     Left p  -> Left (show p)
@@ -26,16 +50,7 @@ parseOneUncalC14 = do
     std <- read <$> P.many1 P.digit
     return (UncalC14 name mean std)
 
-writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
-writeCalPDFs path calPDFs =
-    writeFile path $ 
-        "sample,calBC,density\n"
-        ++ concatMap renderCalPDF calPDFs
-
-renderCalPDF :: CalPDF -> String
-renderCalPDF (CalPDF name obs) =
-    concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") obs
-
+-- CalCurve
 loadCalCurve :: String -> CalCurve 
 loadCalCurve calCurveString = do
     case P.runParser calCurveFileParser () "" calCurveString of

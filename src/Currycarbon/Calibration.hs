@@ -8,9 +8,9 @@ import Data.List (elemIndices, sort)
 
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
 calibrateMany calCurve =
-    map (fst . calibrate calCurve)
+    map ((\(x,_,_) -> x) . calibrate calCurve)
 
-calibrate :: CalCurve -> UncalC14 -> (CalPDF, CalCurve)
+calibrate :: CalCurve -> UncalC14 -> (CalPDF, CalCurve, CalCurveMatrix)
 calibrate calCurve uncalDate =
     let -- prepare PDF for uncalibrated date
         uncalPDF = uncalToPDF uncalDate
@@ -18,11 +18,11 @@ calibrate calCurve uncalDate =
         calCurveSegment = makeBCCalCurve $
                             interpolateCalCurve $
                             getRelevantCalCurveSegment uncalPDF calCurve
+        -- transform calCurve to matrix
+        calCurveMatrix = makeCalCurveMatrix calCurveSegment
         -- perform projection (aka calibration)
-        calPDF = normalizeCalPDF $
-                            projectUncalOverCalCurve uncalPDF $
-                            makeCalCurveMatrix calCurveSegment
-    in (calPDF,calCurveSegment)
+        calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
+    in (calPDF,calCurveSegment,calCurveMatrix)
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF calPDF = 

@@ -45,8 +45,9 @@ optParser = OP.subparser (
 
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> parseUncalC14
-                                      <*> parseShowPlots
                                       <*> parseOutFile
+                                      <*> parseExplore
+                                      <*> parseExploreDir
 
 parseUncalC14 :: OP.Parser [UncalC14]
 parseUncalC14 = OP.argument (OP.eitherReader readUncalC14String) (
@@ -56,15 +57,23 @@ parseUncalC14 = OP.argument (OP.eitherReader readUncalC14String) (
             \ so for example \"S1:4000+50;S2:3000+25;S3:1000+20\""
     )
 
-parseShowPlots :: OP.Parser Bool
-parseShowPlots = OP.switch (
-    OP.long "showPlots" <> 
-    OP.help "Show calCurve and calDensity plots (only for the first input date)"
-    )
-
 parseOutFile :: OP.Parser FilePath
 parseOutFile = OP.strOption (
     OP.long "outFile" <>
     OP.short 'o' <>
     OP.help "The output file path"
+    )
+
+parseExplore :: OP.Parser Bool
+parseExplore = OP.switch (
+    OP.long "explore" <> 
+    OP.help "Give more info for the first date in the input list"
+    )
+
+parseExploreDir :: OP.Parser FilePath 
+parseExploreDir = OP.strOption (
+    OP.long "exploreDir" <> 
+    OP.help "Output directry for the exploration output" <>
+    OP.value "currycarbonExplore" <>
+    OP.showDefault
     )

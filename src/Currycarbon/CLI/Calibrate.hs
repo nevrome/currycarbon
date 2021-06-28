@@ -6,25 +6,32 @@ import           Currycarbon.Parsers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
-import           Control.Monad (when)
+import           Control.Monad      (when)
+import           System.FilePath    ((</>))
+import           System.Directory   (createDirectory)
 import           TextPlot
+import Data.Maybe (fromJust)
 
 data CalibrateOptions = CalibrateOptions {
       _calibrateUncalC14 :: [UncalC14],
-      _calibateShowPlots :: Bool,
-      _calibrateOutFile :: FilePath
+      _calibrateOutFile :: FilePath,
+      _calibrateExplore :: Bool,
+      _calibrateExploreDir :: FilePath
     }
 
 runCalibrate :: CalibrateOptions -> IO ()
-runCalibrate (CalibrateOptions uncalC14s showPlots outFile) = do
+runCalibrate (CalibrateOptions uncalC14s outFile explore exploreDir) = do
+    -- normal mode
     let calCurve = loadCalCurve intcal20
         calPDFs = calibrateMany calCurve uncalC14s
-    when showPlots $ do
-        let (calPDF,calCurveSegment) = calibrate calCurve $ head uncalC14s
+    writeCalPDFs outFile calPDFs
+    -- single date exploration
+    when explore $ do
+        let (calPDF,calCurveSegment,calCurveMatrix) = calibrate calCurve $ head uncalC14s
+        createDirectory exploreDir
         plotCalCurveSegment calCurveSegment
         plotCalPDF calPDF
-    writeCalPDFs outFile calPDFs
-    return ()
+        writeCalCurveMatrixFile (exploreDir </> "calCurveMatrix.csv") calCurveMatrix
 
 plotCalCurveSegment :: CalCurve -> IO ()
 plotCalCurveSegment calCurveSegment = do
