@@ -1,9 +1,15 @@
 library(ggplot2)
 
-test <- readr::read_csv("~/agora/currycarbon/test.txt")
+testdate <- c(5000,50)
+
+system(paste0(
+  "currycarbon calibrate \"1:",
+  testdate[1], "+", testdate[2],
+  "\" --outFile /tmp/currycarbon.txt"))
+test <- readr::read_csv("/tmp/currycarbon.txt")
 
 bchronRaw <- Bchron::BchronCalibrate(
-  4000, 25, 
+  testdate[1], testdate[2],
   calCurves = 'intcal20'
 )
 
@@ -20,8 +26,7 @@ bchron |> dplyr::left_join(
     names_to = "method"
   ) |>
   ggplot() +
-  geom_line(aes(x = calBC, y = value, colour = method)) +
-  coord_cartesian(xlim = c(2700,2300))
+  geom_line(aes(x = calBC, y = value, colour = method))
 
 
 test$density |> sum()
