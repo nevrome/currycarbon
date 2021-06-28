@@ -4,7 +4,7 @@ import Currycarbon.Parsers
 import Currycarbon.Types
 import Currycarbon.Utils
 
-import Data.List (elemIndices, sort) 
+import Data.List (elemIndices, sort, genericLength) 
 
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
 calibrateMany calCurve =
@@ -80,14 +80,16 @@ interpolateCalCurve calCurve =
         zip3 fillCalBPs fillCalCals fillCalCalSigmas
     where
         curveInterpolInt :: [Int] -> [Int] -> Int -> Int
-        curveInterpolInt xs ys xPred = 
+        curveInterpolInt xs ys xPred =
             let xsDouble = map fromIntegral xs
                 ysDouble = map fromIntegral ys
                 xPredDouble = fromIntegral xPred
             in round $ curveInterpol xsDouble ysDouble xPredDouble
         curveInterpol :: [Double] -> [Double] -> Double -> Double
         curveInterpol xs ys xPred
-            | xPred `elem` xs = ys !! head (xPred `elemIndices` xs)
+            | xPred `elem` xs = 
+                let values = map (ys !!) $ xPred `elemIndices` xs
+                in sum values / genericLength values -- mean
             | otherwise =
                 let (xsLeft,xsRight) = splitWhen (< xPred) xs
                     xLeft = maximum xsLeft
