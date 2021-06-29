@@ -1,13 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import           Paths_currycarbon                   (version)
+import           Paths_currycarbon                  (version)
 import           Currycarbon.Parsers
 import           Currycarbon.Types
-import           Currycarbon.CLI.Calibrate           (runCalibrate, 
-                                                 CalibrateOptions (..))
+import           Currycarbon.CLI.CLICalibrate       (runCalibrate, 
+                                                     CalibrateOptions (..))
 
-import           Data.Version                   (showVersion)
-import qualified Options.Applicative            as OP
+import           Data.Version                       (showVersion)
+import qualified Options.Applicative                as OP
 
 -- data types
 

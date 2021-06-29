@@ -1,4 +1,4 @@
-module Currycarbon.CLI.Calibrate where
+module Currycarbon.CLI.CLICalibrate where
 
 import           Currycarbon.CalCurves.Intcal20
 import           Currycarbon.Calibration
