@@ -57,11 +57,12 @@ parseUncalC14 = OP.argument (OP.eitherReader readUncalC14String) (
             \ so for example \"S1:4000+50;S2:3000+25;S3:1000+20\""
     )
 
-parseOutFile :: OP.Parser FilePath
-parseOutFile = OP.strOption (
+parseOutFile :: OP.Parser (Maybe FilePath)
+parseOutFile = OP.option (Just <$> OP.str) (
     OP.long "outFile" <>
     OP.short 'o' <>
-    OP.help "The output file path"
+    OP.help "The output file path" <>
+    OP.value Nothing
     )
 
 parseExplore :: OP.Parser Bool

@@ -10,12 +10,12 @@ import           Control.Monad      (when)
 import           System.FilePath    ((</>))
 import           System.Directory   (createDirectoryIfMissing)
 import           TextPlot
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isJust)
 import Data.List (sort)
 
 data CalibrateOptions = CalibrateOptions {
       _calibrateUncalC14 :: [UncalC14],
-      _calibrateOutFile :: FilePath,
+      _calibrateOutFile :: Maybe FilePath,
       _calibrateExplore :: Bool,
       _calibrateExploreDir :: FilePath
     }
@@ -27,8 +27,10 @@ runCalibrate (CalibrateOptions uncalC14s outFile explore exploreDir) = do
         calPDFs = calibrateMany calCurve uncalC14s
         calC14 = refineCal calPDFs
     putStrLn $ renderCalC14s calC14
-    writeCalPDFs outFile calPDFs
-    -- single date exploration
+    -- write density file
+    when (isJust outFile) $
+        writeCalPDFs (fromJust outFile) calPDFs
+    -- write all the output for more extensive single date exploration
     when explore $ do
         let (calPDF,calCurveSegment,calCurveMatrix) = calibrate calCurve $ head uncalC14s
         createDirectoryIfMissing True exploreDir
