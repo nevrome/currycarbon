@@ -58,10 +58,10 @@ getNameUncal :: UncalPDF -> String
 getNameUncal (UncalPDF name _) = name
 
 getBPs :: CalCurve -> [Int]
-getBPs (CalCurve obs) = map (\(x,y,z) -> x) obs
+getBPs (CalCurve obs) = map (\(x,_,_) -> x) obs
 
 getCals :: CalCurve -> [Int]
-getCals (CalCurve obs) = map (\(x,y,z) -> y) obs
+getCals (CalCurve obs) = map (\(_,y,_) -> y) obs
 
 getCalSigmas :: CalCurve -> [Int]
-getCalSigmas (CalCurve obs) = map (\(x,y,z) -> z) obs
+getCalSigmas (CalCurve obs) = map (\(_,_,z) -> z) obs

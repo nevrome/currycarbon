@@ -1,14 +1,10 @@
 module Currycarbon.Parsers where
 
 import Currycarbon.Types
-import Currycarbon.Utils
 
-import           Control.Exception              (throwIO)
-import           Control.Monad                  (guard)
 import           Data.List                      (intercalate, transpose)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
-import qualified Text.Parsec.Number             as P
 
 -- CalC14
 renderCalC14s :: [CalC14] -> String
@@ -16,7 +12,7 @@ renderCalC14s xs =
     intercalate "\n--\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 name extencedCalPDF hdrs68 hdrs95) =
+renderCalC14 (CalC14 name _ hdrs68 hdrs95) =
        "Sample: " ++ name ++ "\n" 
     ++ "HDR 1-sigma: " ++ renderHDRs hdrs68 ++ " calBC\n"
     ++ "HDR 2-sigma: " ++ renderHDRs hdrs95 ++ " calBC"
@@ -101,6 +97,6 @@ calCurveLineParser = do
 
 comments :: P.Parser String
 comments = do 
-    P.string "#"
-    comment <- P.manyTill P.anyChar P.newline
+    _ <- P.string "#"
+    _ <- P.manyTill P.anyChar P.newline
     return ""

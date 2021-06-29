@@ -15,7 +15,7 @@ library
     exposed-modules:    Currycarbon.Parsers, Currycarbon.Types, Currycarbon.Utils, Currycarbon.Calibration, 
                         Currycarbon.CLI.CLICalibrate, Currycarbon.CalCurves.Intcal20
     hs-source-dirs:     src
-    build-depends:      base, filepath, parsec, parsec3-numbers, textPlot, directory
+    build-depends:      base, filepath, parsec, textPlot, directory
     default-language:   Haskell2010
 
 executable currycarbon

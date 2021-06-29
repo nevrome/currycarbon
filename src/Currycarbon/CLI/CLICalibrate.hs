@@ -4,14 +4,12 @@ import           Currycarbon.CalCurves.Intcal20
 import           Currycarbon.Calibration
 import           Currycarbon.Parsers
 import           Currycarbon.Types
-import           Currycarbon.Utils
 
 import           Control.Monad      (when)
 import           System.FilePath    ((</>))
 import           System.Directory   (createDirectoryIfMissing)
 import           TextPlot
-import Data.Maybe (fromJust, isJust)
-import Data.List (sort)
+import Data.Maybe                   (fromJust, isJust)
 
 data CalibrateOptions = CalibrateOptions {
       _calibrateUncalC14 :: [UncalC14],

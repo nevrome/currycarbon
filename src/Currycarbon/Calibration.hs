@@ -1,10 +1,8 @@
 module Currycarbon.Calibration where
 
-import Currycarbon.Parsers
 import Currycarbon.Types
-import Currycarbon.Utils
 
-import Data.List (elemIndices, sort, genericLength, tails, nub, sortBy, groupBy) 
+import Data.List            (elemIndices, sort, tails, sortBy, groupBy) 
 
 refineCal :: [CalPDF] -> [CalC14]
 refineCal = map refineCalOne
@@ -13,9 +11,9 @@ refineCalOne :: CalPDF -> CalC14
 refineCalOne (CalPDF name densities) =
     let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) densities
         cumsumDensities = scanl1 (+) $ map snd sortedDensities
-        in68 = map (< 0.683) cumsumDensities
-        in95 = map (< 0.954) cumsumDensities
-        contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities in68 in95
+        isIn68 = map (< 0.683) cumsumDensities
+        isIn95 = map (< 0.954) cumsumDensities
+        contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities isIn68 isIn95
     in CalC14 name contextualizedDensities (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
     where
         densities2HDR68 :: [(Int, Double, Bool, Bool)] -> [HDR]
@@ -29,9 +27,9 @@ refineCalOne (CalPDF name densities) =
                 filteredDensityGroups = filter (all getIn95) highDensityGroups
             in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
         getIn68 :: (Int, Double, Bool, Bool) -> Bool
-        getIn68 (_,_,in68,_) = in68
+        getIn68 (_,_,x,_) = x
         getIn95 :: (Int, Double, Bool, Bool) -> Bool
-        getIn95 (_,_,_,in95) = in95
+        getIn95 (_,_,_,x) = x
         getYear :: (Int, Double, Bool, Bool) -> Int
         getYear (year,_,_,_) = year
 
@@ -67,17 +65,17 @@ uncalToPDF (UncalC14 name mean std) =
     in UncalPDF name $ zip years probabilities
 
 dnormInt :: Int -> Int -> Int -> Double
-dnormInt mu sigma x =
-    let muDouble = fromIntegral mu
-        sigmaDouble = fromIntegral sigma
-        xDouble = fromIntegral x
+dnormInt muInt sigmaInt xInt =
+    let muDouble = fromIntegral muInt
+        sigmaDouble = fromIntegral sigmaInt
+        xDouble = fromIntegral xInt
     in dnorm muDouble sigmaDouble xDouble
     where
         dnorm :: Double -> Double -> Double -> Double 
         dnorm mu sigma x = 
             let a = recip (sqrt (2 * pi * sigma2))
-                b = exp ((-(realToFrac x - realToFrac mu)^2) / (2 * sigma2))
-                sigma2 = realToFrac sigma^2
+                b = exp ((-((realToFrac x - realToFrac mu)**2)) / (2 * sigma2))
+                sigma2 = realToFrac sigma**2
             in a * b
 
 -- this is a relatively imprecise solution, because start and end of the range may be badly represented
@@ -85,8 +83,8 @@ getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
     let minSearchBP = minimum $ getBPsUncal uncalPDF
         maxSearchBP = maximum $ getBPsUncal uncalPDF
-        (smallerMin,biggerMin) = splitWhen (\(x,_,_) -> x < minSearchBP) obs
-        (smallerMax,biggerMax) = splitWhen (\(x,_,_) -> x <= maxSearchBP) biggerMin
+        (_,biggerMin) = splitWhen (\(x,_,_) -> x < minSearchBP) obs
+        (smallerMax,_) = splitWhen (\(x,_,_) -> x <= maxSearchBP) biggerMin
     in CalCurve smallerMax
 
 interpolateCalCurve :: CalCurve -> CalCurve
@@ -116,10 +114,10 @@ interpolateCalCurve (CalCurve obs) =
             in (xPred, y1 + xPredRel * yDiffPerxDiff)
 
 timeWindows :: [(a,b,c)] -> [((a,b,c),(a,b,c))]
-timeWindows xs = map (\xs -> (head xs, last xs)) $ windows 2 xs
+timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
     where
         windows :: Int -> [a] -> [[a]]
-        windows n xs = takeLengthOf (drop (n-1) xs) (windows' n xs)
+        windows n ys = takeLengthOf (drop (n-1) ys) (windows' n ys)
         takeLengthOf :: [a] -> [b] -> [b]
         takeLengthOf = zipWith (flip const)
         windows' :: Int -> [a] -> [[a]]
@@ -143,16 +141,15 @@ makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
 makeCalCurveMatrix calCurve =
     let bps = getBPs calCurve
         cals = getCals calCurve
-        sigmas = getCalSigmas calCurve
         bpsMatrix = [(minimum bps)..(maximum bps)]
         calsMatrix = [(minimum cals)..(maximum cals)]
     in CalCurveMatrix bpsMatrix calsMatrix $ map (\x -> map (fillCell calCurve x) bpsMatrix) calsMatrix
     where 
         fillCell :: CalCurve -> Int -> Int -> Double
-        fillCell calCurve matrixPosCal matrixPosBP =
-            let bps = getBPs calCurve
-                cals = getCals calCurve
-                sigmas = getCalSigmas calCurve
+        fillCell curve matrixPosCal matrixPosBP =
+            let bps = getBPs curve
+                cals = getCals curve
+                sigmas = getCalSigmas curve
                 relevantIndex = head $ elemIndices matrixPosCal cals
                 mean = bps !! relevantIndex
                 sigma = sigmas !! relevantIndex
