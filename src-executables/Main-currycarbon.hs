@@ -53,28 +53,29 @@ parseUncalC14 :: OP.Parser [UncalC14]
 parseUncalC14 = OP.argument (OP.eitherReader readUncalC14String) (
     OP.metavar "DATES" <>
     OP.help "A string with one or multiple uncalibrated dates of \
-            \ the form \"<sample name>:<mean age BP>+<one standard deviation>;...\" \
-            \ so for example \"S1:4000+50;S2:3000+25;S3:1000+20\""
+            \ the form \"(<sample name>)<mean age BP>+<one sigma standard deviation>;...\" \
+            \ so for example \"(S1)4000+50;3000+25;(S3)1000+20\". \
+            \ The sample name is optional."
     )
 
 parseOutFile :: OP.Parser (Maybe FilePath)
 parseOutFile = OP.option (Just <$> OP.str) (
     OP.long "outFile" <>
     OP.short 'o' <>
-    OP.help "The output file path" <>
+    OP.help "Path to the standard output file which stores the output densities per sample and calender year" <>
     OP.value Nothing
     )
 
 parseExplore :: OP.Parser Bool
 parseExplore = OP.switch (
     OP.long "explore" <> 
-    OP.help "Give more info for the first date in the input list"
+    OP.help "Produce more (diagnostic) output for the first date in DATES"
     )
 
 parseExploreDir :: OP.Parser FilePath 
 parseExploreDir = OP.strOption (
     OP.long "exploreDir" <> 
-    OP.help "Output directry for the exploration output" <>
+    OP.help "Output directory for the diagnostic output" <>
     OP.value "currycarbonExplore" <>
     OP.showDefault
     )
