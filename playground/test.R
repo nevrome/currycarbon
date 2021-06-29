@@ -1,6 +1,6 @@
 library(ggplot2)
 
-testdate <- c(10000,200)
+testdate <- c(3000,50)
 
 system(paste0(
   "currycarbon calibrate \"1:",

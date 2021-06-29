@@ -4,7 +4,29 @@ import Currycarbon.Parsers
 import Currycarbon.Types
 import Currycarbon.Utils
 
-import Data.List (elemIndices, sort, genericLength, tails, nub) 
+import Data.List (elemIndices, sort, genericLength, tails, nub, sortBy, groupBy) 
+
+refineCal :: [CalPDF] -> [CalC14]
+refineCal = map refineCalOne
+
+refineCalOne :: CalPDF -> CalC14
+refineCalOne (CalPDF name densities) =
+    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) densities
+        cumsumDensities = scanl1 (+) $ map snd sortedDensities
+        in68 = map (< 0.683) cumsumDensities
+        in95 = map (< 0.954) cumsumDensities
+        contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities in68 in95
+    in CalC14 name contextualizedDensities $ contextualizedDensities2HDR contextualizedDensities
+    where 
+        contextualizedDensities2HDR :: [(Int, Double, Bool, Bool)] -> [HDR]
+        contextualizedDensities2HDR cDensities = 
+            let highDensityGroups = groupBy (\(_,_,_,in951) (_,_,_,in952) -> in951 == in952) cDensities
+                filteredDensityGroups = filter (all getIn95) highDensityGroups
+            in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
+        getIn95 :: (Int, Double, Bool, Bool) -> Bool
+        getIn95 (_,_,_,in95) = in95
+        getYear :: (Int, Double, Bool, Bool) -> Int
+        getYear (year,_,_,_) = year
 
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
 calibrateMany calCurve =

@@ -10,6 +10,22 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Text.Parsec.Number             as P
 
+-- CalC14
+renderCalC14s :: [CalC14] -> String
+renderCalC14s xs = 
+    intercalate "\n" (map renderCalC14 xs)
+
+renderCalC14 :: CalC14 -> String
+renderCalC14 (CalC14 name extencedCalPDF hdrs) =
+    name ++ "\n" ++ renderHDRs hdrs
+
+-- HDR
+renderHDRs :: [HDR] -> String
+renderHDRs xs = "HDR:" ++ intercalate ", " (map renderHDR xs)
+
+renderHDR :: HDR -> String
+renderHDR (HDR start stop) = show start ++ "-" ++ show stop
+
 -- CalCurveMatrix
 writeCalCurveMatrixFile :: FilePath -> CalCurveMatrix -> IO ()
 writeCalCurveMatrixFile path calCurveMatrix = 

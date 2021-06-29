@@ -25,6 +25,8 @@ runCalibrate (CalibrateOptions uncalC14s outFile explore exploreDir) = do
     -- normal mode
     let calCurve = loadCalCurve intcal20
         calPDFs = calibrateMany calCurve uncalC14s
+        calC14 = refineCal calPDFs
+    putStrLn $ renderCalC14s calC14
     writeCalPDFs outFile calPDFs
     -- single date exploration
     when explore $ do
