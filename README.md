@@ -1,4 +1,4 @@
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nevrome/currycarbon/normalCheck)](https://github.com/nevrome/currycarbon/actions?query=workflow%3AnormalCheck)
+[![GitHub Workflow Status](https://github.com/nevrome/currycarbon/actions/workflows/normalCheck.yml/badge.svg)](https://github.com/nevrome/currycarbon/actions/workflows/normalCheck.yml)
 
 # currycarbon
 
