@@ -1,17 +1,17 @@
 library(ggplot2)
 
-testdate <- c(10000,50)
+testdate <- c(10000,200)
 
 system(paste0(
   "currycarbon calibrate \"1:",
   testdate[1], "+", testdate[2],
-  "\" --outFile /tmp/currycarbon.txt --explore --exploreDir \"/tmp/currytest\""))
+  "\" --outFile /tmp/currycarbon.txt"))# --explore --exploreDir \"/tmp/currytest\""))
 
-cal_curve_matrix <- as.matrix(read.csv("/tmp/currytest/calCurveMatrix.csv", row.names = 1, header = T))
-cal_curve_segment <- readr::read_csv("/tmp/currytest/calCurveInterpolated.csv")
+# cal_curve_matrix <- as.matrix(read.csv("/tmp/currytest/calCurveMatrix.csv", row.names = 1, header = T))
+# cal_curve_segment <- readr::read_csv("/tmp/currytest/calCurveInterpolated.csv")
 
-#image(cal_curve_matrix)
-
+# image(cal_curve_matrix)
+# 
 # cal_curve_segment |>
 #   ggplot() +
 #   geom_point(aes(x = `CAL BP`, y = `14C age`, label = `14C age`))
@@ -39,7 +39,3 @@ bchron |> dplyr::left_join(
   ggplot() +
   geom_line(aes(x = calBC, y = value, colour = method), 
             size = 1, alpha = 0.5)
-
-
-test$density |> sum()
-bchron$density_bchron |> sum()
