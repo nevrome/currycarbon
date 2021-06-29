@@ -3,7 +3,7 @@ library(ggplot2)
 testdate <- c(3000,50)
 
 system(paste0(
-  "currycarbon calibrate \"1:",
+  "currycarbon calibrate \"",
   testdate[1], "+", testdate[2],
   "\" --outFile /tmp/currycarbon.txt"))# --explore --exploreDir \"/tmp/currytest\""))
 
