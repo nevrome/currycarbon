@@ -19,10 +19,10 @@ data CalPDF = CalPDF
 data CalC14 = CalC14 
                 String -- Name
                 [(Int, Double, Bool, Bool)] -- calBP, probability, in 68% probability range, in 95% probability range
-                [HDR]
+                [HDR] -- 1sigma high density regions
+                [HDR] -- 2sigma high density regions
     deriving Show
 
--- https://github.com/ropensci/c14bazAAR/blob/19b3d8bd9046212caf7d125a5d88a2f92ca3ce4c/R/c14_date_list_calibrate.R#L253
 data HDR = HDR -- High density region
                 Int -- Start age calBC
                 Int -- Stop age calBC

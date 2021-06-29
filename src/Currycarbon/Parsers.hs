@@ -13,15 +13,17 @@ import qualified Text.Parsec.Number             as P
 -- CalC14
 renderCalC14s :: [CalC14] -> String
 renderCalC14s xs = 
-    intercalate "\n" (map renderCalC14 xs)
+    intercalate "\n--\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 name extencedCalPDF hdrs) =
-    name ++ "\n" ++ renderHDRs hdrs
+renderCalC14 (CalC14 name extencedCalPDF hdrs68 hdrs95) =
+       "Sample: " ++ name ++ "\n" 
+    ++ "HDR 1-sigma: " ++ renderHDRs hdrs68 ++ " calBC\n"
+    ++ "HDR 2-sigma: " ++ renderHDRs hdrs95 ++ " calBC"
 
 -- HDR
 renderHDRs :: [HDR] -> String
-renderHDRs xs = "HDR:" ++ intercalate ", " (map renderHDR xs)
+renderHDRs xs = intercalate ", " (map renderHDR xs)
 
 renderHDR :: HDR -> String
 renderHDR (HDR start stop) = show start ++ "-" ++ show stop

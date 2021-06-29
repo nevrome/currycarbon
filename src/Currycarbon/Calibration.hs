@@ -16,13 +16,20 @@ refineCalOne (CalPDF name densities) =
         in68 = map (< 0.683) cumsumDensities
         in95 = map (< 0.954) cumsumDensities
         contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities in68 in95
-    in CalC14 name contextualizedDensities $ contextualizedDensities2HDR contextualizedDensities
-    where 
-        contextualizedDensities2HDR :: [(Int, Double, Bool, Bool)] -> [HDR]
-        contextualizedDensities2HDR cDensities = 
+    in CalC14 name contextualizedDensities (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
+    where
+        densities2HDR68 :: [(Int, Double, Bool, Bool)] -> [HDR]
+        densities2HDR68 cDensities = 
+            let highDensityGroups = groupBy (\(_,_,in681,_) (_,_,in682,_) -> in681 == in682) cDensities
+                filteredDensityGroups = filter (all getIn68) highDensityGroups
+            in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
+        densities2HDR95 :: [(Int, Double, Bool, Bool)] -> [HDR]
+        densities2HDR95 cDensities = 
             let highDensityGroups = groupBy (\(_,_,_,in951) (_,_,_,in952) -> in951 == in952) cDensities
                 filteredDensityGroups = filter (all getIn95) highDensityGroups
             in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
+        getIn68 :: (Int, Double, Bool, Bool) -> Bool
+        getIn68 (_,_,in68,_) = in68
         getIn95 :: (Int, Double, Bool, Bool) -> Bool
         getIn95 (_,_,_,in95) = in95
         getYear :: (Int, Double, Bool, Bool) -> Int
