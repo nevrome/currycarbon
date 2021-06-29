@@ -58,7 +58,7 @@ writeCalCurve path calCurve =
 renderCalCurve :: CalCurve -> String
 renderCalCurve (CalCurve obs) =
     let header = "CAL BP,14C age,Sigma\n"
-        body = map (\(x,y,z) -> show x ++ "," ++ show y ++ "," ++ show z) obs
+        body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) obs
     in header ++ intercalate "\n" body
 
 loadCalCurve :: String -> CalCurve 

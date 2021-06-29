@@ -4,7 +4,7 @@ import Currycarbon.Parsers
 import Currycarbon.Types
 import Currycarbon.Utils
 
-import Data.List (elemIndices, sort, genericLength) 
+import Data.List (elemIndices, sort, genericLength, tails, nub) 
 
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
 calibrateMany calCurve =
@@ -33,7 +33,7 @@ normalizeCalPDF calPDF =
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 name mean std) =
-    let years = reverse [(mean-4*std) .. (mean+4*std)]
+    let years = reverse [(mean-5*std) .. (mean+5*std)]
         probabilities = map (dnormInt mean std) years
     in UncalPDF name $ zip years probabilities
 
@@ -51,63 +51,50 @@ dnormInt mu sigma x =
                 sigma2 = realToFrac sigma^2
             in a * b
 
+-- this is a relatively imprecise solution, because start and end of the range may be badly represented
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
     let minSearchBP = minimum $ getBPsUncal uncalPDF
         maxSearchBP = maximum $ getBPsUncal uncalPDF
-        (smallerMin,biggerMin) = splitWhenSorted (\(x,_,_) -> x <= minSearchBP) obs
-        (smallerMax,biggerMax) = splitWhenSorted (\(x,_,_) -> x < maxSearchBP) (last smallerMin : biggerMin)
-    in CalCurve (smallerMax ++ [head biggerMax])
+        (smallerMin,biggerMin) = splitWhen (\(x,_,_) -> x < minSearchBP) obs
+        (smallerMax,biggerMax) = splitWhen (\(x,_,_) -> x <= maxSearchBP) biggerMin
+    in CalCurve smallerMax
 
 interpolateCalCurve :: CalCurve -> CalCurve
-interpolateCalCurve calCurve = 
-    let -- input observations
-        bps = getBPs calCurve
-        cals = getCals calCurve
-        sigmas = getCalSigmas calCurve
-        -- find and fill missing uncalBP years
-        fillBPBPs = filter (`notElem` bps) [(minimum bps)..(maximum bps)]
-        fillBPCals = map (curveInterpolInt bps cals) fillBPBPs
-        fillBPCalSigmas = map (curveInterpolInt bps sigmas) fillBPBPs
-        -- find and fill missing calBP years
-        fillCalCals = filter (`notElem` cals ++ fillBPCals) [(minimum cals)..(maximum cals)]
-        fillCalBPs = map (curveInterpolInt cals bps) fillCalCals
-        fillCalCalSigmas = map (curveInterpolInt bps sigmas) fillCalBPs
-    in -- merge observations and interpolated values
-        CalCurve $ sort $
-        zip3 bps cals sigmas ++
-        zip3 fillBPBPs fillBPCals fillBPCalSigmas ++ 
-        zip3 fillCalBPs fillCalCals fillCalCalSigmas
+interpolateCalCurve (CalCurve obs) = 
+    let obsFilled = concat $ map fillWindowsCal (timeWindows obs) ++ [[last obs]]
+    in CalCurve obsFilled
     where
-        curveInterpolInt :: [Int] -> [Int] -> Int -> Int
-        curveInterpolInt xs ys xPred =
-            let xsDouble = map fromIntegral xs
-                ysDouble = map fromIntegral ys
-                xPredDouble = fromIntegral xPred
-            in round $ curveInterpol xsDouble ysDouble xPredDouble
-        curveInterpol :: [Double] -> [Double] -> Double -> Double
-        curveInterpol xs ys xPred
-            | xPred `elem` xs = 
-                let values = map (ys !!) $ xPred `elemIndices` xs
-                in sum values / genericLength values -- mean
-            | otherwise =
-                let (xsLeft,xsRight) = splitWhen (< xPred) xs
-                    xLeft = maximum xsLeft
-                    xRight = minimum xsRight
-                    iLeft = head $ elemIndices xLeft xs
-                    iRight = head $ elemIndices xRight xs
-                in snd $ getInBetweenPoints (xs !! iLeft, ys !! iLeft) (xs !! iRight, ys !! iRight) xPred
+        fillWindowsCal :: ((Int,Int,Int),(Int,Int,Int)) -> [(Int,Int,Int)]
+        fillWindowsCal ((bp1,calbp1,sigma1),(bp2,calbp2,sigma2)) =
+            if calbp1 == calbp2 || calbp1+1 == calbp2 || calbp1-1 == calbp2 
+            then [(bp1,calbp1,sigma1)]
+            else 
+                let newCals = [calbp1,calbp1-1..calbp2+1]
+                    newBPs = map (snd . getInBetweenPointsInt (calbp1,bp1) (calbp2,bp2)) newCals
+                    newSigmas = map (snd . getInBetweenPointsInt (calbp1,sigma1) (calbp2,sigma2)) newCals
+                in zip3 newBPs newCals newSigmas
+        getInBetweenPointsInt :: (Int, Int) -> (Int, Int) -> Int -> (Int, Int)
+        getInBetweenPointsInt (x1,y1) (x2,y2) xPred =
+            let (_,yPred) = getInBetweenPoints (fromIntegral x1,fromIntegral y1) (fromIntegral x2,fromIntegral y2) $ fromIntegral xPred
+            in (xPred, round yPred)
         getInBetweenPoints :: (Double, Double) -> (Double, Double) -> Double -> (Double, Double)
         getInBetweenPoints (x1,y1) (x2,y2) xPred =
             let yDiff = y2 - y1
                 xDiff = abs $ x1 - x2
                 yDiffPerxDiff = yDiff/xDiff
-                xPredRel = xPred - x1
+                xPredRel = x1 - xPred
             in (xPred, y1 + xPredRel * yDiffPerxDiff)
 
-splitWhenSorted :: (Ord a) => (a -> Bool) -> [a] -> ([a],[a])
-splitWhenSorted pre xs = sortTupleLists $ splitWhen pre xs
-    where sortTupleLists (xs,ys) = (sort xs, sort ys)
+timeWindows :: [(a,b,c)] -> [((a,b,c),(a,b,c))]
+timeWindows xs = map (\xs -> (head xs, last xs)) $ windows 2 xs
+    where
+        windows :: Int -> [a] -> [[a]]
+        windows n xs = takeLengthOf (drop (n-1) xs) (windows' n xs)
+        takeLengthOf :: [a] -> [b] -> [b]
+        takeLengthOf = zipWith (flip const)
+        windows' :: Int -> [a] -> [[a]]
+        windows' n = map (take n) . tails
 
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])
@@ -137,13 +124,13 @@ makeCalCurveMatrix calCurve =
             let bps = getBPs calCurve
                 cals = getCals calCurve
                 sigmas = getCalSigmas calCurve
-                relevantIndex = middle $ elemIndices matrixPosCal cals
+                relevantIndex = head $ elemIndices matrixPosCal cals
                 mean = bps !! relevantIndex
                 sigma = sigmas !! relevantIndex
             in dnormInt mean sigma matrixPosBP
-        middle :: [a] -> a
-        middle [x] = x
-        middle xs = xs !! ((length xs `div` 2) - 1)
+        -- middle :: [a] -> a
+        -- middle [x] = x
+        -- middle xs = xs !! ((length xs `div` 2) - 1)
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =

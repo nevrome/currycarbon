@@ -11,6 +11,7 @@ import           System.FilePath    ((</>))
 import           System.Directory   (createDirectoryIfMissing)
 import           TextPlot
 import Data.Maybe (fromJust)
+import Data.List (sort)
 
 data CalibrateOptions = CalibrateOptions {
       _calibrateUncalC14 :: [UncalC14],
@@ -33,7 +34,7 @@ runCalibrate (CalibrateOptions uncalC14s outFile explore exploreDir) = do
         plotCalPDF calPDF
         writeCalCurve (exploreDir </> "calCurveInterpolated.csv") calCurveSegment
         writeCalCurveMatrixFile (exploreDir </> "calCurveMatrix.csv") calCurveMatrix
-        
+
 plotCalCurveSegment :: CalCurve -> IO ()
 plotCalCurveSegment calCurveSegment = do
     let maxBPCalCurve =     fromIntegral $ maximum $ getBPs calCurveSegment
