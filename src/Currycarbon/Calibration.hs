@@ -2,7 +2,8 @@ module Currycarbon.Calibration where
 
 import Currycarbon.Types
 
-import Data.List            (elemIndices, sort, tails, sortBy, groupBy) 
+import Control.Parallel.Strategies ( parList, rdeepseq, using)
+import Data.List (elemIndices, sort, tails, sortBy, groupBy) 
 
 refineCal :: [CalPDF] -> [CalC14]
 refineCal = map refineCalOne
@@ -34,11 +35,22 @@ refineCalOne (CalPDF name densities) =
         getYear (year,_,_,_) = year
 
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
-calibrateMany calCurve =
-    map ((\(x,_,_) -> x) . calibrate calCurve)
+calibrateMany calCurve uncalDates =
+    let calDates = map (calibrateSimple calCurve) uncalDates
+    in calDates `using` parList rdeepseq
 
-calibrate :: CalCurve -> UncalC14 -> (CalPDF, CalCurve, CalCurveMatrix)
-calibrate calCurve uncalDate =
+calibrateSimple :: CalCurve -> UncalC14 -> CalPDF
+calibrateSimple calCurve uncalDate =
+    let uncalPDF = uncalToPDF uncalDate
+        calCurveSegment = makeBCCalCurve $
+                            interpolateCalCurve $
+                            getRelevantCalCurveSegment uncalPDF calCurve
+        calCurveMatrix = makeCalCurveMatrix calCurveSegment
+        calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
+    in calPDF
+
+calibrateInfo :: CalCurve -> UncalC14 -> (CalPDF, CalCurve, CalCurveMatrix)
+calibrateInfo calCurve uncalDate =
     let -- prepare PDF for uncalibrated date
         uncalPDF = uncalToPDF uncalDate
         -- prepare relevant segment of the calcurve

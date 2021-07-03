@@ -30,7 +30,7 @@ runCalibrate (CalibrateOptions uncalC14s outFile explore exploreDir) = do
         writeCalPDFs (fromJust outFile) calPDFs
     -- write all the output for more extensive single date exploration
     when explore $ do
-        let (calPDF,calCurveSegment,calCurveMatrix) = calibrate calCurve $ head uncalC14s
+        let (calPDF,calCurveSegment,calCurveMatrix) = calibrateInfo calCurve $ head uncalC14s
         createDirectoryIfMissing True exploreDir
         plotCalCurveSegment calCurveSegment
         plotCalPDF calPDF
