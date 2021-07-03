@@ -1,0 +1,2 @@
+- V 0.2.0: Added parallel processing for the main calibration operation
+- V 0.1.0: First basically working version

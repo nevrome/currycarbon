@@ -1,7 +1,7 @@
 name:                currycarbon
-version:             0.1.0
-synopsis:            ...
-description:         ...
+version:             0.2.0
+synopsis:            A package for simple, fast radiocarbon calibration
+description:         Radiocarbon calibration with the intercept method optimised for fast calibration of many dates.
 license:             MIT
 author:              Clemens Schmid
 maintainer:          clemens@nevrome.de
