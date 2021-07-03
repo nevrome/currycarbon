@@ -2,7 +2,7 @@
 
 module Currycarbon.Types where
 
-import GHC.Generics (Generic, Generic1)
+import GHC.Generics (Generic)
 import Control.DeepSeq (NFData)
 
 data UncalC14 = UncalC14 
