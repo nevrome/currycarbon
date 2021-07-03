@@ -54,14 +54,24 @@ renderCalPDF (CalPDF name obs) =
 readUncalC14String :: String -> Either String [UncalC14]
 readUncalC14String s = case P.runParser uncalC14Parser () "" s of
     Left p  -> Left (show p)
-    Right x -> Right x
+    Right x -> Right (replaceEmptyNames x)
+    where
+        replaceEmptyNames :: [UncalC14] -> [UncalC14]
+        replaceEmptyNames xs =
+            zipWith replaceName xs [1..]
+            where
+                replaceName :: UncalC14 -> Int -> UncalC14
+                replaceName (UncalC14 name mean std) number =
+                    if name == "unknownSampleName"
+                    then UncalC14 (show number) mean std
+                    else UncalC14 name mean std
 
 uncalC14Parser :: P.Parser [UncalC14]
 uncalC14Parser = P.try (P.sepBy parseOneUncalC14 (P.char ';' <* P.spaces))
 
 parseOneUncalC14 :: P.Parser UncalC14
 parseOneUncalC14 = do
-    name <- P.option "unknown" (P.between (P.char '(') (P.char ')') (P.manyTill P.anyChar (P.lookAhead (P.char ')'))))
+    name <- P.option "unknownSampleName" (P.between (P.char '(') (P.char ')') (P.manyTill P.anyChar (P.lookAhead (P.char ')'))))
     mean <- read <$> P.many1 P.digit
     _ <- P.oneOf "+"
     std <- read <$> P.many1 P.digit

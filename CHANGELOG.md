@@ -1,3 +1,4 @@
+- V 0.3.1: Added automatic filling of unknown sample names
 - V 0.3.0: Simplified interface
 - V 0.2.1: Removed ascii plot functionality
 - V 0.2.0: Added parallel processing for the main calibration operation
