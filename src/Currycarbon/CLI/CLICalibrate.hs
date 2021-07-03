@@ -41,10 +41,15 @@ runCalibrate (CalibrateOptions uncalDate quickOut densityFile hdrFile calCurveSe
     -- write calcurve segment file
     when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
         hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date: " ++
-                           show uncalDate
+                           show (head uncalDate)
         let uncalPDF = uncalToPDF $ head uncalDate
             (calCurveSegment,calCurveMatric) = prepareCalCurve calCurve uncalPDF
-        writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
-        writeCalCurveMatrixFile (fromJust calCurveMatrixFile) calCurveMatric
+        when (isJust calCurveSegmentFile) $ do
+            hPutStrLn stderr "Writing calCurveSegment file"
+            writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
+        when (isJust calCurveMatrixFile) $ do
+            hPutStrLn stderr "Writing calCurveMatrix file"
+            writeCalCurveMatrixFile (fromJust calCurveMatrixFile) calCurveMatric
+    -- finished
     hPutStrLn stderr "Done"
 
