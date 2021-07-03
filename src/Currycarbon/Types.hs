@@ -23,7 +23,6 @@ data CalPDF = CalPDF
 
 data CalC14 = CalC14 
                 String -- Name
-                [(Int, Double, Bool, Bool)] -- calBP, probability, in 68% probability range, in 95% probability range
                 [HDR] -- 1sigma high density regions
                 [HDR] -- 2sigma high density regions
     deriving Show

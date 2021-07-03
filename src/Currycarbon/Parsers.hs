@@ -7,12 +7,15 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 
 -- CalC14
+writeCalC14 :: FilePath -> [CalC14] -> IO ()
+writeCalC14 path calC14 = writeFile path $ renderCalC14s calC14
+
 renderCalC14s :: [CalC14] -> String
 renderCalC14s xs = 
-    intercalate "\n--\n" (map renderCalC14 xs)
+    intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 name _ hdrs68 hdrs95) =
+renderCalC14 (CalC14 name hdrs68 hdrs95) =
        "Sample: " ++ name ++ "\n" 
     ++ "HDR 1-sigma: " ++ renderHDRs hdrs68 ++ " calBC\n"
     ++ "HDR 2-sigma: " ++ renderHDRs hdrs95 ++ " calBC"
@@ -65,8 +68,8 @@ parseOneUncalC14 = do
     return (UncalC14 name mean std)
 
 -- CalCurve
-writeCalCurve :: FilePath -> CalCurve -> IO ()
-writeCalCurve path calCurve = 
+writeCalCurveFile :: FilePath -> CalCurve -> IO ()
+writeCalCurveFile path calCurve = 
     writeFile path $ renderCalCurve calCurve
 
 renderCalCurve :: CalCurve -> String

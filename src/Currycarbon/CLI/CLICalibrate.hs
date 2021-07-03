@@ -7,29 +7,44 @@ import           Currycarbon.Types
 
 import           Control.Monad      (when)
 import           Data.Maybe         (fromJust, isJust)
-import           System.FilePath    ((</>))
-import           System.Directory   (createDirectoryIfMissing)
+import           System.IO          (hPutStrLn, stderr, stdout)
 
 data CalibrateOptions = CalibrateOptions {
       _calibrateUncalC14 :: [UncalC14],
-      _calibrateOutFile :: Maybe FilePath,
-      _calibrateExplore :: Bool,
-      _calibrateExploreDir :: FilePath
+      _calibrateQuickOut :: Bool,
+      _calibrateDensityFile :: Maybe FilePath,
+      _calibrateHDRFile :: Maybe FilePath,
+      _calibrateCalCurveSegmentFile :: Maybe FilePath,
+      _calibrateCalCurveMatrixFile :: Maybe FilePath
     }
 
 runCalibrate :: CalibrateOptions -> IO ()
-runCalibrate (CalibrateOptions uncalC14s outFile explore exploreDir) = do
-    -- normal mode
+runCalibrate (CalibrateOptions uncalDate quickOut densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
+    -- basic calibration
+    hPutStrLn stderr "Loading calibration curve"
     let calCurve = loadCalCurve intcal20
-        calPDFs = calibrateMany calCurve uncalC14s
-        calC14 = refineCal calPDFs
-    putStrLn $ renderCalC14s calC14
+    hPutStrLn stderr "Calibrating"
+    let calPDFs = calibrateMany calCurve uncalDate
     -- write density file
-    when (isJust outFile) $
-        writeCalPDFs (fromJust outFile) calPDFs
-    -- write all the output for more extensive single date exploration
-    when explore $ do
-        let (calPDF,calCurveSegment,calCurveMatrix) = calibrateInfo calCurve $ head uncalC14s
-        createDirectoryIfMissing True exploreDir
-        writeCalCurve (exploreDir </> "calCurveInterpolated.csv") calCurveSegment
-        writeCalCurveMatrixFile (exploreDir </> "calCurveMatrix.csv") calCurveMatrix
+    when (isJust densityFile) $ do
+        hPutStrLn stderr "Writing density file"
+        writeCalPDFs (fromJust densityFile) calPDFs
+    -- print or write high density regions
+    when (quickOut || isJust hdrFile) $ do
+        hPutStrLn stderr "Calculating HDR regions"
+        let calC14 = refineCal calPDFs
+        when quickOut $ do
+            hPutStrLn stdout $ renderCalC14s calC14
+        when (isJust hdrFile) $ do
+            hPutStrLn stderr "Writing hdr file"
+            writeCalC14 (fromJust hdrFile) calC14
+    -- write calcurve segment file
+    when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
+        hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date: " ++
+                           show uncalDate
+        let uncalPDF = uncalToPDF $ head uncalDate
+            (calCurveSegment,calCurveMatric) = prepareCalCurve calCurve uncalPDF
+        writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
+        writeCalCurveMatrixFile (fromJust calCurveMatrixFile) calCurveMatric
+    hPutStrLn stderr "Done"
+

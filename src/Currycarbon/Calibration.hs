@@ -15,7 +15,7 @@ refineCalOne (CalPDF name densities) =
         isIn68 = map (< 0.683) cumsumDensities
         isIn95 = map (< 0.954) cumsumDensities
         contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities isIn68 isIn95
-    in CalC14 name contextualizedDensities (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
+    in CalC14 name (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
     where
         densities2HDR68 :: [(Int, Double, Bool, Bool)] -> [HDR]
         densities2HDR68 cDensities = 
@@ -36,32 +36,28 @@ refineCalOne (CalPDF name densities) =
 
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
 calibrateMany calCurve uncalDates =
-    let calDates = map (calibrateSimple calCurve) uncalDates
+    let calDates = map (calibrate calCurve) uncalDates
     in calDates `using` parList rdeepseq
 
-calibrateSimple :: CalCurve -> UncalC14 -> CalPDF
-calibrateSimple calCurve uncalDate =
-    let uncalPDF = uncalToPDF uncalDate
-        calCurveSegment = makeBCCalCurve $
-                            interpolateCalCurve $
-                            getRelevantCalCurveSegment uncalPDF calCurve
-        calCurveMatrix = makeCalCurveMatrix calCurveSegment
+calibrate :: CalCurve -> UncalC14 -> CalPDF
+calibrate calCurve uncalDate =
+    let -- prepare PDF for uncalibrated date
+        uncalPDF = uncalToPDF uncalDate
+        -- prepare calCurve
+        (_,calCurveMatrix) = prepareCalCurve calCurve uncalPDF
+        -- perform projection (aka calibration)
         calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
     in calPDF
 
-calibrateInfo :: CalCurve -> UncalC14 -> (CalPDF, CalCurve, CalCurveMatrix)
-calibrateInfo calCurve uncalDate =
-    let -- prepare PDF for uncalibrated date
-        uncalPDF = uncalToPDF uncalDate
-        -- prepare relevant segment of the calcurve
+prepareCalCurve :: CalCurve -> UncalPDF -> (CalCurve, CalCurveMatrix)
+prepareCalCurve calCurve uncalPDF =
+    let -- prepare relevant segment of the calcurve
         calCurveSegment = makeBCCalCurve $
                             interpolateCalCurve $
                             getRelevantCalCurveSegment uncalPDF calCurve
         -- transform calCurve to matrix
         calCurveMatrix = makeCalCurveMatrix calCurveSegment
-        -- perform projection (aka calibration)
-        calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
-    in (calPDF,calCurveSegment,calCurveMatrix)
+    in (calCurveSegment,calCurveMatrix)
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF calPDF = 
