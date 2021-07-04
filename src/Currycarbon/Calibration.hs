@@ -2,9 +2,8 @@ module Currycarbon.Calibration where
 
 import Currycarbon.Types
 
-import Control.Parallel.Strategies ( parList, rdeepseq, using)
-import Data.List (sort, tails, sortBy, groupBy, elemIndex) 
-import Data.Maybe (fromJust)
+import Control.Parallel.Strategies (parList, rdeepseq, using)
+import Data.List (sort, tails, sortBy, groupBy)
 
 refineCal :: [CalPDF] -> [CalC14]
 refineCal = map refineCalOne
