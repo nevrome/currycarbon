@@ -3,7 +3,8 @@ module Currycarbon.Calibration where
 import Currycarbon.Types
 
 import Control.Parallel.Strategies ( parList, rdeepseq, using)
-import Data.List (elemIndices, sort, tails, sortBy, groupBy) 
+import Data.List (sort, tails, sortBy, groupBy, elemIndex) 
+import Data.Maybe (fromJust)
 
 refineCal :: [CalPDF] -> [CalC14]
 refineCal = map refineCalOne
@@ -82,15 +83,18 @@ dnormInt muInt sigmaInt xInt =
         dnorm :: Double -> Double -> Double -> Double 
         dnorm mu sigma x = 
             let a = recip (sqrt (2 * pi * sigma2))
-                b = exp ((-((realToFrac x - realToFrac mu)**2)) / (2 * sigma2))
-                sigma2 = realToFrac sigma**2
-            in a * b
+                b = exp ((-((x - mu)**2)) / (2 * sigma2))
+                sigma2 = sigma**2
+                dens = a*b
+            -- only consider reasonably high densities (similar to Bchron)
+            in if dens < 0.00001 then 0 else dens
 
 -- this is a relatively imprecise solution, because start and end of the range may be badly represented
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
-    let minSearchBP = minimum $ getBPsUncal uncalPDF
-        maxSearchBP = maximum $ getBPsUncal uncalPDF
+    let bps = getBPsUncal uncalPDF
+        minSearchBP = minimum bps
+        maxSearchBP = maximum bps
         (_,biggerMin) = splitWhen (\(x,_,_) -> x < minSearchBP) obs
         (smallerMax,_) = splitWhen (\(x,_,_) -> x <= maxSearchBP) biggerMin
     in CalCurve smallerMax
@@ -145,23 +149,18 @@ makeBCCalCurve calCurve = CalCurve $ zip3 (getBPs calCurve) (map (\x -> x - 1950
 makeBCCalPDF :: CalPDF -> CalPDF
 makeBCCalPDF calPDF = CalPDF (getNameCal calPDF) $ zip (map (\x -> x - 1950) $ getBPsCal calPDF) (getProbsCal calPDF)
 
+-- this only works, because the calCurve list is naturally ordered by the unique calibrated ages
+-- if this is not the case, then the more complicated implementation from before V 0.3.2 is necessary
 makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
-makeCalCurveMatrix calCurve =
-    let bps = getBPs calCurve
-        cals = getCals calCurve
+makeCalCurveMatrix (CalCurve obs) =
+    let bps = getBPs (CalCurve obs)
         bpsMatrix = [(minimum bps)..(maximum bps)]
-        calsMatrix = [(minimum cals)..(maximum cals)]
-    in CalCurveMatrix bpsMatrix calsMatrix $ map (\x -> map (fillCell calCurve x) bpsMatrix) calsMatrix
+        cals = getCals (CalCurve obs)
+    in CalCurveMatrix bpsMatrix (reverse cals) $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
     where 
-        fillCell :: CalCurve -> Int -> Int -> Double
-        fillCell curve matrixPosCal matrixPosBP =
-            let bps = getBPs curve
-                cals = getCals curve
-                sigmas = getCalSigmas curve
-                relevantIndex = head $ elemIndices matrixPosCal cals
-                mean = bps !! relevantIndex
-                sigma = sigmas !! relevantIndex
-            in dnormInt mean sigma matrixPosBP
+        fillCell :: (Int, Int, Int) -> Int -> Double
+        fillCell (bp,_,sigma) matrixPosBP =
+            dnormInt bp sigma matrixPosBP
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
