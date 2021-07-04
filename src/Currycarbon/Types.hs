@@ -13,12 +13,12 @@ data UncalC14 = UncalC14
 
 data UncalPDF = UncalPDF 
                 String -- Name
-                [(Int, Double)] -- BP, probability
+                [(Int, Float)] -- BP, probability
     deriving Show
 
 data CalPDF = CalPDF 
                 String -- Name
-                [(Int, Double)] -- calBP, probability
+                [(Int, Float)] -- calBP, probability
     deriving (Show, Generic, NFData)
 
 data CalC14 = CalC14 
@@ -35,7 +35,7 @@ data HDR = HDR -- High density region
 data CalCurveMatrix = CalCurveMatrix 
                 [Int] -- BP
                 [Int] -- calBP
-                [[Double]] -- matrix
+                [[Float]] -- matrix
     deriving Show
 
 newtype CalCurve = CalCurve [(Int, Int, Int)] -- BP, calBP, sigma
@@ -46,7 +46,7 @@ newtype CalCurve = CalCurve [(Int, Int, Int)] -- BP, calBP, sigma
 getBPsCal :: CalPDF -> [Int]
 getBPsCal (CalPDF _ obs) = map fst obs
 
-getProbsCal :: CalPDF -> [Double]
+getProbsCal :: CalPDF -> [Float]
 getProbsCal (CalPDF _ obs) = map snd obs
 
 getNameCal :: CalPDF -> String 
@@ -55,7 +55,7 @@ getNameCal (CalPDF name _) = name
 getBPsUncal :: UncalPDF -> [Int]
 getBPsUncal (UncalPDF _ obs) = map fst obs
 
-getProbsUncal :: UncalPDF -> [Double]
+getProbsUncal :: UncalPDF -> [Float]
 getProbsUncal (UncalPDF _ obs) = map snd obs
 
 getNameUncal :: UncalPDF -> String 

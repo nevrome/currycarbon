@@ -18,21 +18,21 @@ refineCalOne (CalPDF name densities) =
         contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities isIn68 isIn95
     in CalC14 name (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
     where
-        densities2HDR68 :: [(Int, Double, Bool, Bool)] -> [HDR]
+        densities2HDR68 :: [(Int, Float, Bool, Bool)] -> [HDR]
         densities2HDR68 cDensities = 
             let highDensityGroups = groupBy (\(_,_,in681,_) (_,_,in682,_) -> in681 == in682) cDensities
                 filteredDensityGroups = filter (all getIn68) highDensityGroups
             in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
-        densities2HDR95 :: [(Int, Double, Bool, Bool)] -> [HDR]
+        densities2HDR95 :: [(Int, Float, Bool, Bool)] -> [HDR]
         densities2HDR95 cDensities = 
             let highDensityGroups = groupBy (\(_,_,_,in951) (_,_,_,in952) -> in951 == in952) cDensities
                 filteredDensityGroups = filter (all getIn95) highDensityGroups
             in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
-        getIn68 :: (Int, Double, Bool, Bool) -> Bool
+        getIn68 :: (Int, Float, Bool, Bool) -> Bool
         getIn68 (_,_,x,_) = x
-        getIn95 :: (Int, Double, Bool, Bool) -> Bool
+        getIn95 :: (Int, Float, Bool, Bool) -> Bool
         getIn95 (_,_,_,x) = x
-        getYear :: (Int, Double, Bool, Bool) -> Int
+        getYear :: (Int, Float, Bool, Bool) -> Int
         getYear (year,_,_,_) = year
 
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
@@ -73,21 +73,19 @@ uncalToPDF (UncalC14 name mean std) =
         probabilities = map (dnormInt mean std) years
     in UncalPDF name $ zip years probabilities
 
-dnormInt :: Int -> Int -> Int -> Double
+dnormInt :: Int -> Int -> Int -> Float
 dnormInt muInt sigmaInt xInt =
-    let muDouble = fromIntegral muInt
-        sigmaDouble = fromIntegral sigmaInt
-        xDouble = fromIntegral xInt
-    in dnorm muDouble sigmaDouble xDouble
+    let muFloat = fromIntegral muInt
+        sigmaFloat = fromIntegral sigmaInt
+        xFloat = fromIntegral xInt
+    in dnorm muFloat sigmaFloat xFloat
     where
-        dnorm :: Double -> Double -> Double -> Double 
+        dnorm :: Float -> Float -> Float -> Float 
         dnorm mu sigma x = 
             let a = recip (sqrt (2 * pi * sigma2))
                 b = exp ((-((x - mu)**2)) / (2 * sigma2))
                 sigma2 = sigma**2
-                dens = a*b
-            -- only consider reasonably high densities (similar to Bchron)
-            in if dens < 0.00001 then 0 else dens
+            in a*b
 
 -- this is a relatively imprecise solution, because start and end of the range may be badly represented
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
@@ -117,7 +115,7 @@ interpolateCalCurve (CalCurve obs) =
         getInBetweenPointsInt (x1,y1) (x2,y2) xPred =
             let (_,yPred) = getInBetweenPoints (fromIntegral x1,fromIntegral y1) (fromIntegral x2,fromIntegral y2) $ fromIntegral xPred
             in (xPred, round yPred)
-        getInBetweenPoints :: (Double, Double) -> (Double, Double) -> Double -> (Double, Double)
+        getInBetweenPoints :: (Float, Float) -> (Float, Float) -> Float -> (Float, Float)
         getInBetweenPoints (x1,y1) (x2,y2) xPred =
             let yDiff = y2 - y1
                 xDiff = abs $ x1 - x2
@@ -158,7 +156,7 @@ makeCalCurveMatrix (CalCurve obs) =
         cals = getCals (CalCurve obs)
     in CalCurveMatrix bpsMatrix (reverse cals) $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
     where 
-        fillCell :: (Int, Int, Int) -> Int -> Double
+        fillCell :: (Int, Int, Int) -> Int -> Float
         fillCell (bp,_,sigma) matrixPosBP =
             dnormInt bp sigma matrixPosBP
 
@@ -166,7 +164,7 @@ projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
     CalPDF (getNameUncal uncalPDF) $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
     where
-        vectorMatrixMult :: [Double] -> [[Double]] -> [[Double]]
+        vectorMatrixMult :: [Float] -> [[Float]] -> [[Float]]
         vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
-        matrixColSum :: [[Double]] -> [Double]
+        matrixColSum :: [[Float]] -> [Float]
         matrixColSum = map sum
