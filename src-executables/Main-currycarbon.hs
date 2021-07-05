@@ -43,6 +43,7 @@ optParser = OP.subparser (
 
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> parseUncalC14
+                                      <*> parseUncalC14FromFile
                                       <*> parseQuickOut
                                       <*> parseDensityFile
                                       <*> parseHDRFile
@@ -50,13 +51,22 @@ calibrateOptParser = CalibrateOptions <$> parseUncalC14
                                       <*> parseCalCurveMatrixFile
 
 parseUncalC14 :: OP.Parser [UncalC14]
-parseUncalC14 = OP.argument (OP.eitherReader readUncalC14String) (
+parseUncalC14 = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14String) (
     OP.metavar "DATES" <>
     OP.help "A string with one or multiple uncalibrated dates of \
-            \ the form \"(<sample name>)<mean age BP>+<one sigma standard deviation>;...\" \
-            \ so for example \"(S1)4000+50;3000+25;(S3)1000+20\". \
-            \ The sample name is optional"
-    )
+            \the form \"(<sample name>)<mean age BP>+<one sigma standard deviation>;...\" \
+            \so for example \"(S1)4000+50;3000+25;(S3)1000+20\". \
+            \The sample name is optional"
+    ))
+
+parseUncalC14FromFile :: OP.Parser [FilePath]
+parseUncalC14FromFile = OP.many (OP.strOption (
+    OP.long "inputFile" <>
+    OP.short 'i' <>
+    OP.help "A file with a list of uncalibrated dates. \
+            \Formated just as DATES, but multiple values can also be separated by newline, not just by ;. \
+            \DATES and --uncalFile can be combined and you can provide multiple instances of --uncalFile"
+    ))
 
 parseQuickOut :: OP.Parser (Bool)
 parseQuickOut = OP.switch (
@@ -85,7 +95,7 @@ parseCalCurveSegmentFile = OP.option (Just <$> OP.str) (
     OP.long "calCurveSegmentFile" <>
     OP.help "Path to an output file which stores the relevant, interpolated calibration curve \
             \segment for the first (!) input date in a long format. \
-            \This option as well as --calCurveMatrixFile are mostly meant for debugging." <>
+            \This option as well as --calCurveMatrixFile are mostly meant for debugging" <>
     OP.value Nothing
     )
 

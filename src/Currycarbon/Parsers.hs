@@ -56,20 +56,18 @@ renderCalPDF (CalPDF name obs) =
     concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") obs
 
 -- UncalC14
+readUncalC14FromFile :: FilePath -> IO [UncalC14]
+readUncalC14FromFile uncalFile = do
+    let multiEntityParser = uncalC14Parser `P.sepBy1` (P.newline *> P.spaces)
+    eitherParseResult <- P.parseFromFile (P.spaces *> multiEntityParser <* P.spaces) uncalFile
+    case eitherParseResult of
+        Left err -> error $ "Error in parsing dates from File: " ++ show err
+        Right r -> return (concat r)
+
 readUncalC14String :: String -> Either String [UncalC14]
 readUncalC14String s = case P.runParser uncalC14Parser () "" s of
     Left p  -> Left (show p)
-    Right x -> Right (replaceEmptyNames x)
-    where
-        replaceEmptyNames :: [UncalC14] -> [UncalC14]
-        replaceEmptyNames xs =
-            zipWith replaceName xs [1..]
-            where
-                replaceName :: UncalC14 -> Int -> UncalC14
-                replaceName (UncalC14 name mean std) number =
-                    if name == "unknownSampleName"
-                    then UncalC14 (show number) mean std
-                    else UncalC14 name mean std
+    Right x -> Right x
 
 uncalC14Parser :: P.Parser [UncalC14]
 uncalC14Parser = P.try (P.sepBy parseOneUncalC14 (P.char ';' <* P.spaces))
