@@ -20,23 +20,19 @@ data CalibrateOptions = CalibrateOptions {
 
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions uncalDate quickOut densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
+    hPutStrLn stderr "Calibrating..."
     -- basic calibration
-    hPutStrLn stderr "Loading calibration curve"
     let calCurve = loadCalCurve intcal20
-    hPutStrLn stderr "Calibrating"
-    let calPDFs = calibrateMany calCurve uncalDate
+        calPDFs = calibrateMany calCurve uncalDate
     -- write density file
     when (isJust densityFile) $ do
-        hPutStrLn stderr "Writing density file"
         writeCalPDFs (fromJust densityFile) calPDFs
     -- print or write high density regions
     when (quickOut || isJust hdrFile) $ do
-        hPutStrLn stderr "Calculating HDR regions"
         let calC14 = refineCal calPDFs
         when quickOut $ do
             hPutStrLn stdout $ renderCalC14s calC14
         when (isJust hdrFile) $ do
-            hPutStrLn stderr "Writing hdr file"
             writeCalC14 (fromJust hdrFile) calC14
     -- write calcurve segment file
     when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
@@ -45,10 +41,8 @@ runCalibrate (CalibrateOptions uncalDate quickOut densityFile hdrFile calCurveSe
         let uncalPDF = uncalToPDF $ head uncalDate
             (calCurveSegment,calCurveMatric) = prepareCalCurve calCurve uncalPDF
         when (isJust calCurveSegmentFile) $ do
-            hPutStrLn stderr "Writing calCurveSegment file"
             writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
         when (isJust calCurveMatrixFile) $ do
-            hPutStrLn stderr "Writing calCurveMatrix file"
             writeCalCurveMatrixFile (fromJust calCurveMatrixFile) calCurveMatric
     -- finished
     hPutStrLn stderr "Done"

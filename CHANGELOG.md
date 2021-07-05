@@ -1,3 +1,4 @@
+- V 0.4.0: Made output calibrated dates negative numbers for BC and positive for AD - and adjusted HDR printing accordingly
 - V 0.3.2: Some optimisation
 - V 0.3.1: Added automatic filling of unknown sample names
 - V 0.3.0: Simplified interface

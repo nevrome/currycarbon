@@ -25,17 +25,18 @@ bchronRaw <- Bchron::BchronCalibrate(
 )
 
 bchron <- tibble::tibble(
-  calBC = bchronRaw$Date1$ageGrid - 1950,
+  calBCAD = -bchronRaw$Date1$ageGrid + 1950,
   density_bchron = bchronRaw$Date1$densities
-) 
+)
 
 bchron |> dplyr::left_join(
-  test, by = "calBC"
+  test, by = "calBCAD"
 ) |>
   tidyr::pivot_longer(
     tidyselect::starts_with("dens"),
     names_to = "method"
   ) |>
   ggplot() +
-  geom_line(aes(x = calBC, y = value, colour = method), 
+  geom_line(aes(x = calBCAD, y = value, colour = method), 
             size = 1, alpha = 0.5)
+

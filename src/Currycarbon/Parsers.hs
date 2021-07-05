@@ -12,20 +12,25 @@ writeCalC14 path calC14 = writeFile path $ renderCalC14s calC14
 
 renderCalC14s :: [CalC14] -> String
 renderCalC14s xs = 
+    "Calibrated high density ranges (HDR):\n" ++
     intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
 renderCalC14 (CalC14 name hdrs68 hdrs95) =
        "Sample: " ++ name ++ "\n" 
-    ++ "HDR 1-sigma: " ++ renderHDRs hdrs68 ++ " calBC\n"
-    ++ "HDR 2-sigma: " ++ renderHDRs hdrs95 ++ " calBC"
+    ++ "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
+    ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
 
 -- HDR
 renderHDRs :: [HDR] -> String
 renderHDRs xs = intercalate ", " (map renderHDR xs)
 
 renderHDR :: HDR -> String
-renderHDR (HDR start stop) = show start ++ "-" ++ show stop
+renderHDR (HDR stop start)
+    | start < 0 && stop <= 0  = show (-start) ++ "-" ++ show (-stop) ++ "BC"
+    | start < 0 && stop > 0   = show (-start) ++ "BC-" ++ show stop ++ "AD"
+    | start >= 0 && stop >= 0 = show start ++ "-" ++ show stop ++ "AD"
+    | otherwise = error $ "this should never happen: " ++ show start ++ "-" ++ show stop
 
 -- CalCurveMatrix
 writeCalCurveMatrixFile :: FilePath -> CalCurveMatrix -> IO ()
@@ -43,7 +48,7 @@ renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 writeCalPDFs path calPDFs =
     writeFile path $ 
-        "sample,calBC,density\n"
+        "sample,calBCAD,density\n"
         ++ concatMap renderCalPDF calPDFs
 
 renderCalPDF :: CalPDF -> String

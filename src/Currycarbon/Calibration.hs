@@ -52,7 +52,7 @@ calibrate calCurve uncalDate =
 prepareCalCurve :: CalCurve -> UncalPDF -> (CalCurve, CalCurveMatrix)
 prepareCalCurve calCurve uncalPDF =
     let -- prepare relevant segment of the calcurve
-        calCurveSegment = makeBCCalCurve $
+        calCurveSegment = makeBCADCalCurve $
                             interpolateCalCurve $
                             getRelevantCalCurveSegment uncalPDF calCurve
         -- transform calCurve to matrix
@@ -140,11 +140,8 @@ splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
         combine :: ([a],[a]) -> ([a],[a]) -> ([a],[a])
         combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
 
-makeBCCalCurve :: CalCurve -> CalCurve
-makeBCCalCurve calCurve = CalCurve $ zip3 (getBPs calCurve) (map (\x -> x - 1950) $ getCals calCurve) (getCalSigmas calCurve)
-
-makeBCCalPDF :: CalPDF -> CalPDF
-makeBCCalPDF calPDF = CalPDF (getNameCal calPDF) $ zip (map (\x -> x - 1950) $ getBPsCal calPDF) (getProbsCal calPDF)
+makeBCADCalCurve :: CalCurve -> CalCurve
+makeBCADCalCurve calCurve = CalCurve $ zip3 (getBPs calCurve) (map (\x -> -x + 1950) $ getCals calCurve) (getCalSigmas calCurve)
 
 -- this only works, because the calCurve list is naturally ordered by the unique calibrated ages
 -- if this is not the case, then the more complicated implementation from before V 0.3.2 is necessary
