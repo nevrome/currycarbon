@@ -55,7 +55,7 @@ parseUncalC14 = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14Str
     OP.metavar "DATES" <>
     OP.help "A string with one or multiple uncalibrated dates of \
             \the form \"(<sample name>)<mean age BP>+<one sigma standard deviation>;...\" \
-            \so for example \"(S1)4000+50;3000+25;(S3)1000+20\". \
+            \so for example \"[S1]4000+50;3000+25;[S3]1000+20\". \
             \The sample name is optional"
     ))
 

@@ -74,7 +74,7 @@ uncalC14Parser = P.try (P.sepBy parseOneUncalC14 (P.char ';' <* P.spaces))
 
 parseOneUncalC14 :: P.Parser UncalC14
 parseOneUncalC14 = do
-    name <- P.option "unknownSampleName" (P.between (P.char '(') (P.char ')') (P.manyTill P.anyChar (P.lookAhead (P.char ')'))))
+    name <- P.option "unknownSampleName" (P.between (P.char '[') (P.char ']') (P.manyTill P.anyChar (P.lookAhead (P.char ']'))))
     mean <- read <$> P.many1 P.digit
     _ <- P.oneOf "+"
     std <- read <$> P.many1 P.digit

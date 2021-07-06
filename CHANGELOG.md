@@ -1,3 +1,4 @@
+- V 0.6.0: Changed the date input interface, because parenthesis can be part of valid lab numbers
 - V 0.5.2: Fixed parallel evalutation (deepseq forced memory-intensive, non-lazy behaviour)
 - V 0.5.1: Added github release action (copied from poseidon-hs)
 - V 0.5.0: Added file input for dates to calibrate
