@@ -3,5 +3,3 @@ resolver: lts-18.0
 packages:
 - .
 extra-deps:
-- parsec3-numbers-0.1.0@sha256:2f32295f9f4023f7f97da851549aaaf5e72866e98bf016a1ac3c6e8715bbaf8a,685
-- textPlot-1.0@sha256:adcb61573078b42034f2d191a26971a752ce82fe7f572943f6d26865fc374c78,650

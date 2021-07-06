@@ -4,9 +4,51 @@
 
 An experimental radiocarbon calibration module written in and for [Haskell](https://www.haskell.org/). Comes with a small executable to run calibration on the commandline.
 
-I'm developing this for my own needs and will add features accordingly. The interface is highly fluid and prone to change for the time being.
+## Install
 
-### Install
+For stable release versions we automatically prepare binaries that can be downloaded and run.
+
+You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) | [Windows 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Windows.exe) ]. Older release versions are available [here](https://github.com/nevrome/currycarbon/releases).
+
+## Interface
+
+```
+Usage: currycarbon calibrate [DATES] [-i|--inputFile ARG] [-q|--quickOut] 
+                             [--densityFile ARG] [--hdrFile ARG] 
+                             [--calCurveSegmentFile ARG] 
+                             [--calCurveMatrixFile ARG]
+  Simple intercept calibration for one or multiple radiocarbon dates
+
+Available options:
+  -h,--help                Show this help text
+  DATES                    A string with one or multiple uncalibrated dates of
+                           the form "(<sample name>)<mean age BP>+<one sigma
+                           standard deviation>;..." so for example
+                           "(S1)4000+50;3000+25;(S3)1000+20". The sample name is
+                           optional
+  -i,--inputFile ARG       A file with a list of uncalibrated dates. Formated
+                           just as DATES, but multiple values can also be
+                           separated by newline, not just by ;. DATES and
+                           --uncalFile can be combined and you can provide
+                           multiple instances of --uncalFile
+  -q,--quickOut            Should a simple calibration result per sample be
+                           printed to the command line?
+  --densityFile ARG        Path to an output file which stores output densities
+                           per sample and calender year
+  --hdrFile ARG            Path to an output file which stores the high
+                           probability density regions for each sample
+  --calCurveSegmentFile ARG
+                           Path to an output file which stores the relevant,
+                           interpolated calibration curve segment for the first
+                           (!) input date in a long format. This option as well
+                           as --calCurveMatrixFile are mostly meant for
+                           debugging
+  --calCurveMatrixFile ARG Path to an output file which stores the relevant,
+                           interpolated calibration curve segment for the first
+                           (!) input date in a wide matrix format
+```
+
+## For developers
 
 To install the latest development version you can follow these steps:
 
@@ -14,9 +56,26 @@ To install the latest development version you can follow these steps:
 2. Clone the repository
 3. Execute `stack install` inside the repository to build the tool and automatically copy the executables to `~/.local/bin` (which you may want to add to your path). This will install the compiler and all dependencies into folders that won't interfere with any installation you might already have.
 
-## For developers
+### Preparing a new stable release
 
-Profiling: 
+The Github Actions script in `.github/workflows/release.yml` registers a new draft release and automatically builds and uploads currycarbon binaries when a new Git tag with the prefix `v*` is pushed. 
+
+```bash
+# locally register a new tag (e.g. 0.3.1)
+git tag -a v0.3.1 -m "see CHANGELOG.md"
+# push tag
+git push origin v0.3.1
+```
+
+In case of a failing build delete the tag and the release draft on Github and then delete the tag locally with
+
+```bash
+git tag -d v0.3.1
+```
+
+before rerunning the procedure above.
+
+### Profiling
 
 ```
 stack build --profile
