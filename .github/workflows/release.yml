@@ -1,0 +1,108 @@
+# taken from https://vrom911.github.io/blog/github-actions-releases
+
+name: Release
+
+on:
+  # Trigger the workflow on the new 'v*' tag created
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  create_release:
+    name: Create Github Release
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: false
+
+      - name: Output Release URL File
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: release_url.txt
+
+  build_artifact:
+    needs: [create_release]
+    name: ${{ matrix.os }}/GHC ${{ matrix.ghc }}/${{ github.ref }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macOS-latest, windows-latest]
+        cabal: ["3.2"]
+        ghc: ["8.10.3"]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set tag name
+        uses: olegtarasov/get-tag@v2.1
+        id: tagName
+        with:
+          tagRegex: "v(.*)"
+          tagRegexGroup: 1
+
+      - name: Setup Haskell
+        uses: haskell/actions/setup@v1
+        id: setup-haskell-cabal
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: ${{ matrix.cabal }}
+
+      - name: Freeze
+        run: |
+          cabal freeze
+
+      - name: Build
+        run: |
+          mkdir dist
+          cabal install exe:currycarbon --install-method=copy --overwrite-policy=always --installdir=dist -fembed_data_files
+
+      - name: Set extension to .exe on Windows
+        if: matrix.os == 'windows-latest'
+        id: ifwin
+        run: echo "::set-output name=EXT::.exe"
+
+      - name: Set binary path name
+        id: binarypath
+        run: echo "::set-output name=BINARY_PATH::./dist/currycarbon${{ steps.ifwin.outputs.EXT }}"
+
+      - name: Compress binary
+        uses: svenstaro/upx-action@v2
+        with:
+          file: ${{ steps.binarypath.outputs.BINARY_PATH }}
+
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+          echo "::set-output name=upload_url::$(cat release_url/release_url.txt)"
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ${{ steps.binarypath.outputs.BINARY_PATH }}
+          asset_name: currycarbon-${{ runner.os }}${{ steps.ifwin.outputs.EXT }}
+          asset_content_type: application/octet-stream
