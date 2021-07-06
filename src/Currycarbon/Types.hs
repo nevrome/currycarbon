@@ -1,9 +1,4 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
-
 module Currycarbon.Types where
-
-import GHC.Generics (Generic)
-import Control.DeepSeq (NFData)
 
 data UncalC14 = UncalC14 
                 String -- name
@@ -19,7 +14,7 @@ data UncalPDF = UncalPDF
 data CalPDF = CalPDF 
                 String -- Name
                 [(Int, Float)] -- calBP, probability
-    deriving (Show, Generic, NFData)
+    deriving (Show)
 
 data CalC14 = CalC14 
                 String -- Name

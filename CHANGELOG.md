@@ -1,3 +1,4 @@
+- V 0.5.2: Fixed parallel evalutation (deepseq forced memory-intensive, non-lazy behaviour)
 - V 0.5.1: Added github release action (copied from poseidon-hs)
 - V 0.5.0: Added file input for dates to calibrate
 - V 0.4.0: Made output calibrated dates negative numbers for BC and positive for AD - and adjusted HDR printing accordingly

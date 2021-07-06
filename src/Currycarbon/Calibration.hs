@@ -2,7 +2,7 @@ module Currycarbon.Calibration where
 
 import Currycarbon.Types
 
-import Control.Parallel.Strategies (parList, rdeepseq, using)
+import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
 
 refineCal :: [CalPDF] -> [CalC14]
@@ -36,8 +36,7 @@ refineCalOne (CalPDF name densities) =
 
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
 calibrateMany calCurve uncalDates =
-    let calDates = map (calibrate calCurve) uncalDates
-    in calDates `using` parList rdeepseq
+    map (calibrate calCurve) uncalDates `using` parList rpar
 
 calibrate :: CalCurve -> UncalC14 -> CalPDF
 calibrate calCurve uncalDate =
