@@ -26,7 +26,7 @@ Available options:
   DATES                    A string with one or multiple uncalibrated dates of
                            the form "(<sample name>)<mean age BP>+<one sigma
                            standard deviation>;..." so for example
-                           "(S1)4000+50;3000+25;(S3)1000+20". The sample name is
+                           "[S1]4000+50;3000+25;[S3]1000+20". The sample name is
                            optional
   -i,--inputFile ARG       A file with a list of uncalibrated dates. Formated
                            just as DATES, but multiple values can also be
