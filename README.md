@@ -1,4 +1,6 @@
 [![GitHub Workflow Status](https://github.com/nevrome/currycarbon/actions/workflows/normalCheck.yml/badge.svg)](https://github.com/nevrome/currycarbon/actions/workflows/normalCheck.yml)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/nevrome/currycarbon?include_prereleases) 
+![GitHub all releases](https://img.shields.io/github/downloads/nevrome/currycarbon/total)](https://github.com/nevrome/currycarbon/releases)
 
 # currycarbon
 
