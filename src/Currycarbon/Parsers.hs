@@ -58,27 +58,39 @@ renderCalPDF (CalPDF name obs) =
 -- UncalC14
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
-    let multiEntityParser = uncalC14Parser `P.sepBy1` (P.newline *> P.spaces)
-    eitherParseResult <- P.parseFromFile (P.spaces *> multiEntityParser <* P.spaces) uncalFile
-    case eitherParseResult of
-        Left err -> error $ "Error in parsing dates from File: " ++ show err
-        Right r -> return (concat r)
+    s <- readFile uncalFile
+    case P.runParser uncalC14SepByNewline () "" s of
+        Left err -> error $ "Error in parsing dates from file: " ++ show err
+        Right x -> return x
+    where
+        uncalC14SepByNewline :: P.Parser [UncalC14]
+        uncalC14SepByNewline = P.endBy parseOneUncalC14 (P.newline <* P.spaces) <* P.eof
 
 readUncalC14String :: String -> Either String [UncalC14]
-readUncalC14String s = case P.runParser uncalC14Parser () "" s of
-    Left p  -> Left (show p)
-    Right x -> Right x
-
-uncalC14Parser :: P.Parser [UncalC14]
-uncalC14Parser = P.try (P.sepBy parseOneUncalC14 (P.char ';' <* P.spaces))
+readUncalC14String s = 
+    case P.runParser uncalC14SepBySemicolon () "" s of
+        Left err -> error $ "Error in parsing dates from string: " ++ show err
+        Right x -> Right x
+    where 
+        uncalC14SepBySemicolon :: P.Parser [UncalC14]
+        uncalC14SepBySemicolon = P.sepBy parseOneUncalC14 (P.char ';' <* P.spaces) <* P.eof
 
 parseOneUncalC14 :: P.Parser UncalC14
 parseOneUncalC14 = do
-    name <- P.option "unknownSampleName" (P.between (P.char '[') (P.char ']') (P.manyTill P.anyChar (P.lookAhead (P.char ']'))))
-    mean <- read <$> P.many1 P.digit
-    _ <- P.oneOf "+"
-    std <- read <$> P.many1 P.digit
-    return (UncalC14 name mean std)
+    P.try long P.<|> short
+    where
+        long = do
+            name <- P.many (P.noneOf ",")
+            _ <- P.oneOf ","
+            mean <- read <$> P.many1 P.digit
+            _ <- P.oneOf ","
+            std <- read <$> P.many1 P.digit
+            return (UncalC14 name mean std)
+        short = do
+            mean <- read <$> P.many1 P.digit
+            _ <- P.oneOf ","
+            std <- read <$> P.many1 P.digit
+            return (UncalC14 "unknownSampleName" mean std)
 
 -- CalCurve
 writeCalCurveFile :: FilePath -> CalCurve -> IO ()

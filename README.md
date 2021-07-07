@@ -24,15 +24,14 @@ Usage: currycarbon calibrate [DATES] [-i|--inputFile ARG] [-q|--quickOut]
 Available options:
   -h,--help                Show this help text
   DATES                    A string with one or multiple uncalibrated dates of
-                           the form "(<sample name>)<mean age BP>+<one sigma
-                           standard deviation>;..." so for example
-                           "[S1]4000+50;3000+25;[S3]1000+20". The sample name is
-                           optional
+                           the form "<sample name>,<mean age BP>,<one sigma
+                           standard deviation>;..." where <sample name> is
+                           optional. So for example
+                           "S1,4000,50;3000,25;S3,1000,20".
   -i,--inputFile ARG       A file with a list of uncalibrated dates. Formated
-                           just as DATES, but multiple values can also be
-                           separated by newline, not just by ;. DATES and
-                           --uncalFile can be combined and you can provide
-                           multiple instances of --uncalFile
+                           just as DATES, but with a new line for each input
+                           date. DATES and --uncalFile can be combined and you
+                           can provide multiple instances of --uncalFile
   -q,--quickOut            Should a simple calibration result per sample be
                            printed to the command line?
   --densityFile ARG        Path to an output file which stores output densities
