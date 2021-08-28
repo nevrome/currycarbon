@@ -51,8 +51,9 @@ jobs:
       id: haddockpath
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       run: |
-        docpath=find `stack path --local-doc-root` -type d -name "currycarbon*"
-        echo "::set-output name=DOCPATH::$docpath"
+        docpathgeneral=`stack path --local-install-root`/doc
+        docpathcurrycarbon=find $docpathgeneral -type d -name "currycarbon*"
+        echo "::set-output name=DOCPATH::$docpathcurrycarbon"
     
     - name: Deploy haddock documentation
       uses: peaceiris/actions-gh-pages@v3
