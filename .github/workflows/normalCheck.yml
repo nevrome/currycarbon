@@ -40,6 +40,27 @@ jobs:
         --no-run-benchmarks \
         --pedantic
 
+    - name: Render haddock documentation
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      run: |
+        stack haddock \
+        --no-haddock-deps \
+        --fast
+
+    - name: Get path to haddock documentation
+      id: haddockpath
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      run: |
+        docpath=`stack path --local-doc-root`/currycarbon*
+        echo "::set-output name=DOCPATH::$docpath"
+    
+    - name: Deploy haddock documentation
+      uses: peaceiris/actions-gh-pages@v3
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ${{ steps.haddockpath.outputs.DOCPATH }}
+
     # - name: Test
     #   run: |
     #     stack test \
