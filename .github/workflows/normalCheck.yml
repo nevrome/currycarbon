@@ -52,7 +52,9 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       run: |
         docpathgeneral=`stack path --local-install-root`/doc
-        docpathcurrycarbon=find $docpathgeneral -type d -name "currycarbon*"
+        echo $docpathgeneral
+        docpathcurrycarbon=`find $docpathgeneral -type d -name "currycarbon*"`
+        echo $docpathcurrycarbon
         echo "::set-output name=DOCPATH::$docpathcurrycarbon"
     
     - name: Deploy haddock documentation
