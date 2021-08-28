@@ -63,7 +63,7 @@ normalizeCalPDF calPDF =
     let dens = getProbsCal calPDF
         sumDens = sum $ getProbsCal calPDF
         normalizedDens = map (/ sumDens) dens
-    in CalPDF (getNameCal calPDF) $ zip (getBPsCal calPDF) normalizedDens
+    in CalPDF (_calPDFid calPDF) $ zip (getBPsCal calPDF) normalizedDens
 
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 name mean std) =
@@ -157,7 +157,7 @@ makeCalCurveMatrix (CalCurve obs) =
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
-    CalPDF (getNameUncal uncalPDF) $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
+    CalPDF (_uncalPDFid uncalPDF) $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
     where
         vectorMatrixMult :: [Float] -> [[Float]] -> [[Float]]
         vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat

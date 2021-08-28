@@ -1,3 +1,4 @@
+- V 0.7.1: Added type documentation with haddock and replaced the existing types with record types
 - V 0.7.0: Changed the date input interface once more
 - V 0.6.0: Changed the date input interface, because parenthesis can be part of valid lab numbers
 - V 0.5.2: Fixed parallel evalutation (deepseq forced memory-intensive, non-lazy behaviour)
