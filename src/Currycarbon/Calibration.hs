@@ -122,7 +122,7 @@ dnormInt muInt sigmaInt xInt =
 
 -- | Calibrates a list of dates with the provided calibration curve
 calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
-calibrateMany calCurve [] = []
+calibrateMany _ [] = []
 calibrateMany calCurve uncalDates =
     map (calibrate calCurve) uncalDates `using` parList rpar
 

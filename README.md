@@ -4,15 +4,17 @@
 
 # currycarbon
 
-An experimental radiocarbon calibration module written in and for [Haskell](https://www.haskell.org/). Comes with a small executable to run calibration on the commandline.
+An experimental radiocarbon calibration module written in and for [Haskell](https://www.haskell.org). Comes with a small CLI app to run calibration on the commandline.
 
-## Install
+### Library
+
+The Haskell library is not on Hackage yet. Some documentation for the dev version can be found here: https://nevrome.github.io/currycarbon
+
+### CLI app
 
 For stable release versions we automatically prepare binaries that can be downloaded and run.
 
 You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) | [Windows 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Windows.exe) ]. Older release versions are available [here](https://github.com/nevrome/currycarbon/releases).
-
-## Interface
 
 ```
 Usage: currycarbon calibrate [DATES] [-i|--inputFile ARG] [-q|--quickOut] 
@@ -49,7 +51,7 @@ Available options:
                            (!) input date in a wide matrix format
 ```
 
-## For developers
+### For developers
 
 To install the latest development version you can follow these steps:
 
@@ -57,7 +59,7 @@ To install the latest development version you can follow these steps:
 2. Clone the repository
 3. Execute `stack install` inside the repository to build the tool and automatically copy the executables to `~/.local/bin` (which you may want to add to your path). This will install the compiler and all dependencies into folders that won't interfere with any installation you might already have.
 
-### Preparing a new stable release
+#### Preparing a new stable release
 
 The Github Actions script in `.github/workflows/release.yml` registers a new draft release and automatically builds and uploads currycarbon binaries when a new Git tag with the prefix `v*` is pushed. 
 
@@ -76,7 +78,7 @@ git tag -d v0.3.1
 
 before rerunning the procedure above.
 
-### Profiling
+#### Profiling
 
 ```
 stack build --profile
