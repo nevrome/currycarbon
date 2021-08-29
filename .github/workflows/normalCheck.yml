@@ -53,7 +53,7 @@ jobs:
       run: |
         docpathgeneral=`stack path --local-install-root`/doc
         echo $docpathgeneral
-        docpathcurrycarbon=`find $docpathgeneral -type d -name "currycarbon*"`
+        docpathcurrycarbon=`find $docpathgeneral -type d -name "currycarbon*" -printf '%T+ %p\n' | sort -r | head -n 1 | cut -d' ' -f2`
         echo $docpathcurrycarbon
         echo "::set-output name=DOCPATH::$docpathcurrycarbon"
     
