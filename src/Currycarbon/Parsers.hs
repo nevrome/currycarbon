@@ -14,13 +14,25 @@ import qualified Text.Parsec.String             as P
 -- output plumbing for different datatypes
 
 -- CalC14
-writeCalC14 :: FilePath -> [CalC14] -> IO ()
-writeCalC14 path calC14 = writeFile path $ renderCalC14s calC14
+writeCalC14s :: FilePath -> [CalC14] -> IO ()
+writeCalC14s path calC14s = writeFile path $ 
+    "sample,hdrSigma,hdrStart,hdrStop\n" 
+    ++ intercalate "\n" (map renderCalC14ForFile calC14s)
+
+renderCalC14ForFile :: CalC14 -> String
+renderCalC14ForFile (CalC14 name hdrs68 hdrs95) =
+    intercalate "\n" $ 
+        map renderRow $
+        zip3 (repeat name) (repeat "1") (renderHDRsForFile hdrs68) ++
+        zip3 (repeat name) (repeat "2") (renderHDRsForFile hdrs95)
+    where
+        renderRow :: (String, String, (String, String)) -> String
+        renderRow (a, b, (c, d)) = intercalate "," [a,b,c,d]
 
 renderCalC14s :: [CalC14] -> String
 renderCalC14s xs = 
-    "Calibrated high density ranges (HDR):\n" ++
-    intercalate "\n" (map renderCalC14 xs)
+    "Calibrated high density ranges (HDR):\n" 
+    ++ intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
 renderCalC14 (CalC14 name hdrs68 hdrs95) =
@@ -29,6 +41,12 @@ renderCalC14 (CalC14 name hdrs68 hdrs95) =
     ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
 
 -- HDR
+renderHDRsForFile :: [HDR] -> [(String, String)]
+renderHDRsForFile = map renderHDRForFile
+
+renderHDRForFile :: HDR -> (String, String)
+renderHDRForFile (HDR start stop) = (show stop, show start)
+
 renderHDRs :: [HDR] -> String
 renderHDRs xs = intercalate ", " (map renderHDR xs)
 

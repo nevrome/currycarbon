@@ -7,8 +7,8 @@ import           Currycarbon.Parsers
 import           Currycarbon.Types
 
 import           Control.Monad      (when)
-import           Data.Maybe         (fromJust, isJust, maybe)
-import           System.IO          (hPutStrLn, stderr, stdout)
+import           Data.Maybe         (fromJust, isJust)
+import           System.IO          (hPutStrLn, stderr)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
@@ -40,11 +40,11 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile quickOut densit
             writeCalPDFs (fromJust densityFile) calPDFs
         -- print or write high density regions
         when (quickOut || isJust hdrFile) $ do
-            let calC14 = refineCal calPDFs
+            let calC14s = refineCal calPDFs
             when quickOut $ do
-                hPutStrLn stdout $ renderCalC14s calC14
+                putStrLn $ renderCalC14s calC14s
             when (isJust hdrFile) $ do
-                writeCalC14 (fromJust hdrFile) calC14
+                writeCalC14s (fromJust hdrFile) calC14s
         -- write calcurve segment file
         when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
             hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date: " ++
