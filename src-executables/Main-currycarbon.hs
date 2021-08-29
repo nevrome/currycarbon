@@ -50,6 +50,7 @@ optParser = OP.subparser (
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> parseUncalC14
                                       <*> parseUncalC14FromFile
+                                      <*> parseCalCurveFromFile
                                       <*> parseQuickOut
                                       <*> parseDensityFile
                                       <*> parseHDRFile
@@ -79,6 +80,15 @@ parseUncalC14FromFile = OP.many (OP.strOption (
             \Formated just as DATES, but with a new line for each input date. \
             \DATES and --uncalFile can be combined and you can provide multiple instances of --uncalFile"
     ))
+
+parseCalCurveFromFile :: OP.Parser (Maybe FilePath)
+parseCalCurveFromFile = OP.option (Just <$> OP.str) (
+    OP.long "calibrationCurveFile" <>
+    OP.help "Path to an calibration curve file in .14c format. \
+            \The calibration curve will be read and used for calibration. \
+            \If no file is provided, currycarbon will use the intcal20 curve." <>
+    OP.value Nothing
+    )
 
 parseQuickOut :: OP.Parser (Bool)
 parseQuickOut = OP.switch (

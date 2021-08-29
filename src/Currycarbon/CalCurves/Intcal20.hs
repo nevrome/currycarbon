@@ -1,6 +1,6 @@
 module Currycarbon.CalCurves.Intcal20 where
 
--- | The complete intcal20 calibration curve in a large string
+-- | The complete intcal20 calibration curve in a large string (Reimer et al. 2020, doi:10.1017/RDC.2020.41)
 intcal20 :: String
 intcal20 = "\
     \##Atmospheric data from Reimer et al (2020)\n\

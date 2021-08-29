@@ -17,7 +17,8 @@ For stable release versions we automatically prepare binaries that can be downlo
 You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) | [Windows 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Windows.exe) ]. Older release versions are available [here](https://github.com/nevrome/currycarbon/releases).
 
 ```
-Usage: currycarbon calibrate [DATES] [-i|--inputFile ARG] [-q|--quickOut] 
+Usage: currycarbon calibrate [DATES] [-i|--inputFile ARG] 
+                             [--calibrationCurveFile ARG] [-q|--quickOut] 
                              [--densityFile ARG] [--hdrFile ARG] 
                              [--calCurveSegmentFile ARG] 
                              [--calCurveMatrixFile ARG]
@@ -34,6 +35,11 @@ Available options:
                            just as DATES, but with a new line for each input
                            date. DATES and --uncalFile can be combined and you
                            can provide multiple instances of --uncalFile
+  --calibrationCurveFile ARG
+                           Path to an calibration curve file in .14c format. The
+                           calibration curve will be read and used for
+                           calibration. If no file is provided, currycarbon will
+                           use the intcal20 curve.
   -q,--quickOut            Should a simple calibration result per sample be
                            printed to the command line?
   --densityFile ARG        Path to an output file which stores output densities

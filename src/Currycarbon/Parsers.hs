@@ -110,6 +110,11 @@ renderCalCurve (CalCurve obs) =
         body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) obs
     in header ++ intercalate "\n" body
 
+readCalCurve :: FilePath -> IO CalCurve
+readCalCurve calCurveFile = do
+    calCurve <- readFile calCurveFile
+    return $ loadCalCurve calCurve
+
 loadCalCurve :: String -> CalCurve 
 loadCalCurve calCurveString = do
     case P.runParser calCurveFileParser () "" calCurveString of

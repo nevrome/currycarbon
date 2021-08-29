@@ -1,3 +1,4 @@
+- V 0.8.0: Added option --calibrationCurveFile to calibrate with different calibration curves
 - V 0.7.2: More documentation, small changes in code layout and renamed CLI module that provides runCalibrate
 - V 0.7.1: Added type documentation with haddock and replaced the existing types with record types
 - V 0.7.0: Changed the date input interface once more
