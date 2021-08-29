@@ -4,6 +4,7 @@ module Currycarbon.Utils (
 
 import           Control.Exception (Exception)
 
+-- | Different exceptions for currycarbon
 data CurrycarbonException =
     CurrycarbonCLIParsingException String
     deriving (Show)

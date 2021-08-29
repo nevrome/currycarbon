@@ -1,53 +1,23 @@
-module Currycarbon.Calibration where
+module Currycarbon.Calibration
+    ( -- * Calibration functions
+      --
+      -- $calibration
+      --
+      -- This module implements the actual calibration logic
+        prepareCalCurve
+      , uncalToPDF
+      , calibrateMany
+      , refineCal
+    ) where
 
 import Currycarbon.Types
 
 import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
 
-refineCal :: [CalPDF] -> [CalC14]
-refineCal = map refineCalOne
-
-refineCalOne :: CalPDF -> CalC14
-refineCalOne (CalPDF name densities) =
-    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) densities
-        cumsumDensities = scanl1 (+) $ map snd sortedDensities
-        isIn68 = map (< 0.683) cumsumDensities
-        isIn95 = map (< 0.954) cumsumDensities
-        contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities isIn68 isIn95
-    in CalC14 name (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
-    where
-        densities2HDR68 :: [(Int, Float, Bool, Bool)] -> [HDR]
-        densities2HDR68 cDensities = 
-            let highDensityGroups = groupBy (\(_,_,in681,_) (_,_,in682,_) -> in681 == in682) cDensities
-                filteredDensityGroups = filter (all getIn68) highDensityGroups
-            in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
-        densities2HDR95 :: [(Int, Float, Bool, Bool)] -> [HDR]
-        densities2HDR95 cDensities = 
-            let highDensityGroups = groupBy (\(_,_,_,in951) (_,_,_,in952) -> in951 == in952) cDensities
-                filteredDensityGroups = filter (all getIn95) highDensityGroups
-            in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
-        getIn68 :: (Int, Float, Bool, Bool) -> Bool
-        getIn68 (_,_,x,_) = x
-        getIn95 :: (Int, Float, Bool, Bool) -> Bool
-        getIn95 (_,_,_,x) = x
-        getYear :: (Int, Float, Bool, Bool) -> Int
-        getYear (year,_,_,_) = year
-
-calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
-calibrateMany calCurve uncalDates =
-    map (calibrate calCurve) uncalDates `using` parList rpar
-
-calibrate :: CalCurve -> UncalC14 -> CalPDF
-calibrate calCurve uncalDate =
-    let -- prepare PDF for uncalibrated date
-        uncalPDF = uncalToPDF uncalDate
-        -- prepare calCurve
-        (_,calCurveMatrix) = prepareCalCurve calCurve uncalPDF
-        -- perform projection (aka calibration)
-        calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
-    in calPDF
-
+-- | Take a raw calibration curve and an uncalibrated date and return
+-- a tuple with the relevant segment of the calibration curve in standard-
+-- and matrix-format
 prepareCalCurve :: CalCurve -> UncalPDF -> (CalCurve, CalCurveMatrix)
 prepareCalCurve calCurve uncalPDF =
     let -- prepare relevant segment of the calcurve
@@ -58,42 +28,8 @@ prepareCalCurve calCurve uncalPDF =
         calCurveMatrix = makeCalCurveMatrix calCurveSegment
     in (calCurveSegment,calCurveMatrix)
 
-normalizeCalPDF :: CalPDF -> CalPDF
-normalizeCalPDF calPDF = 
-    let dens = getProbsCal calPDF
-        sumDens = sum $ getProbsCal calPDF
-        normalizedDens = map (/ sumDens) dens
-    in CalPDF (_calPDFid calPDF) $ zip (getBPsCal calPDF) normalizedDens
-
-uncalToPDF :: UncalC14 -> UncalPDF
-uncalToPDF (UncalC14 name mean std) =
-    let years = reverse [(mean-5*std) .. (mean+5*std)]
-        probabilities = map (dnormInt mean std) years
-    in UncalPDF name $ zip years probabilities
-
-dnormInt :: Int -> Int -> Int -> Float
-dnormInt muInt sigmaInt xInt =
-    let muFloat = fromIntegral muInt
-        sigmaFloat = fromIntegral sigmaInt
-        xFloat = fromIntegral xInt
-    in dnorm muFloat sigmaFloat xFloat
-    where
-        dnorm :: Float -> Float -> Float -> Float 
-        dnorm mu sigma x = 
-            let a = recip (sqrt (2 * pi * sigma2))
-                b = exp ((-((x - mu)**2)) / (2 * sigma2))
-                sigma2 = sigma**2
-            in a*b
-
--- this is a relatively imprecise solution, because start and end of the range may be badly represented
-getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
-getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
-    let bps = getBPsUncal uncalPDF
-        minSearchBP = minimum bps
-        maxSearchBP = maximum bps
-        (_,biggerMin) = splitWhen (\(x,_,_) -> x < minSearchBP) obs
-        (smallerMax,_) = splitWhen (\(x,_,_) -> x <= maxSearchBP) biggerMin
-    in CalCurve smallerMax
+makeBCADCalCurve :: CalCurve -> CalCurve
+makeBCADCalCurve calCurve = CalCurve $ zip3 (getBPs calCurve) (map (\x -> -x + 1950) $ getCals calCurve) (getCalSigmas calCurve)
 
 interpolateCalCurve :: CalCurve -> CalCurve
 interpolateCalCurve (CalCurve obs) = 
@@ -131,6 +67,16 @@ timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
         windows' :: Int -> [a] -> [[a]]
         windows' n = map (take n) . tails
 
+-- this is a relatively imprecise solution, because start and end of the range may be badly represented
+getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
+getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
+    let bps = getBPsUncal uncalPDF
+        minSearchBP = minimum bps
+        maxSearchBP = maximum bps
+        (_,biggerMin) = splitWhen (\(x,_,_) -> x < minSearchBP) obs
+        (smallerMax,_) = splitWhen (\(x,_,_) -> x <= maxSearchBP) biggerMin
+    in CalCurve smallerMax
+
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])
 splitWhen pre [x] = if pre x then ([x],[]) else ([],[x])
@@ -138,9 +84,6 @@ splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
     where
         combine :: ([a],[a]) -> ([a],[a]) -> ([a],[a])
         combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
-
-makeBCADCalCurve :: CalCurve -> CalCurve
-makeBCADCalCurve calCurve = CalCurve $ zip3 (getBPs calCurve) (map (\x -> -x + 1950) $ getCals calCurve) (getCalSigmas calCurve)
 
 -- this only works, because the calCurve list is naturally ordered by the unique calibrated ages
 -- if this is not the case, then the more complicated implementation from before V 0.3.2 is necessary
@@ -155,6 +98,51 @@ makeCalCurveMatrix (CalCurve obs) =
         fillCell (bp,_,sigma) matrixPosBP =
             dnormInt bp sigma matrixPosBP
 
+-- | Transform an uncalibrated date to an uncalibrated 
+-- probability density table
+uncalToPDF :: UncalC14 -> UncalPDF
+uncalToPDF (UncalC14 name mean std) =
+    let years = reverse [(mean-5*std) .. (mean+5*std)]
+        probabilities = map (dnormInt mean std) years
+    in UncalPDF name $ zip years probabilities
+
+dnormInt :: Int -> Int -> Int -> Float
+dnormInt muInt sigmaInt xInt =
+    let muFloat = fromIntegral muInt
+        sigmaFloat = fromIntegral sigmaInt
+        xFloat = fromIntegral xInt
+    in dnorm muFloat sigmaFloat xFloat
+    where
+        dnorm :: Float -> Float -> Float -> Float 
+        dnorm mu sigma x = 
+            let a = recip (sqrt (2 * pi * sigma2))
+                b = exp ((-((x - mu)**2)) / (2 * sigma2))
+                sigma2 = sigma**2
+            in a*b
+
+-- | Calibrates a list of dates with the provided calibration curve
+calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
+calibrateMany calCurve [] = []
+calibrateMany calCurve uncalDates =
+    map (calibrate calCurve) uncalDates `using` parList rpar
+
+calibrate :: CalCurve -> UncalC14 -> CalPDF
+calibrate calCurve uncalDate =
+    let -- prepare PDF for uncalibrated date
+        uncalPDF = uncalToPDF uncalDate
+        -- prepare calCurve
+        (_,calCurveMatrix) = prepareCalCurve calCurve uncalPDF
+        -- perform projection (aka calibration)
+        calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
+    in calPDF
+
+normalizeCalPDF :: CalPDF -> CalPDF
+normalizeCalPDF calPDF = 
+    let dens = getProbsCal calPDF
+        sumDens = sum $ getProbsCal calPDF
+        normalizedDens = map (/ sumDens) dens
+    in CalPDF (_calPDFid calPDF) $ zip (getBPsCal calPDF) normalizedDens
+
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
     CalPDF (_uncalPDFid uncalPDF) $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
@@ -163,3 +151,34 @@ projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
         vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
         matrixColSum :: [[Float]] -> [Float]
         matrixColSum = map sum
+
+-- | Transforms the raw, calibrated probability density table to a meaningful representation of a
+-- calibrated radiocarbon date
+refineCal :: [CalPDF] -> [CalC14]
+refineCal = map refineCalOne
+
+refineCalOne :: CalPDF -> CalC14
+refineCalOne (CalPDF name densities) =
+    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) densities
+        cumsumDensities = scanl1 (+) $ map snd sortedDensities
+        isIn68 = map (< 0.683) cumsumDensities
+        isIn95 = map (< 0.954) cumsumDensities
+        contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities isIn68 isIn95
+    in CalC14 name (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
+    where
+        densities2HDR68 :: [(Int, Float, Bool, Bool)] -> [HDR]
+        densities2HDR68 cDensities = 
+            let highDensityGroups = groupBy (\(_,_,in681,_) (_,_,in682,_) -> in681 == in682) cDensities
+                filteredDensityGroups = filter (all getIn68) highDensityGroups
+            in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
+        densities2HDR95 :: [(Int, Float, Bool, Bool)] -> [HDR]
+        densities2HDR95 cDensities = 
+            let highDensityGroups = groupBy (\(_,_,_,in951) (_,_,_,in952) -> in951 == in952) cDensities
+                filteredDensityGroups = filter (all getIn95) highDensityGroups
+            in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
+        getIn68 :: (Int, Float, Bool, Bool) -> Bool
+        getIn68 (_,_,x,_) = x
+        getIn95 :: (Int, Float, Bool, Bool) -> Bool
+        getIn95 (_,_,_,x) = x
+        getYear :: (Int, Float, Bool, Bool) -> Int
+        getYear (year,_,_,_) = year

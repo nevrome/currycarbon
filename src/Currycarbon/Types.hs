@@ -1,5 +1,11 @@
 module Currycarbon.Types where
 
+-- * Data types
+--
+-- $dataTypes
+--
+-- This module defines the relevant data types for handling radiocarbon dates
+
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14 = UncalC14 {   
       _uncalC14id :: String -- ^ Identifier, e.g. a lab number

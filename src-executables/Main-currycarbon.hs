@@ -9,6 +9,12 @@ import           Currycarbon.CLI.RunCalibrate       (runCalibrate,
 import           Data.Version                       (showVersion)
 import qualified Options.Applicative                as OP
 
+-- * CLI interface configuration
+--
+-- $cliInterface
+--
+-- This module contains the necessary code to configure the currycarbon CLI interface
+
 -- data types
 data Options = CmdCalibrate CalibrateOptions
 
@@ -49,6 +55,12 @@ calibrateOptParser = CalibrateOptions <$> parseUncalC14
                                       <*> parseHDRFile
                                       <*> parseCalCurveSegmentFile
                                       <*> parseCalCurveMatrixFile
+
+-- ** Input parsing functions
+--
+-- $inputParsing
+--
+-- These functions define and handle the CLI input arguments
 
 parseUncalC14 :: OP.Parser [UncalC14]
 parseUncalC14 = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14String) (

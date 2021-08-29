@@ -6,6 +6,13 @@ import           Data.List                      (intercalate, transpose)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 
+-- * Parsing, rendering and writing functions
+--
+-- $importExport
+--
+-- This module contains a number of functions to manage data input and 
+-- output plumbing for different datatypes
+
 -- CalC14
 writeCalC14 :: FilePath -> [CalC14] -> IO ()
 writeCalC14 path calC14 = writeFile path $ renderCalC14s calC14
