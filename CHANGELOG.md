@@ -1,3 +1,4 @@
+- V 0.7.2: More documentation and renamed CLI module that provides runCalibrate
 - V 0.7.1: Added type documentation with haddock and replaced the existing types with record types
 - V 0.7.0: Changed the date input interface once more
 - V 0.6.0: Changed the date input interface, because parenthesis can be part of valid lab numbers

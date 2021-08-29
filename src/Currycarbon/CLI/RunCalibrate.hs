@@ -1,4 +1,5 @@
-module Currycarbon.CLI.CLICalibrate where
+module Currycarbon.CLI.RunCalibrate
+    (CalibrateOptions (..), runCalibrate) where
 
 import           Currycarbon.CalCurves.Intcal20
 import           Currycarbon.Calibration
@@ -9,16 +10,18 @@ import           Control.Monad      (when)
 import           Data.Maybe         (fromJust, isJust)
 import           System.IO          (hPutStrLn, stderr, stdout)
 
+-- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
-      _calibrateUncalC14 :: [UncalC14],
-      _calibrateUncalC14File :: [FilePath],
-      _calibrateQuickOut :: Bool,
-      _calibrateDensityFile :: Maybe FilePath,
-      _calibrateHDRFile :: Maybe FilePath,
-      _calibrateCalCurveSegmentFile :: Maybe FilePath,
-      _calibrateCalCurveMatrixFile :: Maybe FilePath
+        _calibrateUncalC14 :: [UncalC14]  -- ^ Uncalibrated dates that should be calibrated
+      , _calibrateUncalC14File :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
+      , _calibrateQuickOut :: Bool -- ^ Should a short output string be printed to the command line for every date
+      , _calibrateDensityFile :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
+      , _calibrateHDRFile :: Maybe FilePath -- ^ Path to an output file
+      , _calibrateCalCurveSegmentFile :: Maybe FilePath -- ^ Path to an output file 
+      , _calibrateCalCurveMatrixFile :: Maybe FilePath -- ^ Path to an output file 
     }
 
+-- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions uncalDates uncalFile quickOut densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
     -- compile dates
@@ -54,6 +57,8 @@ runCalibrate (CalibrateOptions uncalDates uncalFile quickOut densityFile hdrFile
         -- finished
         hPutStrLn stderr "Done"
 
+-- | Helper function to replace empty input names with a sequence of numbers, 
+-- to get each input date an unique identifier
 replaceEmptyNames :: [UncalC14] -> [UncalC14]
 replaceEmptyNames xs =
     zipWith replaceName xs [1..]
