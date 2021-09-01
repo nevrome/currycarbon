@@ -16,6 +16,17 @@ For stable release versions we automatically prepare binaries that can be downlo
 
 You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) | [Windows 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Windows.exe) ]. Older release versions are available [here](https://github.com/nevrome/currycarbon/releases).
 
+So in Linux you can run the following commands to get started:
+
+```bash
+# download the current stable release binary
+wget https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux
+# make it executable
+chmod +x currycarbon-Linux
+# test it
+./currycarbon-Linux "Sample1,4000,30"
+```
+
 ```
 Usage: currycarbon [--version] [DATES] [-i|--inputFile ARG] 
                    [--calibrationCurveFile ARG] [-q|--quiet] [--densityFile ARG]
