@@ -33,19 +33,14 @@ runCmd o = case o of
 optParserInfo :: OP.ParserInfo Options
 optParserInfo = OP.info (OP.helper <*> versionOption <*> optParser) (
     OP.briefDesc <>
-    OP.progDesc "currycarbon calibrates C14 dates"
+    OP.progDesc "Simple intercept calibration for one or multiple radiocarbon dates"
     )
 
 versionOption :: OP.Parser (a -> a)
 versionOption = OP.infoOption (showVersion version) (OP.long "version" <> OP.help "Show version")
 
 optParser :: OP.Parser Options
-optParser = OP.subparser (
-        OP.command "calibrate" calibrateOptInfo
-    )
-  where
-    calibrateOptInfo = OP.info (OP.helper <*> (CmdCalibrate <$> calibrateOptParser))
-        (OP.progDesc "Simple intercept calibration for one or multiple radiocarbon dates")
+optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> parseUncalC14
