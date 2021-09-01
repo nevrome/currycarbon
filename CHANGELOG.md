@@ -1,3 +1,4 @@
+- V 0.10.0: Simplified CLI interface by dropping the "calibrate" subcommand (currycarbon is sufficient now) and by repurposing -q from --quickOut to --quiet
 - V 0.9.0: Made --hdrFile output a lot more machine-readable
 - V 0.8.0: Added option --calibrationCurveFile to calibrate with different calibration curves
 - V 0.7.2: More documentation, small changes in code layout and renamed CLI module that provides runCalibrate

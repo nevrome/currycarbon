@@ -17,15 +17,15 @@ For stable release versions we automatically prepare binaries that can be downlo
 You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) | [Windows 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Windows.exe) ]. Older release versions are available [here](https://github.com/nevrome/currycarbon/releases).
 
 ```
-Usage: currycarbon calibrate [DATES] [-i|--inputFile ARG] 
-                             [--calibrationCurveFile ARG] [-q|--quickOut] 
-                             [--densityFile ARG] [--hdrFile ARG] 
-                             [--calCurveSegmentFile ARG] 
-                             [--calCurveMatrixFile ARG]
+Usage: currycarbon [--version] [DATES] [-i|--inputFile ARG] 
+                   [--calibrationCurveFile ARG] [-q|--quiet] [--densityFile ARG]
+                   [--hdrFile ARG] [--calCurveSegmentFile ARG] 
+                   [--calCurveMatrixFile ARG]
   Simple intercept calibration for one or multiple radiocarbon dates
 
 Available options:
   -h,--help                Show this help text
+  --version                Show version
   DATES                    A string with one or multiple uncalibrated dates of
                            the form "<sample name>,<mean age BP>,<one sigma
                            standard deviation>;..." where <sample name> is
@@ -40,8 +40,8 @@ Available options:
                            calibration curve will be read and used for
                            calibration. If no file is provided, currycarbon will
                            use the intcal20 curve.
-  -q,--quickOut            Should a simple calibration result per sample be
-                           printed to the command line?
+  -q,--quiet               Suppress the printing of calibration results to the
+                           command line
   --densityFile ARG        Path to an output file which stores output densities
                            per sample and calender year
   --hdrFile ARG            Path to an output file which stores the high
@@ -88,5 +88,5 @@ before rerunning the procedure above.
 
 ```
 stack build --profile
-stack exec --profile -- currycarbon calibrate "5000+200;5000+200;5000+200;5000+200;5000+200;5000+200;5000+200;5000+200" -q +RTS -p
+stack exec --profile -- currycarbon "5000+200;5000+200;5000+200;5000+200;5000+200;5000+200;5000+200;5000+200" +RTS -p
 ```
