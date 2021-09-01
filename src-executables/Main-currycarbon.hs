@@ -46,7 +46,7 @@ calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> parseUncalC14
                                       <*> parseUncalC14FromFile
                                       <*> parseCalCurveFromFile
-                                      <*> parseQuickOut
+                                      <*> parseQuiet
                                       <*> parseDensityFile
                                       <*> parseHDRFile
                                       <*> parseCalCurveSegmentFile
@@ -85,11 +85,11 @@ parseCalCurveFromFile = OP.option (Just <$> OP.str) (
     OP.value Nothing
     )
 
-parseQuickOut :: OP.Parser (Bool)
-parseQuickOut = OP.switch (
-    OP.long "quickOut" <> 
+parseQuiet :: OP.Parser (Bool)
+parseQuiet = OP.switch (
+    OP.long "quiet" <> 
     OP.short 'q' <>
-    OP.help "Should a simple calibration result per sample be printed to the command line?"
+    OP.help "Suppress the printing of calibration results to the command line"
     )
 
 parseDensityFile :: OP.Parser (Maybe FilePath)

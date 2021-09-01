@@ -6,7 +6,7 @@ import           Currycarbon.Calibration
 import           Currycarbon.Parsers
 import           Currycarbon.Types
 
-import           Control.Monad      (when)
+import           Control.Monad      (when, unless)
 import           Data.Maybe         (fromJust, isJust)
 import           System.IO          (hPutStrLn, stderr)
 
@@ -15,7 +15,7 @@ data CalibrateOptions = CalibrateOptions {
         _calibrateUncalC14 :: [UncalC14]  -- ^ Uncalibrated dates that should be calibrated
       , _calibrateUncalC14File :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
       , _calibrateCalCurveFile :: Maybe FilePath -- ^ Path to a .14c file
-      , _calibrateQuickOut :: Bool -- ^ Should a short output string be printed to the command line for every date
+      , _calibrateQuiet :: Bool -- ^ Suppress the printing of calibration results to the command line
       , _calibrateDensityFile :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
       , _calibrateHDRFile :: Maybe FilePath -- ^ Path to an output file
       , _calibrateCalCurveSegmentFile :: Maybe FilePath -- ^ Path to an output file 
@@ -24,7 +24,7 @@ data CalibrateOptions = CalibrateOptions {
 
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
-runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile quickOut densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
+runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
     -- compile dates
     entitiesFromFile <- mapM readUncalC14FromFile uncalFile
     let dates = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
@@ -39,9 +39,9 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile quickOut densit
         when (isJust densityFile) $ do
             writeCalPDFs (fromJust densityFile) calPDFs
         -- print or write high density regions
-        when (quickOut || isJust hdrFile) $ do
+        when (not quiet || isJust hdrFile) $ do
             let calC14s = refineCal calPDFs
-            when quickOut $ do
+            unless quiet $ do
                 putStrLn $ renderCalC14s calC14s
             when (isJust hdrFile) $ do
                 writeCalC14s (fromJust hdrFile) calC14s
