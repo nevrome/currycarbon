@@ -5,6 +5,9 @@ import Currycarbon.Types
 import           Data.List                      (intercalate, transpose)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
+import Numeric.LinearAlgebra.Data as HM
+import qualified Numeric.LinearAlgebra.HMatrix as HM
+import qualified GHC.OldList as HM
 
 -- * Parsing, rendering and writing functions
 --
@@ -66,7 +69,7 @@ renderCalCurveMatrixFile :: CalCurveMatrix -> String
 renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
     let header = "," ++ intercalate "," (map show cals) ++ "\n"
         body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show bpDens)) 
-            bps (transpose curveDensities)
+            bps (HM.toLists $ HM.tr $ curveDensities)
     in header ++ intercalate "\n" body
 
 -- CalPDF

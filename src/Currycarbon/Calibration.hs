@@ -14,6 +14,9 @@ import Currycarbon.Types
 
 import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
+import qualified Numeric.LinearAlgebra as HM
+import qualified Numeric.LinearAlgebra.Data as HM
+import qualified Numeric.LinearAlgebra.Devel as HM
 
 -- | Take a raw calibration curve and an uncalibrated date and return
 -- a tuple with the relevant segment of the calibration curve in standard-
@@ -24,14 +27,14 @@ prepareCalCurve interpolate calCurve uncalPDF =
         rawCalCurveSegment = getRelevantCalCurveSegment uncalPDF calCurve
         calCurveSegment = makeBCADCalCurve $
             if interpolate
-            then  interpolateCalCurve rawCalCurveSegment
+            then interpolateCalCurve rawCalCurveSegment
             else rawCalCurveSegment
         -- transform calCurve to matrix
-        calCurveMatrix = makeCalCurveMatrix calCurveSegment
+        calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
     in (calCurveSegment,calCurveMatrix)
 
 makeBCADCalCurve :: CalCurve -> CalCurve
-makeBCADCalCurve (CalCurve x) = CalCurve $ map (\(a,b,c) -> (-a+1950,b,c)) x
+makeBCADCalCurve (CalCurve x) = CalCurve $ map (\(a,b,c) -> (-a+1950,-b+1950,c)) x
 
 interpolateCalCurve :: CalCurve -> CalCurve
 interpolateCalCurve (CalCurve obs) = 
@@ -65,7 +68,7 @@ timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
         windows :: Int -> [a] -> [[a]]
         windows n ys = takeLengthOf (drop (n-1) ys) (windows' n ys)
         takeLengthOf :: [a] -> [b] -> [b]
-        takeLengthOf = zipWith (flip const)
+        takeLengthOf = zipWith (\_ x -> x)
         windows' :: Int -> [a] -> [[a]]
         windows' n = map (take n) . tails
 
@@ -73,11 +76,11 @@ timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
     let bps = getBPsUncal uncalPDF
-        minSearchBP = minimum bps
-        maxSearchBP = maximum bps
-        (_,biggerMin) = splitWhen (\(x,_,_) -> x < minSearchBP) obs
-        (smallerMax,_) = splitWhen (\(x,_,_) -> x <= maxSearchBP) biggerMin
-    in CalCurve smallerMax
+        start = head bps
+        stop = last bps
+        (afterStart,_) = splitWhen (\(x,_,_) -> x <= start) obs
+        (_,beforeStop) = splitWhen (\(x,_,_) -> x <= stop) $ reverse afterStart
+    in CalCurve $ reverse beforeStop
 
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])
@@ -87,14 +90,12 @@ splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
         combine :: ([a],[a]) -> ([a],[a]) -> ([a],[a])
         combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
 
--- this only works, because the calCurve list is naturally ordered by the unique calibrated ages
--- if this is not the case, then the more complicated implementation from before V 0.3.2 is necessary
-makeCalCurveMatrix :: CalCurve -> CalCurveMatrix
-makeCalCurveMatrix (CalCurve obs) =
+makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
+makeCalCurveMatrix uncalPDF (CalCurve obs) =
     let bps = getBPs (CalCurve obs)
-        bpsMatrix = [(minimum bps)..(maximum bps)]
+        bpsMatrix =  map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
         cals = getCals (CalCurve obs)
-    in CalCurveMatrix bpsMatrix (reverse cals) $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
+    in CalCurveMatrix bpsMatrix (reverse cals) $ HM.tr $ HM.fromLists $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
     where 
         fillCell :: (Int, Int, Int) -> Int -> Float
         fillCell (bp,_,sigma) matrixPosBP =
@@ -149,10 +150,12 @@ projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
     CalPDF (_uncalPDFid uncalPDF) $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
     where
-        vectorMatrixMult :: [Float] -> [[Float]] -> [[Float]]
-        vectorMatrixMult vec mat = map (\x -> zipWith (*) x vec) mat
-        matrixColSum :: [[Float]] -> [Float]
-        matrixColSum = map sum
+        vectorMatrixMult :: [Float] -> HM.Matrix Float -> [HM.Vector Float]
+        vectorMatrixMult vec mat = 
+            let vecHM = HM.fromList vec
+            in map (* vecHM) (HM.toColumns mat)
+        matrixColSum :: [HM.Vector Float] -> [Float]
+        matrixColSum x = map HM.sumElements x
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
