@@ -118,8 +118,8 @@ uncalToPDF (UncalC14 name mean std) =
 dnorm :: Float -> Float -> Float -> Float 
 dnorm mu sigma x = 
     let a = recip (sqrt (2 * pi * sigma2))
-        b = exp ((-((x - mu)**2)) / (2 * sigma2))
-        sigma2 = sigma**2
+        b = exp ((-((x - mu) * (x - mu))) / (2 * sigma2))
+        sigma2 = sigma * sigma
     in a*b
 
 -- | Calibrates a list of dates with the provided calibration curve
