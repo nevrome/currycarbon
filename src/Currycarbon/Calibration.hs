@@ -16,6 +16,7 @@ import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
 import Data.Foldable (foldl')
 
+{-# INLINE fastSum #-}
 fastSum :: Num a => [a] -> a
 fastSum = foldl' (+) 0
 
@@ -23,13 +24,13 @@ fastSum = foldl' (+) 0
 -- a tuple with the relevant segment of the calibration curve in standard-
 -- and matrix-format
 prepareCalCurve :: Bool -> CalCurve -> UncalPDF -> (CalCurve, CalCurveMatrix)
-prepareCalCurve interpolate calCurve uncalPDF =
+prepareCalCurve noInterpolate calCurve uncalPDF =
     let -- prepare relevant segment of the calcurve
         rawCalCurveSegment = getRelevantCalCurveSegment uncalPDF calCurve
         calCurveSegment = makeBCADCalCurve $
-            if interpolate
-            then interpolateCalCurve rawCalCurveSegment
-            else rawCalCurveSegment
+            if noInterpolate
+            then rawCalCurveSegment
+            else interpolateCalCurve rawCalCurveSegment
         -- transform calCurve to matrix
         calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
     in (calCurveSegment,calCurveMatrix)
@@ -118,7 +119,9 @@ uncalToPDF (UncalC14 name mean std) =
 dnorm :: Float -> Float -> Float -> Float 
 dnorm mu sigma x = 
     let a = recip (sqrt (2 * pi * sigma2))
-        b = exp ((-((x - mu) * (x - mu))) / (2 * sigma2))
+        b = exp (-c2 / (2 * sigma2))
+        c = x - mu
+        c2 = c * c
         sigma2 = sigma * sigma
     in a*b
 

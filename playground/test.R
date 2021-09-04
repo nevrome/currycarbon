@@ -5,7 +5,7 @@ testdate <- c(10000,500)
 system(paste0(
   "currycarbon \"",
   testdate[1], ",", testdate[2],
-  "\" --densityFile /tmp/currycarbon.txt --interpolate"))# --explore --exploreDir \"/tmp/currytest\""))
+  "\" --densityFile /tmp/currycarbon.txt"))# --explore --exploreDir \"/tmp/currytest\""))
 
 # cal_curve_matrix <- as.matrix(read.csv("/tmp/currytest/calCurveMatrix.csv", row.names = 1, header = T))
 # cal_curve_segment <- readr::read_csv("/tmp/currytest/calCurveInterpolated.csv")
