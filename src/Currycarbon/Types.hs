@@ -50,7 +50,7 @@ data CalCurveMatrix = CalCurveMatrix {
       _calCurveMatrixbp :: [Int] -- ^ Row names of the calibration curve matrix:
                                  -- Uncalibrated age BP in years
     , _calCurveMatrixcalbp :: [Int] -- ^ Column names of the calibration curve matrix:
-                                    -- ^ Calibrated age BP in years
+                                    -- Calibrated age BP in years
     , _calCurveMatrixmatrix :: [[Float]] -- ^ Matrix (as a list of columns) with the 
                                          -- probaility densities
     } deriving Show

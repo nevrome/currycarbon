@@ -89,36 +89,32 @@ splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
 
 makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 makeCalCurveMatrix uncalPDF (CalCurve obs) =
-    let bps = getBPs (CalCurve obs)
-        bpsMatrix =  map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
-        cals = getCals (CalCurve obs)
-    in CalCurveMatrix bpsMatrix (reverse cals) $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
+    let obsFloat = map (\(x,y,z) -> (fromIntegral x, fromIntegral y, fromIntegral z)) $ reverse obs
+        bps = map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
+        bpsFloat = map fromIntegral bps
+        cals = reverse $ getCals (CalCurve obs)
+    in CalCurveMatrix bps cals $ map (\x -> map (fillCell x) bpsFloat) obsFloat
     where 
-        fillCell :: (Int, Int, Int) -> Int -> Float
-        fillCell (bp,_,sigma) matrixPosBP =
-            dnormInt bp sigma matrixPosBP
+        fillCell :: (Float, Float, Float) -> Float -> Float
+        fillCell (bp,_,sigma) matrixPosBP = dnorm bp sigma matrixPosBP
 
 -- | Transform an uncalibrated date to an uncalibrated 
 -- probability density table
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 name mean std) =
-    let years = reverse [(mean-5*std) .. (mean+5*std)]
-        probabilities = map (dnormInt mean std) years
+    let meanFloat = fromIntegral mean
+        stdFloat = fromIntegral std
+        years = reverse [(mean-5*std) .. (mean+5*std)]
+        yearsFloat = map fromIntegral years
+        probabilities = map (dnorm meanFloat stdFloat) yearsFloat
     in UncalPDF name $ zip years probabilities
 
-dnormInt :: Int -> Int -> Int -> Float
-dnormInt muInt sigmaInt xInt =
-    let muFloat = fromIntegral muInt
-        sigmaFloat = fromIntegral sigmaInt
-        xFloat = fromIntegral xInt
-    in dnorm muFloat sigmaFloat xFloat
-    where
-        dnorm :: Float -> Float -> Float -> Float 
-        dnorm mu sigma x = 
-            let a = recip (sqrt (2 * pi * sigma2))
-                b = exp ((-((x - mu)**2)) / (2 * sigma2))
-                sigma2 = sigma**2
-            in a*b
+dnorm :: Float -> Float -> Float -> Float 
+dnorm mu sigma x = 
+    let a = recip (sqrt (2 * pi * sigma2))
+        b = exp ((-((x - mu)**2)) / (2 * sigma2))
+        sigma2 = sigma**2
+    in a*b
 
 -- | Calibrates a list of dates with the provided calibration curve
 calibrateDates :: Bool -> CalCurve -> [UncalC14] -> [CalPDF]
