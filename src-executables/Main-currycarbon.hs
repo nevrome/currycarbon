@@ -43,7 +43,7 @@ optParser :: OP.Parser Options
 optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> parseUncalC14
+calibrateOptParser = CalibrateOptions <$> parseUncalC14String
                                       <*> parseUncalC14FromFile
                                       <*> parseCalCurveFromFile
                                       <*> parseInterpolateCalCurve
@@ -59,8 +59,8 @@ calibrateOptParser = CalibrateOptions <$> parseUncalC14
 --
 -- These functions define and handle the CLI input arguments
 
-parseUncalC14 :: OP.Parser [UncalC14]
-parseUncalC14 = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14String) (
+parseUncalC14String :: OP.Parser [UncalC14]
+parseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14String) (
     OP.metavar "DATES" <>
     OP.help "A string with one or multiple uncalibrated dates of \
             \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>;...\" \

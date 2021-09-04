@@ -6,8 +6,8 @@ module Currycarbon.Calibration
       -- This module implements the actual calibration logic
         prepareCalCurve
       , uncalToPDF
-      , calibrateMany
-      , refineCal
+      , calibrateDates
+      , refineCalDates
     ) where
 
 import Currycarbon.Types
@@ -31,7 +31,7 @@ prepareCalCurve interpolate calCurve uncalPDF =
     in (calCurveSegment,calCurveMatrix)
 
 makeBCADCalCurve :: CalCurve -> CalCurve
-makeBCADCalCurve calCurve = CalCurve $ zip3 (getBPs calCurve) (map (\x -> -x + 1950) $ getCals calCurve) (getCalSigmas calCurve)
+makeBCADCalCurve (CalCurve x) = CalCurve $ map (\(a,b,c) -> (-a+1950,b,c)) x
 
 interpolateCalCurve :: CalCurve -> CalCurve
 interpolateCalCurve (CalCurve obs) = 
@@ -123,13 +123,13 @@ dnormInt muInt sigmaInt xInt =
             in a*b
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateMany :: Bool -> CalCurve -> [UncalC14] -> [CalPDF]
-calibrateMany _ _ [] = []
-calibrateMany interpolate calCurve uncalDates =
-    map (calibrate interpolate calCurve) uncalDates `using` parList rpar
+calibrateDates :: Bool -> CalCurve -> [UncalC14] -> [CalPDF]
+calibrateDates _ _ [] = []
+calibrateDates interpolate calCurve uncalDates =
+    map (calibrateDate interpolate calCurve) uncalDates `using` parList rpar
 
-calibrate :: Bool -> CalCurve -> UncalC14 -> CalPDF
-calibrate interpolate calCurve uncalDate =
+calibrateDate :: Bool -> CalCurve -> UncalC14 -> CalPDF
+calibrateDate interpolate calCurve uncalDate =
     let -- prepare PDF for uncalibrated date
         uncalPDF = uncalToPDF uncalDate
         -- prepare calCurve
@@ -156,11 +156,11 @@ projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
-refineCal :: [CalPDF] -> [CalC14]
-refineCal = map refineCalOne
+refineCalDates :: [CalPDF] -> [CalC14]
+refineCalDates = map refineCalDate
 
-refineCalOne :: CalPDF -> CalC14
-refineCalOne (CalPDF name densities) =
+refineCalDate :: CalPDF -> CalC14
+refineCalDate (CalPDF name densities) =
     let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) densities
         cumsumDensities = scanl1 (+) $ map snd sortedDensities
         isIn68 = map (< 0.683) cumsumDensities

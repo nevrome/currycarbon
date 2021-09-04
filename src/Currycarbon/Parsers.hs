@@ -89,7 +89,7 @@ readUncalC14FromFile uncalFile = do
         Right x -> return x
     where
         uncalC14SepByNewline :: P.Parser [UncalC14]
-        uncalC14SepByNewline = P.endBy parseOneUncalC14 (P.newline <* P.spaces) <* P.eof
+        uncalC14SepByNewline = P.endBy parseUncalC14 (P.newline <* P.spaces) <* P.eof
 
 readUncalC14String :: String -> Either String [UncalC14]
 readUncalC14String s = 
@@ -98,10 +98,10 @@ readUncalC14String s =
         Right x -> Right x
     where 
         uncalC14SepBySemicolon :: P.Parser [UncalC14]
-        uncalC14SepBySemicolon = P.sepBy parseOneUncalC14 (P.char ';' <* P.spaces) <* P.eof
+        uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof
 
-parseOneUncalC14 :: P.Parser UncalC14
-parseOneUncalC14 = do
+parseUncalC14 :: P.Parser UncalC14
+parseUncalC14 = do
     P.try long P.<|> short
     where
         long = do

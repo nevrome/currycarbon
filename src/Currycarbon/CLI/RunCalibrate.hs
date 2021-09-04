@@ -35,13 +35,13 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile interpolate qui
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
         calCurve <- maybe (return $ loadCalCurve intcal20) readCalCurve calCurveFile
-        let calPDFs = calibrateMany interpolate calCurve dates
+        let calPDFs = calibrateDates interpolate calCurve dates
         -- write density file
         when (isJust densityFile) $ do
             writeCalPDFs (fromJust densityFile) calPDFs
         -- print or write high density regions
         when (not quiet || isJust hdrFile) $ do
-            let calC14s = refineCal calPDFs
+            let calC14s = refineCalDates calPDFs
             unless quiet $ do
                 putStrLn $ renderCalC14s calC14s
             when (isJust hdrFile) $ do
