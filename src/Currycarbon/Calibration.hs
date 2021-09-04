@@ -103,7 +103,10 @@ makeCalCurveMatrix uncalPDF (CalCurve obs) =
         buildMatrix :: [(Float, Float, Float)] -> [Float] -> [[Float]]
         buildMatrix obs bps = map (\x -> map (fillCell x) bps) obs
         fillCell :: (Float, Float, Float) -> Float -> Float
-        fillCell (bp,_,sigma) matrixPosBP = dnorm bp sigma matrixPosBP
+        fillCell (bp,_,sigma) matrixPosBP = 
+            if abs (bp - matrixPosBP) < 5*sigma
+            then dnorm bp sigma matrixPosBP
+            else 0
 
 -- | Transform an uncalibrated date to an uncalibrated 
 -- probability density table
