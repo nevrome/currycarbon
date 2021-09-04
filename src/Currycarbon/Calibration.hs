@@ -14,6 +14,10 @@ import Currycarbon.Types
 
 import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
+import Data.Foldable (foldl')
+
+fastSum :: Num a => [a] -> a
+fastSum = foldl' (+) 0
 
 -- | Take a raw calibration curve and an uncalibrated date and return
 -- a tuple with the relevant segment of the calibration curve in standard-
@@ -93,8 +97,10 @@ makeCalCurveMatrix uncalPDF (CalCurve obs) =
         bps = map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
         bpsFloat = map fromIntegral bps
         cals = reverse $ getCals (CalCurve obs)
-    in CalCurveMatrix bps cals $ map (\x -> map (fillCell x) bpsFloat) obsFloat
-    where 
+    in CalCurveMatrix bps cals $ buildMatrix obsFloat bpsFloat
+    where
+        buildMatrix :: [(Float, Float, Float)] -> [Float] -> [[Float]]
+        buildMatrix obs bps = map (\x -> map (fillCell x) bps) obs
         fillCell :: (Float, Float, Float) -> Float -> Float
         fillCell (bp,_,sigma) matrixPosBP = dnorm bp sigma matrixPosBP
 
@@ -135,16 +141,18 @@ calibrateDate interpolate calCurve uncalDate =
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF calPDF = 
     let dens = getProbsCal calPDF
-        sumDens = sum $ getProbsCal calPDF
+        sumDens = fastSum $ getProbsCal calPDF
         normalizedDens = map (/ sumDens) dens
     in CalPDF (_calPDFid calPDF) $ zip (getBPsCal calPDF) normalizedDens
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
-    CalPDF (_uncalPDFid uncalPDF) $ zip cal (vectorMatrixMultSum (getProbsUncal uncalPDF) matrix)
+    let name = _uncalPDFid uncalPDF
+        uncalDens = getProbsUncal uncalPDF
+    in CalPDF name $ zip cal $ vectorMatrixMultSum uncalDens matrix
     where
         vectorMatrixMultSum :: [Float] -> [[Float]] -> [Float]
-        vectorMatrixMultSum vec mat = map (\x -> sum $ zipWith (*) x vec) mat
+        vectorMatrixMultSum vec mat = map (\x -> fastSum $ zipWith (*) x vec) mat
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
