@@ -69,7 +69,7 @@ renderCalCurveMatrixFile :: CalCurveMatrix -> String
 renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
     let header = "," ++ intercalate "," (map show cals) ++ "\n"
         body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show bpDens)) 
-            bps (HM.toLists $ HM.tr $ curveDensities)
+            bps (HM.toLists $ HM.tr curveDensities)
     in header ++ intercalate "\n" body
 
 -- CalPDF

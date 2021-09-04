@@ -95,10 +95,11 @@ makeCalCurveMatrix uncalPDF (CalCurve obs) =
     let bps = getBPs (CalCurve obs)
         bpsMatrix =  map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
         cals = getCals (CalCurve obs)
-    in CalCurveMatrix bpsMatrix (reverse cals) $ HM.tr $ HM.fromLists $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
+    in --CalCurveMatrix bpsMatrix (reverse cals) $ HM.tr $ HM.fromLists $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
+        CalCurveMatrix bpsMatrix (reverse cals) $ HM.build (length bpsMatrix, length cals) (\i j -> fillCell (bpsMatrix !! round i) ((reverse obs) !! round j))
     where 
-        fillCell :: (Int, Int, Int) -> Int -> Float
-        fillCell (bp,_,sigma) matrixPosBP =
+        fillCell :: Int -> (Int, Int, Int) -> Float
+        fillCell matrixPosBP (bp,_,sigma) =
             dnormInt bp sigma matrixPosBP
 
 -- | Transform an uncalibrated date to an uncalibrated 
@@ -148,14 +149,12 @@ normalizeCalPDF calPDF =
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
-    CalPDF (_uncalPDFid uncalPDF) $ zip cal (matrixColSum $ vectorMatrixMult (getProbsUncal uncalPDF) matrix)
+    CalPDF (_uncalPDFid uncalPDF) $ zip cal (vectorMatrixMultSum (getProbsUncal uncalPDF) matrix)
     where
-        vectorMatrixMult :: [Float] -> HM.Matrix Float -> [HM.Vector Float]
-        vectorMatrixMult vec mat = 
+        vectorMatrixMultSum :: [Float] -> HM.Matrix Float -> [Float]
+        vectorMatrixMultSum vec mat = 
             let vecHM = HM.fromList vec
-            in map (* vecHM) (HM.toColumns mat)
-        matrixColSum :: [HM.Vector Float] -> [Float]
-        matrixColSum x = map HM.sumElements x
+            in map (\x -> HM.sumElements $ x * vecHM) (HM.toColumns mat)
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
