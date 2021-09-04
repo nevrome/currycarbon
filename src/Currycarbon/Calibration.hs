@@ -18,12 +18,14 @@ import Data.List (sort, tails, sortBy, groupBy)
 -- | Take a raw calibration curve and an uncalibrated date and return
 -- a tuple with the relevant segment of the calibration curve in standard-
 -- and matrix-format
-prepareCalCurve :: CalCurve -> UncalPDF -> (CalCurve, CalCurveMatrix)
-prepareCalCurve calCurve uncalPDF =
+prepareCalCurve :: Bool -> CalCurve -> UncalPDF -> (CalCurve, CalCurveMatrix)
+prepareCalCurve interpolate calCurve uncalPDF =
     let -- prepare relevant segment of the calcurve
+        rawCalCurveSegment = getRelevantCalCurveSegment uncalPDF calCurve
         calCurveSegment = makeBCADCalCurve $
-                            interpolateCalCurve $
-                            getRelevantCalCurveSegment uncalPDF calCurve
+            if interpolate
+            then  interpolateCalCurve rawCalCurveSegment
+            else rawCalCurveSegment
         -- transform calCurve to matrix
         calCurveMatrix = makeCalCurveMatrix calCurveSegment
     in (calCurveSegment,calCurveMatrix)
@@ -121,17 +123,17 @@ dnormInt muInt sigmaInt xInt =
             in a*b
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateMany :: CalCurve -> [UncalC14] -> [CalPDF]
-calibrateMany _ [] = []
-calibrateMany calCurve uncalDates =
-    map (calibrate calCurve) uncalDates `using` parList rpar
+calibrateMany :: Bool -> CalCurve -> [UncalC14] -> [CalPDF]
+calibrateMany _ _ [] = []
+calibrateMany interpolate calCurve uncalDates =
+    map (calibrate interpolate calCurve) uncalDates `using` parList rpar
 
-calibrate :: CalCurve -> UncalC14 -> CalPDF
-calibrate calCurve uncalDate =
+calibrate :: Bool -> CalCurve -> UncalC14 -> CalPDF
+calibrate interpolate calCurve uncalDate =
     let -- prepare PDF for uncalibrated date
         uncalPDF = uncalToPDF uncalDate
         -- prepare calCurve
-        (_,calCurveMatrix) = prepareCalCurve calCurve uncalPDF
+        (_,calCurveMatrix) = prepareCalCurve interpolate calCurve uncalPDF
         -- perform projection (aka calibration)
         calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
     in calPDF
