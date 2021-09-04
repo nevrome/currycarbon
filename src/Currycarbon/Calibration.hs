@@ -15,6 +15,8 @@ import Currycarbon.Types
 import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
 import Data.Foldable (foldl')
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector as V
 
 {-# INLINE fastSum #-}
 fastSum :: Num a => [a] -> a
@@ -154,11 +156,12 @@ normalizeCalPDF calPDF =
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
     let name = _uncalPDFid uncalPDF
-        uncalDens = getProbsUncal uncalPDF
-    in CalPDF name $ zip cal $ vectorMatrixMultSum uncalDens matrix
+        uncalDens = VU.fromList $ getProbsUncal uncalPDF
+        matrixV = V.fromList $ map VU.fromList matrix
+    in CalPDF name $ zip cal $ vectorMatrixMultSum uncalDens matrixV
     where
-        vectorMatrixMultSum :: [Float] -> [[Float]] -> [Float]
-        vectorMatrixMultSum vec mat = map (\x -> fastSum $ zipWith (*) x vec) mat
+        vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> [Float]
+        vectorMatrixMultSum vec mat = V.toList $ V.map (\x -> VU.sum $ VU.zipWith (*) x vec) mat
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
