@@ -6,8 +6,6 @@ module Currycarbon.Types where
 --
 -- This module defines the relevant data types for handling radiocarbon dates
 
-import Numeric.LinearAlgebra.Data as HM
-
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14 = UncalC14 {   
       _uncalC14id :: String -- ^ Identifier, e.g. a lab number
@@ -53,7 +51,7 @@ data CalCurveMatrix = CalCurveMatrix {
                                  -- Uncalibrated age BP in years
     , _calCurveMatrixcalbp :: [Int] -- ^ Column names of the calibration curve matrix:
                                     -- ^ Calibrated age BP in years
-    , _calCurveMatrixmatrix :: HM.Matrix Float -- ^ Matrix (as a list of columns) with the 
+    , _calCurveMatrixmatrix :: [[Float]] -- ^ Matrix (as a list of columns) with the 
                                          -- probaility densities
     } deriving Show
 

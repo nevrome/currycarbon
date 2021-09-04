@@ -14,9 +14,6 @@ import Currycarbon.Types
 
 import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
-import qualified Numeric.LinearAlgebra as HM
-import qualified Numeric.LinearAlgebra.Data as HM
-import qualified Numeric.LinearAlgebra.Devel as HM
 
 -- | Take a raw calibration curve and an uncalibrated date and return
 -- a tuple with the relevant segment of the calibration curve in standard-
@@ -95,11 +92,10 @@ makeCalCurveMatrix uncalPDF (CalCurve obs) =
     let bps = getBPs (CalCurve obs)
         bpsMatrix =  map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
         cals = getCals (CalCurve obs)
-    in --CalCurveMatrix bpsMatrix (reverse cals) $ HM.tr $ HM.fromLists $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
-        CalCurveMatrix bpsMatrix (reverse cals) $ HM.build (length bpsMatrix, length cals) (\i j -> fillCell (bpsMatrix !! round i) ((reverse obs) !! round j))
+    in CalCurveMatrix bpsMatrix (reverse cals) $ map (\x -> map (fillCell x) bpsMatrix) (reverse obs)
     where 
-        fillCell :: Int -> (Int, Int, Int) -> Float
-        fillCell matrixPosBP (bp,_,sigma) =
+        fillCell :: (Int, Int, Int) -> Int -> Float
+        fillCell (bp,_,sigma) matrixPosBP =
             dnormInt bp sigma matrixPosBP
 
 -- | Transform an uncalibrated date to an uncalibrated 
@@ -151,10 +147,8 @@ projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
     CalPDF (_uncalPDFid uncalPDF) $ zip cal (vectorMatrixMultSum (getProbsUncal uncalPDF) matrix)
     where
-        vectorMatrixMultSum :: [Float] -> HM.Matrix Float -> [Float]
-        vectorMatrixMultSum vec mat = 
-            let vecHM = HM.fromList vec
-            in map (\x -> HM.sumElements $ x * vecHM) (HM.toColumns mat)
+        vectorMatrixMultSum :: [Float] -> [[Float]] -> [Float]
+        vectorMatrixMultSum vec mat = map (\x -> sum $ zipWith (*) x vec) mat
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
