@@ -1,3 +1,4 @@
+- V 0.12.0: Renamed some core functions
 - V 0.11.0: Made calibration curve interpolation optional and turned it off by default
 - V 0.10.0: Simplified CLI interface by dropping the "calibrate" subcommand (currycarbon is sufficient now) and by repurposing -q from --quickOut to --quiet
 - V 0.9.0: Made --hdrFile output a lot more machine-readable
