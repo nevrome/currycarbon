@@ -1,5 +1,8 @@
 module Currycarbon.Types where
 
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector as V
+
 -- * Data types
 --
 -- $dataTypes
@@ -17,57 +20,57 @@ data UncalC14 = UncalC14 {
 -- Although technically not correct, we still call this a probability density function
 data UncalPDF = UncalPDF {
       _uncalPDFid :: String -- ^ Identifier, e.g. a lab number
-    , _uncalPDFagedens :: [(Int, Float)] -- ^ List that stores years BP and the respective
+    , _uncalPDFagedens :: V.Vector (Int, Float) -- ^ List that stores years BP and the respective
                                          -- probability densities alongside each other
     } deriving Show
 
 -- | Getter function to access the year BP variable in an uncalibrated age probability density list
-getBPsUncal :: UncalPDF -> [Int]
-getBPsUncal (UncalPDF _ obs) = map fst obs
+getBPsUncal :: UncalPDF -> V.Vector Int
+getBPsUncal (UncalPDF _ obs) = V.map fst obs
 -- | Getter function to access the density variable in an uncalibrated age probability density list
-getProbsUncal :: UncalPDF -> [Float]
-getProbsUncal (UncalPDF _ obs) = map snd obs
+getProbsUncal :: UncalPDF -> V.Vector Float
+getProbsUncal (UncalPDF _ obs) = V.map snd obs
 
 -- | A data type to represent a calibration curve
 newtype CalCurve = CalCurve 
-    [(Int, Int, Int)] -- ^ List that stores the sequence of year BP, 
+    (V.Vector (Int, Int, Int)) -- ^ List that stores the sequence of year BP, 
                       -- year calBP and the one-sigma standard deviation
                       -- (on the year BP scale) that makes up the calibration curve
     deriving Show
 
 -- | Getter function to access the year BP variable in a calibration curve
-getBPs :: CalCurve -> [Int]
-getBPs (CalCurve obs) = map (\(x,_,_) -> x) obs
+getBPs :: CalCurve -> V.Vector Int
+getBPs (CalCurve obs) = V.map (\(x,_,_) -> x) obs
 -- | Getter function to access the year calBP variable in a calibration curve
-getCals :: CalCurve -> [Int]
-getCals (CalCurve obs) = map (\(_,y,_) -> y) obs
+getCals :: CalCurve -> V.Vector Int
+getCals (CalCurve obs) = V.map (\(_,y,_) -> y) obs
 -- | Getter function to access the sigma variable in a calibration curve
-getCalSigmas :: CalCurve -> [Int]
-getCalSigmas (CalCurve obs) = map (\(_,_,z) -> z) obs
+getCalSigmas :: CalCurve -> V.Vector Int
+getCalSigmas (CalCurve obs) = V.map (\(_,_,z) -> z) obs
 
 -- | A data type to represent a calibration curve in a /wide/ matrix form
 data CalCurveMatrix = CalCurveMatrix {
-      _calCurveMatrixbp :: [Int] -- ^ Row names of the calibration curve matrix:
+      _calCurveMatrixbp :: V.Vector Int -- ^ Row names of the calibration curve matrix:
                                  -- Uncalibrated age BP in years
-    , _calCurveMatrixcalbp :: [Int] -- ^ Column names of the calibration curve matrix:
+    , _calCurveMatrixcalbp :: V.Vector Int -- ^ Column names of the calibration curve matrix:
                                     -- Calibrated age BP in years
-    , _calCurveMatrixmatrix :: [[Float]] -- ^ Matrix (as a list of columns) with the 
+    , _calCurveMatrixmatrix :: V.Vector (VU.Vector Float) -- ^ Matrix (as a list of columns) with the 
                                          -- probaility densities
     } deriving Show
 
 -- | A data type to represent a year-wise probability density for calibrated ages
 data CalPDF = CalPDF {
       _calPDFid :: String -- ^ Identifier, e.g. a lab number
-    , _calPDFagedens :: [(Int, Float)] -- ^ List that stores years calBP and the respective
+    , _calPDFagedens :: V.Vector (Int, Float) -- ^ List that stores years calBP and the respective
                                          -- probability densities alongside each other
     } deriving Show
 
 -- | Getter function to access the year BP variable in a calibrated age probability density list
-getBPsCal :: CalPDF -> [Int]
-getBPsCal x = map fst $ _calPDFagedens x
+getBPsCal :: CalPDF -> V.Vector Int
+getBPsCal x = V.map fst $ _calPDFagedens x
 -- | Getter function to access the density variable in a calibrated age probability density list
-getProbsCal :: CalPDF -> [Float]
-getProbsCal x = map snd $ _calPDFagedens x
+getProbsCal :: CalPDF -> V.Vector Float
+getProbsCal x = V.map snd $ _calPDFagedens x
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {

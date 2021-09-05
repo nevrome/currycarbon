@@ -17,6 +17,7 @@ import Data.List (sort, tails, sortBy, groupBy)
 import Data.Foldable (foldl')
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
+import Data.Vector.Generic (convert)
 
 {-# INLINE fastSum #-}
 fastSum :: Num a => [a] -> a
@@ -38,11 +39,11 @@ prepareCalCurve noInterpolate calCurve uncalPDF =
     in (calCurveSegment,calCurveMatrix)
 
 makeBCADCalCurve :: CalCurve -> CalCurve
-makeBCADCalCurve (CalCurve x) = CalCurve $ map (\(a,b,c) -> (-a+1950,-b+1950,c)) x
+makeBCADCalCurve (CalCurve x) = CalCurve $ V.map (\(a,b,c) -> (-a+1950,-b+1950,c)) x
 
 interpolateCalCurve :: CalCurve -> CalCurve
 interpolateCalCurve (CalCurve obs) = 
-    let obsFilled = concat $ map fillWindowsCal (timeWindows obs) ++ [[last obs]]
+    let obsFilled = V.fromList $ concat $ map fillWindowsCal (timeWindows (V.toList obs)) ++ [[last (V.toList obs)]]
     in CalCurve obsFilled
     where
         fillWindowsCal :: ((Int,Int,Int),(Int,Int,Int)) -> [(Int,Int,Int)]
@@ -80,11 +81,11 @@ timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
     let bps = getBPsUncal uncalPDF
-        start = head bps
-        stop = last bps
-        (afterStart,_) = splitWhen (\(x,_,_) -> x <= start) obs
+        start = V.head bps
+        stop = V.last bps
+        (afterStart,_) = splitWhen (\(x,_,_) -> x <= start) (V.toList obs)
         (_,beforeStop) = splitWhen (\(x,_,_) -> x <= stop) $ reverse afterStart
-    in CalCurve $ reverse beforeStop
+    in CalCurve $ V.reverse $ V.fromList beforeStop
 
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])
@@ -96,14 +97,14 @@ splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
 
 makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 makeCalCurveMatrix uncalPDF (CalCurve obs) =
-    let obsFloat = map (\(x,y,z) -> (fromIntegral x, fromIntegral y, fromIntegral z)) $ reverse obs
-        bps = map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
-        bpsFloat = map fromIntegral bps
-        cals = reverse $ getCals (CalCurve obs)
+    let obsFloat = V.map (\(x,y,z) -> (fromIntegral x, fromIntegral y, fromIntegral z)) $ V.reverse obs
+        bps = V.map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
+        bpsFloat = VU.map fromIntegral $ convert bps
+        cals = V.reverse $ getCals (CalCurve obs)
     in CalCurveMatrix bps cals $ buildMatrix obsFloat bpsFloat
     where
-        buildMatrix :: [(Float, Float, Float)] -> [Float] -> [[Float]]
-        buildMatrix obs bps = map (\x -> map (fillCell x) bps) obs
+        buildMatrix :: V.Vector (Float, Float, Float) -> VU.Vector Float -> V.Vector (VU.Vector Float)
+        buildMatrix obs bps = V.map (\x -> VU.map (fillCell x) bps) obs
         fillCell :: (Float, Float, Float) -> Float -> Float
         fillCell (bp,_,sigma) matrixPosBP = 
             if abs (bp - matrixPosBP) < 5*sigma
@@ -116,10 +117,10 @@ uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 name mean std) =
     let meanFloat = fromIntegral mean
         stdFloat = fromIntegral std
-        years = reverse [(mean-5*std) .. (mean+5*std)]
-        yearsFloat = map fromIntegral years
-        probabilities = map (dnorm meanFloat stdFloat) yearsFloat
-    in UncalPDF name $ zip years probabilities
+        years = V.reverse $ V.enumFromN (mean-5*std) (5*std)
+        yearsFloat = V.map fromIntegral years
+        probabilities = V.map (dnorm meanFloat stdFloat) yearsFloat
+    in UncalPDF name $ V.zip years probabilities
 
 dnorm :: Float -> Float -> Float -> Float 
 dnorm mu sigma x = 
@@ -149,19 +150,18 @@ calibrateDate interpolate calCurve uncalDate =
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF calPDF = 
     let dens = getProbsCal calPDF
-        sumDens = fastSum $ getProbsCal calPDF
-        normalizedDens = map (/ sumDens) dens
-    in CalPDF (_calPDFid calPDF) $ zip (getBPsCal calPDF) normalizedDens
+        sumDens = V.sum $ getProbsCal calPDF
+        normalizedDens = V.map (/ sumDens) dens
+    in CalPDF (_calPDFid calPDF) $ V.zip (getBPsCal calPDF) normalizedDens
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
 projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
     let name = _uncalPDFid uncalPDF
-        uncalDens = VU.fromList $ getProbsUncal uncalPDF
-        matrixV = V.fromList $ map VU.fromList matrix
-    in CalPDF name $ zip cal $ vectorMatrixMultSum uncalDens matrixV
+        uncalDens = convert $ getProbsUncal uncalPDF
+    in CalPDF name $ V.zip cal $ vectorMatrixMultSum uncalDens matrix
     where
-        vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> [Float]
-        vectorMatrixMultSum vec mat = V.toList $ V.map (\x -> VU.sum $ VU.zipWith (*) x vec) mat
+        vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> V.Vector Float
+        vectorMatrixMultSum vec mat = V.map (\x -> VU.sum $ VU.zipWith (*) x vec) mat
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
@@ -170,7 +170,7 @@ refineCalDates = map refineCalDate
 
 refineCalDate :: CalPDF -> CalC14
 refineCalDate (CalPDF name densities) =
-    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) densities
+    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (V.toList densities)
         cumsumDensities = scanl1 (+) $ map snd sortedDensities
         isIn68 = map (< 0.683) cumsumDensities
         isIn95 = map (< 0.954) cumsumDensities

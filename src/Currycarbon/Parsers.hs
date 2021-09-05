@@ -5,6 +5,8 @@ import Currycarbon.Types
 import           Data.List                      (intercalate, transpose)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector as V
 
 -- * Parsing, rendering and writing functions
 --
@@ -64,8 +66,8 @@ writeCalCurveMatrixFile path calCurveMatrix =
 
 renderCalCurveMatrixFile :: CalCurveMatrix -> String
 renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
-    let header = "," ++ intercalate "," (map show cals) ++ "\n"
-        body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show bpDens)) bps curveDensities
+    let header = "," ++ intercalate "," (map show $ V.toList cals) ++ "\n"
+        body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show $ VU.toList bpDens)) (V.toList bps) (V.toList curveDensities)
     in header ++ intercalate "\n" body
 
 -- CalPDF
@@ -124,7 +126,7 @@ writeCalCurveFile path calCurve =
 renderCalCurve :: CalCurve -> String
 renderCalCurve (CalCurve obs) =
     let header = "CAL BP,14C age,Sigma\n"
-        body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) obs
+        body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) (V.toList obs)
     in header ++ intercalate "\n" body
 
 readCalCurve :: FilePath -> IO CalCurve
@@ -136,7 +138,7 @@ loadCalCurve :: String -> CalCurve
 loadCalCurve calCurveString = do
     case P.runParser calCurveFileParser () "" calCurveString of
         Left p  -> error $ "This should never happen." ++ show p
-        Right x -> CalCurve x
+        Right x -> CalCurve $ V.fromList x
 
 calCurveFileParser :: P.Parser [(Int, Int, Int)]
 calCurveFileParser = do
