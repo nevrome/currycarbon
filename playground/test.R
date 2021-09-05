@@ -1,21 +1,12 @@
 library(ggplot2)
 
-testdate <- c(3000,50)
+testdate <- c(10000,200)
 
 system(paste0(
-  "currycarbon calibrate \"",
-  testdate[1], "+", testdate[2],
-  "\" --densityFile /tmp/currycarbon.txt"))# --explore --exploreDir \"/tmp/currytest\""))
-
-# cal_curve_matrix <- as.matrix(read.csv("/tmp/currytest/calCurveMatrix.csv", row.names = 1, header = T))
-# cal_curve_segment <- readr::read_csv("/tmp/currytest/calCurveInterpolated.csv")
-
-# image(cal_curve_matrix)
-# 
-# cal_curve_segment |>
-#   ggplot() +
-#   geom_point(aes(x = `CAL BP`, y = `14C age`, label = `14C age`))
-
+  "currycarbon \"",
+  testdate[1], ",", testdate[2],
+  "\" --densityFile /tmp/currycarbon.txt"))
+#--noInterpolation"))
 
 test <- readr::read_csv("/tmp/currycarbon.txt")
 
@@ -37,6 +28,6 @@ bchron |> dplyr::left_join(
     names_to = "method"
   ) |>
   ggplot() +
-  geom_line(aes(x = calBCAD, y = value, colour = method), 
+  geom_point(aes(x = calBCAD, y = value, colour = method), 
             size = 1, alpha = 0.5)
 

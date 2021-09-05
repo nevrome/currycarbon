@@ -1,3 +1,4 @@
+- V 0.13.0: Major rewrite with the vector library - includes multiple bugfixes, but is surprisingly slow
 - V 0.12.0: Renamed some core functions
 - V 0.11.0: Made calibration curve interpolation optional and turned it off by default
 - V 0.10.0: Simplified CLI interface by dropping the "calibrate" subcommand (currycarbon is sufficient now) and by repurposing -q from --quickOut to --quiet

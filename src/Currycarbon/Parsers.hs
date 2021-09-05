@@ -2,9 +2,11 @@ module Currycarbon.Parsers where
 
 import Currycarbon.Types
 
-import           Data.List                      (intercalate, transpose)
+import           Data.List                      (intercalate)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector as V
 
 -- * Parsing, rendering and writing functions
 --
@@ -64,9 +66,8 @@ writeCalCurveMatrixFile path calCurveMatrix =
 
 renderCalCurveMatrixFile :: CalCurveMatrix -> String
 renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
-    let header = "," ++ intercalate "," (map show cals) ++ "\n"
-        body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show bpDens)) 
-            bps (transpose curveDensities)
+    let header = "," ++ intercalate "," (map show $ VU.toList cals) ++ "\n"
+        body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show $ VU.toList bpDens)) (VU.toList bps) (V.toList curveDensities)
     in header ++ intercalate "\n" body
 
 -- CalPDF
@@ -77,8 +78,8 @@ writeCalPDFs path calPDFs =
         ++ concatMap renderCalPDF calPDFs
 
 renderCalPDF :: CalPDF -> String
-renderCalPDF (CalPDF name obs) =
-    concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") obs
+renderCalPDF (CalPDF name bps dens) =
+    concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") $ VU.toList $ VU.zip bps dens
 
 -- UncalC14
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
@@ -123,9 +124,9 @@ writeCalCurveFile path calCurve =
     writeFile path $ renderCalCurve calCurve
 
 renderCalCurve :: CalCurve -> String
-renderCalCurve (CalCurve obs) =
+renderCalCurve (CalCurve bps cals sigmas) =
     let header = "CAL BP,14C age,Sigma\n"
-        body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) obs
+        body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) (VU.toList $ VU.zip3 bps cals sigmas)
     in header ++ intercalate "\n" body
 
 readCalCurve :: FilePath -> IO CalCurve
@@ -137,7 +138,7 @@ loadCalCurve :: String -> CalCurve
 loadCalCurve calCurveString = do
     case P.runParser calCurveFileParser () "" calCurveString of
         Left p  -> error $ "This should never happen." ++ show p
-        Right x -> CalCurve x
+        Right x -> CalCurve (VU.fromList $ map (\(a,_,_) -> a) x) (VU.fromList $ map (\(_,b,_) -> b) x) (VU.fromList $ map (\(_,_,c) -> c) x)
 
 calCurveFileParser :: P.Parser [(Int, Int, Int)]
 calCurveFileParser = do

@@ -46,7 +46,7 @@ calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> parseUncalC14String
                                       <*> parseUncalC14FromFile
                                       <*> parseCalCurveFromFile
-                                      <*> parseInterpolateCalCurve
+                                      <*> parseDontInterpolateCalCurve
                                       <*> parseQuiet
                                       <*> parseDensityFile
                                       <*> parseHDRFile
@@ -93,10 +93,10 @@ parseQuiet = OP.switch (
     OP.help "Suppress the printing of calibration results to the command line"
     )
 
-parseInterpolateCalCurve :: OP.Parser (Bool)
-parseInterpolateCalCurve = OP.switch (
-    OP.long "interpolate" <> 
-    OP.help "Interpolate the calibration curve to get a more precise, year-wise result"
+parseDontInterpolateCalCurve :: OP.Parser (Bool)
+parseDontInterpolateCalCurve = OP.switch (
+    OP.long "noInterpolation" <> 
+    OP.help "Don't interpolate the calibration curve"
     )
 
 parseDensityFile :: OP.Parser (Maybe FilePath)

@@ -1,5 +1,5 @@
 name:                currycarbon
-version:             0.12.0
+version:             0.13.0
 synopsis:            A package for simple, fast radiocarbon calibration
 description:         Radiocarbon calibration with the intercept method optimised for fast calibration of many dates.
 license:             MIT
@@ -15,7 +15,7 @@ library
     exposed-modules:    Currycarbon.Parsers, Currycarbon.Types, Currycarbon.Utils, Currycarbon.Calibration, 
                         Currycarbon.CLI.RunCalibrate, Currycarbon.CalCurves.Intcal20
     hs-source-dirs:     src
-    build-depends:      base, filepath, parsec, parallel
+    build-depends:      base, filepath, parsec, parallel, vector
     default-language:   Haskell2010
 
 executable currycarbon
