@@ -97,8 +97,8 @@ makeCalCurveMatrix uncalPDF (CalCurve bps cals sigmas) =
     let bpsFloat = VU.reverse $ VU.map fromIntegral bps
         sigmasFloat = VU.reverse $ VU.map fromIntegral sigmas
         uncalbps = VU.map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
-        uncalbpsFloat = VU.map fromIntegral $ convert bps
-    in CalCurveMatrix uncalbps cals $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
+        uncalbpsFloat = VU.reverse $ VU.map fromIntegral $ convert bps
+    in CalCurveMatrix uncalbps (VU.reverse cals) $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
     where
         buildMatrix :: VU.Vector Float -> VU.Vector Float -> VU.Vector Float -> V.Vector (VU.Vector Float)
         buildMatrix bps_ sigmas_ uncalbps_ = V.map (\x -> VU.map (fillCell x) uncalbps_) $ V.zip (convert bps_) (convert sigmas_)
@@ -114,7 +114,7 @@ uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 name mean std) =
     let meanFloat = fromIntegral mean
         stdFloat = fromIntegral std
-        years = VU.reverse $ VU.enumFromN (mean-5*std) (5*std)
+        years = VU.reverse $ VU.fromList [(mean-5*std) .. (mean+5*std)]
         yearsFloat = VU.map fromIntegral years
         probabilities = VU.map (dnorm meanFloat stdFloat) yearsFloat
     in UncalPDF name years probabilities
