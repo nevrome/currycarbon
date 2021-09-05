@@ -1,3 +1,5 @@
+{-# LANGUAGE Strict #-}
+
 module Currycarbon.Calibration
     ( -- * Calibration functions
       --

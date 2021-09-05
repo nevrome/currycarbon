@@ -1,3 +1,5 @@
+{-# LANGUAGE StrictData #-}
+
 module Currycarbon.Types where
 
 import qualified Data.Vector.Unboxed as VU

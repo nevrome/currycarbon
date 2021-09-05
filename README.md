@@ -101,4 +101,5 @@ before rerunning the procedure above.
 ```
 stack build --profile
 stack exec --profile -- currycarbon "1000,200;2000,200;3000,200;4000,200;5000,200;6000,200;7000,200;8000,200" -q --densityFile /dev/null +RTS -p
+stack exec -- currycarbon "1000,200;2000,200;3000,200;4000,200;5000,200;6000,200;7000,200;8000,200" -q --densityFile /dev/null +RTS -s
 ```
