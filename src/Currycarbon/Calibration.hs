@@ -14,14 +14,9 @@ import Currycarbon.Types
 
 import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
-import Data.Foldable (foldl')
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
 import Data.Vector.Generic (convert)
-
-{-# INLINE fastSum #-}
-fastSum :: Num a => [a] -> a
-fastSum = foldl' (+) 0
 
 -- | Take a raw calibration curve and an uncalibrated date and return
 -- a tuple with the relevant segment of the calibration curve in standard-
@@ -39,12 +34,13 @@ prepareCalCurve noInterpolate calCurve uncalPDF =
     in (calCurveSegment,calCurveMatrix)
 
 makeBCADCalCurve :: CalCurve -> CalCurve
-makeBCADCalCurve (CalCurve x) = CalCurve $ V.map (\(a,b,c) -> (-a+1950,-b+1950,c)) x
+makeBCADCalCurve (CalCurve bps cals sigmas) = CalCurve (VU.map (\a -> -a+1950) bps) (VU.map (\b -> -b+1950) cals) sigmas
 
 interpolateCalCurve :: CalCurve -> CalCurve
-interpolateCalCurve (CalCurve obs) = 
-    let obsFilled = V.fromList $ concat $ map fillWindowsCal (timeWindows (V.toList obs)) ++ [[last (V.toList obs)]]
-    in CalCurve obsFilled
+interpolateCalCurve (CalCurve bps cals sigmas) = 
+    let obs = VU.toList $ VU.zip3 bps cals sigmas
+        obsFilled = concat $ map fillWindowsCal (timeWindows obs) ++ [[last obs]]
+    in CalCurve (VU.fromList $ map (\(a,_,_) -> a) obsFilled) (VU.fromList $ map (\(_,b,_) -> b) obsFilled) (VU.fromList $ map (\(_,_,c) -> c) obsFilled)
     where
         fillWindowsCal :: ((Int,Int,Int),(Int,Int,Int)) -> [(Int,Int,Int)]
         fillWindowsCal ((bp1,calbp1,sigma1),(bp2,calbp2,sigma2)) =
@@ -79,13 +75,14 @@ timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
 
 -- this is a relatively imprecise solution, because start and end of the range may be badly represented
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
-getRelevantCalCurveSegment uncalPDF (CalCurve obs) = 
-    let bps = getBPsUncal uncalPDF
-        start = V.head bps
-        stop = V.last bps
-        (afterStart,_) = splitWhen (\(x,_,_) -> x <= start) (V.toList obs)
+getRelevantCalCurveSegment (UncalPDF _ bps' _) (CalCurve bps cals sigmas) = 
+    let obs = VU.toList $ VU.zip3 bps cals sigmas 
+        start = VU.head bps'
+        stop = VU.last bps'
+        (afterStart,_) = splitWhen (\(x,_,_) -> x <= start) obs
         (_,beforeStop) = splitWhen (\(x,_,_) -> x <= stop) $ reverse afterStart
-    in CalCurve $ V.reverse $ V.fromList beforeStop
+        finalList = reverse beforeStop
+    in CalCurve (VU.fromList $ map (\(a,_,_) -> a) finalList) (VU.fromList $ map (\(_,b,_) -> b) finalList) (VU.fromList $ map (\(_,_,c) -> c) finalList)
 
 splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
 splitWhen _ [] = ([],[])
@@ -96,17 +93,17 @@ splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
         combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
 
 makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
-makeCalCurveMatrix uncalPDF (CalCurve obs) =
-    let obsFloat = V.map (\(x,y,z) -> (fromIntegral x, fromIntegral y, fromIntegral z)) $ V.reverse obs
-        bps = V.map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
-        bpsFloat = VU.map fromIntegral $ convert bps
-        cals = V.reverse $ getCals (CalCurve obs)
-    in CalCurveMatrix bps cals $ buildMatrix obsFloat bpsFloat
+makeCalCurveMatrix uncalPDF (CalCurve bps cals sigmas) =
+    let bps' = VU.reverse $ VU.map fromIntegral bps
+        sigmas' = VU.reverse $ VU.map fromIntegral sigmas
+        uncalbps = VU.map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
+        uncalbpsFloat = VU.map fromIntegral $ convert bps
+    in CalCurveMatrix uncalbps cals $ buildMatrix bps' sigmas' uncalbpsFloat
     where
-        buildMatrix :: V.Vector (Float, Float, Float) -> VU.Vector Float -> V.Vector (VU.Vector Float)
-        buildMatrix obs bps = V.map (\x -> VU.map (fillCell x) bps) obs
-        fillCell :: (Float, Float, Float) -> Float -> Float
-        fillCell (bp,_,sigma) matrixPosBP = 
+        buildMatrix :: VU.Vector Float -> VU.Vector Float -> VU.Vector Float -> V.Vector (VU.Vector Float)
+        buildMatrix bps_ sigmas_ uncalbps_ = V.map (\x -> VU.map (fillCell x) uncalbps_) $ V.zip (convert bps_) (convert sigmas_)
+        fillCell :: (Float, Float) -> Float -> Float
+        fillCell (bp, sigma) matrixPosBP = 
             if abs (bp - matrixPosBP) < 5*sigma
             then dnorm bp sigma matrixPosBP
             else 0
@@ -117,10 +114,10 @@ uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 name mean std) =
     let meanFloat = fromIntegral mean
         stdFloat = fromIntegral std
-        years = V.reverse $ V.enumFromN (mean-5*std) (5*std)
-        yearsFloat = V.map fromIntegral years
-        probabilities = V.map (dnorm meanFloat stdFloat) yearsFloat
-    in UncalPDF name $ V.zip years probabilities
+        years = VU.reverse $ VU.enumFromN (mean-5*std) (5*std)
+        yearsFloat = VU.map fromIntegral years
+        probabilities = VU.map (dnorm meanFloat stdFloat) yearsFloat
+    in UncalPDF name years probabilities
 
 dnorm :: Float -> Float -> Float -> Float 
 dnorm mu sigma x = 
@@ -148,20 +145,17 @@ calibrateDate interpolate calCurve uncalDate =
     in calPDF
 
 normalizeCalPDF :: CalPDF -> CalPDF
-normalizeCalPDF calPDF = 
-    let dens = getProbsCal calPDF
-        sumDens = V.sum $ getProbsCal calPDF
-        normalizedDens = V.map (/ sumDens) dens
-    in CalPDF (_calPDFid calPDF) $ V.zip (getBPsCal calPDF) normalizedDens
+normalizeCalPDF (CalPDF name cals dens) = 
+    let sumDens = VU.sum dens
+        normalizedDens = VU.map (/ sumDens) dens
+    in CalPDF name cals normalizedDens
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
-projectUncalOverCalCurve uncalPDF (CalCurveMatrix _ cal matrix) =
-    let name = _uncalPDFid uncalPDF
-        uncalDens = convert $ getProbsUncal uncalPDF
-    in CalPDF name $ V.zip cal $ vectorMatrixMultSum uncalDens matrix
+projectUncalOverCalCurve (UncalPDF name _ dens) (CalCurveMatrix _ cals matrix) =
+    CalPDF name cals $ vectorMatrixMultSum dens matrix
     where
-        vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> V.Vector Float
-        vectorMatrixMultSum vec mat = V.map (\x -> VU.sum $ VU.zipWith (*) x vec) mat
+        vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> VU.Vector Float
+        vectorMatrixMultSum vec mat = convert $ V.map (\x -> VU.sum $ VU.zipWith (*) x vec) mat
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
@@ -169,8 +163,8 @@ refineCalDates :: [CalPDF] -> [CalC14]
 refineCalDates = map refineCalDate
 
 refineCalDate :: CalPDF -> CalC14
-refineCalDate (CalPDF name densities) =
-    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (V.toList densities)
+refineCalDate (CalPDF name bps probs) =
+    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip bps probs)
         cumsumDensities = scanl1 (+) $ map snd sortedDensities
         isIn68 = map (< 0.683) cumsumDensities
         isIn95 = map (< 0.954) cumsumDensities
