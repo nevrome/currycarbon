@@ -1,6 +1,6 @@
 library(ggplot2)
 
-testdate <- c(10000,500)
+testdate <- c(3000,200)
 
 system(paste0(
   "currycarbon \"",

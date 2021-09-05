@@ -17,6 +17,7 @@ import Data.List (sort, tails, sortBy, groupBy)
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
 import Data.Vector.Generic (convert)
+import Data.Maybe (fromMaybe)
 
 -- | Take a raw calibration curve and an uncalibrated date and return
 -- a tuple with the relevant segment of the calibration curve in standard-
@@ -73,32 +74,22 @@ timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
         windows' :: Int -> [a] -> [[a]]
         windows' n = map (take n) . tails
 
--- this is a relatively imprecise solution, because start and end of the range may be badly represented
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment (UncalPDF _ bps' _) (CalCurve bps cals sigmas) = 
-    let obs = VU.toList $ VU.zip3 bps cals sigmas 
-        start = VU.head bps'
+    let start = VU.head bps'
         stop = VU.last bps'
-        (afterStart,_) = splitWhen (\(x,_,_) -> x <= start) obs
-        (_,beforeStop) = splitWhen (\(x,_,_) -> x <= stop) $ reverse afterStart
-        finalList = reverse beforeStop
-    in CalCurve (VU.fromList $ map (\(a,_,_) -> a) finalList) (VU.fromList $ map (\(_,b,_) -> b) finalList) (VU.fromList $ map (\(_,_,c) -> c) finalList)
-
-splitWhen :: (a -> Bool) -> [a] -> ([a],[a])
-splitWhen _ [] = ([],[])
-splitWhen pre [x] = if pre x then ([x],[]) else ([],[x])
-splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
-    where
-        combine :: ([a],[a]) -> ([a],[a]) -> ([a],[a])
-        combine (a1,b1) (a2,b2) = (a1++a2,b1++b2)
+        startIndex = fromMaybe 0 $ VU.findIndex (<= start) bps
+        stopIndex = (VU.length bps - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse bps)
+        toIndex = stopIndex - startIndex
+    in CalCurve (VU.slice startIndex toIndex bps) (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex sigmas)
 
 makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 makeCalCurveMatrix uncalPDF (CalCurve bps cals sigmas) =
-    let bpsFloat = VU.reverse $ VU.map fromIntegral bps
-        sigmasFloat = VU.reverse $ VU.map fromIntegral sigmas
+    let bpsFloat = VU.map fromIntegral bps
+        sigmasFloat = VU.map fromIntegral sigmas
         uncalbps = VU.map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
-        uncalbpsFloat = VU.reverse $ VU.map fromIntegral $ convert bps
-    in CalCurveMatrix uncalbps (VU.reverse cals) $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
+        uncalbpsFloat = VU.map fromIntegral $ convert bps
+    in CalCurveMatrix uncalbps cals $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
     where
         buildMatrix :: VU.Vector Float -> VU.Vector Float -> VU.Vector Float -> V.Vector (VU.Vector Float)
         buildMatrix bps_ sigmas_ uncalbps_ = V.map (\x -> VU.map (fillCell x) uncalbps_) $ V.zip (convert bps_) (convert sigmas_)
