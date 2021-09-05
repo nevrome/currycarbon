@@ -94,11 +94,11 @@ splitWhen pre (x:xs) = combine (splitWhen pre [x]) (splitWhen pre xs)
 
 makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 makeCalCurveMatrix uncalPDF (CalCurve bps cals sigmas) =
-    let bps' = VU.reverse $ VU.map fromIntegral bps
-        sigmas' = VU.reverse $ VU.map fromIntegral sigmas
+    let bpsFloat = VU.reverse $ VU.map fromIntegral bps
+        sigmasFloat = VU.reverse $ VU.map fromIntegral sigmas
         uncalbps = VU.map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
         uncalbpsFloat = VU.map fromIntegral $ convert bps
-    in CalCurveMatrix uncalbps cals $ buildMatrix bps' sigmas' uncalbpsFloat
+    in CalCurveMatrix uncalbps cals $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
     where
         buildMatrix :: VU.Vector Float -> VU.Vector Float -> VU.Vector Float -> V.Vector (VU.Vector Float)
         buildMatrix bps_ sigmas_ uncalbps_ = V.map (\x -> VU.map (fillCell x) uncalbps_) $ V.zip (convert bps_) (convert sigmas_)
