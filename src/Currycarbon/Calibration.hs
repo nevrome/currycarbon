@@ -63,16 +63,15 @@ interpolateCalCurve (CalCurve bps cals sigmas) =
                 yDiffPerxDiff = yDiff/xDiff
                 xPredRel = x1 - xPred
             in (xPred, y1 + xPredRel * yDiffPerxDiff)
-
-timeWindows :: [(a,b,c)] -> [((a,b,c),(a,b,c))]
-timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
-    where
-        windows :: Int -> [a] -> [[a]]
-        windows n ys = takeLengthOf (drop (n-1) ys) (windows' n ys)
-        takeLengthOf :: [a] -> [b] -> [b]
-        takeLengthOf = zipWith (\_ x -> x)
-        windows' :: Int -> [a] -> [[a]]
-        windows' n = map (take n) . tails
+        timeWindows :: [(a,b,c)] -> [((a,b,c),(a,b,c))]
+        timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
+            where
+                windows :: Int -> [a] -> [[a]]
+                windows n ys = takeLengthOf (drop (n-1) ys) (windows' n ys)
+                takeLengthOf :: [a] -> [b] -> [b]
+                takeLengthOf = zipWith (\_ x -> x)
+                windows' :: Int -> [a] -> [[a]]
+                windows' n = map (take n) . tails
 
 getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
 getRelevantCalCurveSegment (UncalPDF _ bps' _) (CalCurve bps cals sigmas) = 
@@ -87,7 +86,7 @@ makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 makeCalCurveMatrix (UncalPDF _ bps' _) (CalCurve bps cals sigmas) =
     let bpsFloat = VU.map fromIntegral bps
         sigmasFloat = VU.map fromIntegral sigmas
-        uncalbps = VU.map (\x -> negate x + 1950) bps'
+        uncalbps = VU.map (\x -> -x+1950) bps'
         uncalbpsFloat = VU.map fromIntegral uncalbps
     in CalCurveMatrix uncalbps cals $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
     where
@@ -142,7 +141,7 @@ normalizeCalPDF (CalPDF name cals dens) =
     in CalPDF name cals normalizedDens
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
-projectUncalOverCalCurve hu@(UncalPDF name _ dens) (CalCurveMatrix _ cals matrix) =
+projectUncalOverCalCurve (UncalPDF name _ dens) (CalCurveMatrix _ cals matrix) =
     CalPDF name cals $ vectorMatrixMultSum dens matrix
     where
         vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> VU.Vector Float
