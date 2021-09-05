@@ -11,79 +11,45 @@ import qualified Data.Vector as V
 
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14 = UncalC14 {   
-      _uncalC14id :: String -- ^ Identifier, e.g. a lab number
-    , _uncalC14age :: Int -- ^ Uncalibrated age BP in years
-    , _uncalC14sd :: Int -- ^ One-sigma standard deviation of the uncalibrated age in years
+      _uncalC14Id :: String -- ^ Identifier, e.g. a lab number
+    , _uncalC14BP :: Int -- ^ Years BP
+    , _uncalC14Sigma :: Int -- ^ Standard deviation (one sigma in years)
     } deriving Show
 
 -- | A data type to represent a year-wise probability density for uncalibrated dates
--- Although technically not correct, we still call this a probability density function
+-- Although technically not correct, we still call this a probability density function (PDF)
 data UncalPDF = UncalPDF {
       _uncalPDFid :: String -- ^ Identifier, e.g. a lab number
-    --, _uncalPDFagedens :: V.Vector (Int, Float) -- ^ List that stores years BP and the respective
-                                         -- probability densities alongside each other
-    , getBPsUncal :: VU.Vector Int
-    , getProbsUncal :: VU.Vector Float
+    , _uncalPDFBPs :: VU.Vector Int -- ^ Years BP or BC
+    , _uncalPDFDens :: VU.Vector Float -- ^ Probability densities
     } deriving Show
-
--- | Getter function to access the year BP variable in an uncalibrated age probability density list
--- getBPsUncal :: UncalPDF -> V.Vector Int
--- getBPsUncal (UncalPDF _ obs) = V.map fst obs
--- | Getter function to access the density variable in an uncalibrated age probability density list
--- getProbsUncal :: UncalPDF -> V.Vector Float
--- getProbsUncal (UncalPDF _ obs) = V.map snd obs
 
 -- | A data type to represent a calibration curve
 data CalCurve = CalCurve {
-    --(V.Vector (Int, Int, Int)) -- ^ List that stores the sequence of year BP, 
-                      -- year calBP and the one-sigma standard deviation
-                      -- (on the year BP scale) that makes up the calibration curve
-      getBPs :: VU.Vector Int,
-      getCals :: VU.Vector Int,
-      getCalSigmas :: VU.Vector Int
+      _calCurveBPs :: VU.Vector Int -- ^ Years BP or BC
+    , _calCurveCals :: VU.Vector Int -- ^ Years calBP or calBC
+    , _calCurveSigmas :: VU.Vector Int -- ^ Standard deviation (one sigma in years)
     } deriving Show
-
--- | Getter function to access the year BP variable in a calibration curve
--- getBPs :: CalCurve -> V.Vector Int
--- getBPs (CalCurve obs) = V.map (\(x,_,_) -> x) obs
--- | Getter function to access the year calBP variable in a calibration curve
--- getCals :: CalCurve -> V.Vector Int
--- getCals (CalCurve obs) = V.map (\(_,y,_) -> y) obs
--- | Getter function to access the sigma variable in a calibration curve
--- getCalSigmas :: CalCurve -> V.Vector Int
--- getCalSigmas (CalCurve obs) = V.map (\(_,_,z) -> z) obs
 
 -- | A data type to represent a calibration curve in a /wide/ matrix form
 data CalCurveMatrix = CalCurveMatrix {
-      _calCurveMatrixbp :: VU.Vector Int -- ^ Row names of the calibration curve matrix:
-                                 -- Uncalibrated age BP in years
-    , _calCurveMatrixcalbp :: VU.Vector Int -- ^ Column names of the calibration curve matrix:
-                                    -- Calibrated age BP in years
-    , _calCurveMatrixmatrix :: V.Vector (VU.Vector Float) -- ^ Matrix (as a list of columns) with the 
-                                         -- probaility densities
+      _calCurveMatrixBPs :: VU.Vector Int -- ^ Row names of the calibration curve matrix: Years BP or BC
+    , _calCurveMatrixCalBPs :: VU.Vector Int -- ^ Column names of the calibration curve matrix: Years calBP or calBC
+    , _calCurveMatrixDens :: V.Vector (VU.Vector Float) -- ^ Matrix (as a list of columns) with the probability densities
     } deriving Show
 
 -- | A data type to represent a year-wise probability density for calibrated ages
 data CalPDF = CalPDF {
       _calPDFid :: String -- ^ Identifier, e.g. a lab number
-    --, _calPDFagedens :: V.Vector (Int, Float) -- ^ List that stores years calBP and the respective
-                                         -- probability densities alongside each other
-    , getBPsCal :: VU.Vector Int
-    , getProbsCal :: VU.Vector Float
+    , _calPDFBPs :: VU.Vector Int -- ^ Years calBP or calBC
+    , _calPDFDens :: VU.Vector Float -- ^ Probability densities
     } deriving Show
-
--- | Getter function to access the year BP variable in a calibrated age probability density list
--- getBPsCal :: CalPDF -> V.Vector Int
--- getBPsCal x = V.map fst $ _calPDFagedens x
--- | Getter function to access the density variable in a calibrated age probability density list
--- getProbsCal :: CalPDF -> V.Vector Float
--- getProbsCal x = V.map snd $ _calPDFagedens x
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {
       _calC14id :: String -- ^ Identifier, e.g. a lab number
-    , _calC14hdronesigma :: [HDR] -- ^ One-sigma high density regions
-    , _calC14hdrtwosigma :: [HDR] -- ^ Two-sigma high density regions
+    , _calC14HDROneSigma :: [HDR] -- ^ One-sigma high density regions
+    , _calC14HDRTwoSigma :: [HDR] -- ^ Two-sigma high density regions
     } deriving Show
 
 -- | A data type to represent a high density region of a probability distribution.

@@ -153,12 +153,12 @@ refineCalDates :: [CalPDF] -> [CalC14]
 refineCalDates = map refineCalDate
 
 refineCalDate :: CalPDF -> CalC14
-refineCalDate (CalPDF name bps probs) =
-    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip bps probs)
+refineCalDate (CalPDF name bps dens) =
+    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip bps dens)
         cumsumDensities = scanl1 (+) $ map snd sortedDensities
         isIn68 = map (< 0.683) cumsumDensities
         isIn95 = map (< 0.954) cumsumDensities
-        contextualizedDensities = reverse $ sort $ zipWith3 (\(year,dens) in68 in95 -> (year,dens,in68,in95)) sortedDensities isIn68 isIn95
+        contextualizedDensities = reverse $ sort $ zipWith3 (\(year,density) in68 in95 -> (year,density,in68,in95)) sortedDensities isIn68 isIn95
     in CalC14 name (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
     where
         densities2HDR68 :: [(Int, Float, Bool, Bool)] -> [HDR]

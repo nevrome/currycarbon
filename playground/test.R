@@ -5,17 +5,8 @@ testdate <- c(10000,200)
 system(paste0(
   "currycarbon \"",
   testdate[1], ",", testdate[2],
-  "\" --densityFile /tmp/currycarbon.txt"))# --explore --exploreDir \"/tmp/currytest\""))
-
-# cal_curve_matrix <- as.matrix(read.csv("/tmp/currytest/calCurveMatrix.csv", row.names = 1, header = T))
-# cal_curve_segment <- readr::read_csv("/tmp/currytest/calCurveInterpolated.csv")
-
-# image(cal_curve_matrix)
-# 
-# cal_curve_segment |>
-#   ggplot() +
-#   geom_point(aes(x = `CAL BP`, y = `14C age`, label = `14C age`))
-
+  "\" --densityFile /tmp/currycarbon.txt"))
+#--noInterpolation"))
 
 test <- readr::read_csv("/tmp/currycarbon.txt")
 

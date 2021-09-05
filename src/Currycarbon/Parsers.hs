@@ -78,8 +78,8 @@ writeCalPDFs path calPDFs =
         ++ concatMap renderCalPDF calPDFs
 
 renderCalPDF :: CalPDF -> String
-renderCalPDF (CalPDF name bps probs) =
-    concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") $ VU.toList $ VU.zip bps probs
+renderCalPDF (CalPDF name bps dens) =
+    concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") $ VU.toList $ VU.zip bps dens
 
 -- UncalC14
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
