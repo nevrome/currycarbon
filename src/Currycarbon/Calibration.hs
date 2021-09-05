@@ -84,11 +84,11 @@ getRelevantCalCurveSegment (UncalPDF _ bps' _) (CalCurve bps cals sigmas) =
     in CalCurve (VU.slice startIndex toIndex bps) (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex sigmas)
 
 makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
-makeCalCurveMatrix uncalPDF (CalCurve bps cals sigmas) =
+makeCalCurveMatrix (UncalPDF _ bps' _) (CalCurve bps cals sigmas) =
     let bpsFloat = VU.map fromIntegral bps
         sigmasFloat = VU.map fromIntegral sigmas
-        uncalbps = VU.map (\x -> negate x + 1950) (getBPsUncal uncalPDF)
-        uncalbpsFloat = VU.map fromIntegral $ convert bps
+        uncalbps = VU.map (\x -> negate x + 1950) bps'
+        uncalbpsFloat = VU.map fromIntegral uncalbps
     in CalCurveMatrix uncalbps cals $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
     where
         buildMatrix :: VU.Vector Float -> VU.Vector Float -> VU.Vector Float -> V.Vector (VU.Vector Float)
@@ -142,7 +142,7 @@ normalizeCalPDF (CalPDF name cals dens) =
     in CalPDF name cals normalizedDens
 
 projectUncalOverCalCurve :: UncalPDF -> CalCurveMatrix -> CalPDF
-projectUncalOverCalCurve (UncalPDF name _ dens) (CalCurveMatrix _ cals matrix) =
+projectUncalOverCalCurve hu@(UncalPDF name _ dens) (CalCurveMatrix _ cals matrix) =
     CalPDF name cals $ vectorMatrixMultSum dens matrix
     where
         vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> VU.Vector Float
