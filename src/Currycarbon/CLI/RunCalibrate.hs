@@ -15,6 +15,7 @@ data CalibrateOptions = CalibrateOptions {
         _calibrateUncalC14 :: [UncalC14]  -- ^ Uncalibrated dates that should be calibrated
       , _calibrateUncalC14File :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
       , _calibrateCalCurveFile :: Maybe FilePath -- ^ Path to a .14c file
+      , _calibrateCalibrationMethod :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateDontInterpolateCalCurve :: Bool -- ^ Don't interpolate the calibration curve
       , _calibrateQuiet :: Bool -- ^ Suppress the printing of calibration results to the command line
       , _calibrateDensityFile :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
@@ -25,7 +26,7 @@ data CalibrateOptions = CalibrateOptions {
 
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
-runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
+runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
     -- compile dates
     entitiesFromFile <- mapM readUncalC14FromFile uncalFile
     let dates = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
@@ -35,7 +36,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile noInterpolate q
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
         calCurve <- maybe (return $ loadCalCurve intcal20) readCalCurve calCurveFile
-        let calPDFs = calibrateDates noInterpolate calCurve dates
+        let calPDFs = calibrateDates method (not noInterpolate) calCurve dates
         -- write density file
         when (isJust densityFile) $ do
             writeCalPDFs (fromJust densityFile) calPDFs
@@ -50,12 +51,12 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile noInterpolate q
         when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
             hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date: " ++
                             show (head dates)
-            let uncalPDF = uncalToPDF $ head dates
-                (calCurveSegment,calCurveMatric) = prepareCalCurve noInterpolate calCurve uncalPDF
+            let firstC14 = head dates
+                calCurveSegment = prepareCalCurveSegment (not noInterpolate) True $ getRelevantCalCurveSegment firstC14 calCurve
             when (isJust calCurveSegmentFile) $ do
                 writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
             when (isJust calCurveMatrixFile) $ do
-                writeCalCurveMatrixFile (fromJust calCurveMatrixFile) calCurveMatric
+                writeCalCurveMatrixFile (fromJust calCurveMatrixFile) $ makeCalCurveMatrix (uncalToPDF firstC14) calCurveSegment
         -- finished
         hPutStrLn stderr "Done"
 

@@ -18,7 +18,7 @@ import qualified Data.Vector as V
 -- CalC14
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 writeCalC14s path calC14s = writeFile path $ 
-    "sample,hdrSigma,hdrStart,hdrStop\n" 
+    "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n" 
     ++ intercalate "\n" (map renderCalC14ForFile calC14s)
 
 renderCalC14ForFile :: CalC14 -> String
@@ -125,7 +125,7 @@ writeCalCurveFile path calCurve =
 
 renderCalCurve :: CalCurve -> String
 renderCalCurve (CalCurve bps cals sigmas) =
-    let header = "CAL BP,14C age,Sigma\n"
+    let header = "calBCAD,14CageBCAD,Sigma\n"
         body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) (VU.toList $ VU.zip3 bps cals sigmas)
     in header ++ intercalate "\n" body
 

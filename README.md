@@ -29,9 +29,10 @@ chmod +x currycarbon-Linux
 
 ```
 Usage: currycarbon [--version] [DATES] [-i|--inputFile ARG] 
-                   [--calibrationCurveFile ARG] [--noInterpolation] [-q|--quiet]
-                   [--densityFile ARG] [--hdrFile ARG] 
-                   [--calCurveSegmentFile ARG] [--calCurveMatrixFile ARG]
+                   [--calibrationCurveFile ARG] [--method ARG] 
+                   [--noInterpolation] [-q|--quiet] [--densityFile ARG] 
+                   [--hdrFile ARG] [--calCurveSegmentFile ARG] 
+                   [--calCurveMatrixFile ARG]
   Simple intercept calibration for one or multiple radiocarbon dates
 
 Available options:
@@ -51,6 +52,8 @@ Available options:
                            calibration curve will be read and used for
                            calibration. If no file is provided, currycarbon will
                            use the intcal20 curve.
+  --method ARG             The calibration algorithm that should be used: Bchron
+                           (default) or MatrixMultiplication
   --noInterpolation        Don't interpolate the calibration curve
   -q,--quiet               Suppress the printing of calibration results to the
                            command line

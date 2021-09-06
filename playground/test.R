@@ -6,7 +6,7 @@ system(paste0(
   "currycarbon \"",
   testdate[1], ",", testdate[2],
   "\" --densityFile /tmp/currycarbon.txt"))
-#--noInterpolation"))
+#--method MatrixMultiplication --noInterpolation"))
 
 test <- readr::read_csv("/tmp/currycarbon.txt")
 
@@ -20,7 +20,7 @@ bchron <- tibble::tibble(
   density_bchron = bchronRaw$Date1$densities
 )
 
-bchron |> dplyr::left_join(
+bchron |> dplyr::full_join(
   test, by = "calBCAD"
 ) |>
   tidyr::pivot_longer(
@@ -34,7 +34,7 @@ bchron |> dplyr::left_join(
 ### large test (for memory leaks)
 
 calpal <- c14bazAAR::get_calpal()
-calpal |> dplyr::select(c14age, c14std) |> readr::write_csv("/tmp/currycarbon_large_input_test.csv", col_names = F)
+calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr::write_csv("/tmp/currycarbon_large_input_test.csv", col_names = F)
 
 #currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q --densityFile /dev/null
 
