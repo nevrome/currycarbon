@@ -56,8 +56,8 @@ calibrateDateBchron interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
 -- the relevant segment of the calibration curve
 getRelevantCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
 getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurve bps cals sigmas) = 
-    let start = mean+5*std
-        stop = mean-5*std
+    let start = mean+6*std
+        stop = mean-6*std
         startIndex = fromMaybe 0 $ VU.findIndex (<= start) bps
         stopIndex = (VU.length bps - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse bps)
         toIndex = stopIndex - startIndex
