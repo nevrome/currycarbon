@@ -11,6 +11,11 @@ import qualified Data.Vector as V
 --
 -- This module defines the relevant data types for handling radiocarbon dates
 
+-- | Different calibration algorithms implemented in currycarbon
+data CalibrationMethod =
+    MatrixMultiplication -- ^ Matrix multiplication method
+  | Bchron -- ^ Algorithm similar to the clever implementation in the R package Bchron by Andrew Parnell
+
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14 = UncalC14 {   
       _uncalC14Id :: String -- ^ Identifier, e.g. a lab number

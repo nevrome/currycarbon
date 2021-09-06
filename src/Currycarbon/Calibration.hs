@@ -21,14 +21,46 @@ import qualified Data.Vector as V
 import Data.Vector.Generic (convert)
 import Data.Maybe (fromMaybe)
 
+-- | Calibrates a list of dates with the provided calibration curve
+calibrateDates :: CalibrationMethod -> Bool -> CalCurve -> [UncalC14] -> [CalPDF]
+calibrateDates _ _ _ [] = []
+calibrateDates MatrixMultiplication interpolate calCurve uncalDates =
+    map (calibrateDateMatrixMult interpolate calCurve) uncalDates `using` parList rpar
+calibrateDates Bchron interpolate calCurve uncalDates =
+    map (calibrateDateBchron interpolate calCurve) uncalDates `using` parList rpar
+
+calibrateDateMatrixMult :: Bool -> CalCurve -> UncalC14 -> CalPDF
+calibrateDateMatrixMult interpolate calCurve uncalC14 =
+    let -- prepare PDF for uncalibrated date
+        uncalPDF = uncalToPDF uncalC14
+        -- prepare relevant segment of the calcurve
+        rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
+        -- prepare calCurve
+        (_,calCurveMatrix) = prepareCalCurve interpolate rawCalCurveSegment uncalPDF
+        -- perform projection (aka calibration)
+        calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
+    in calPDF
+
+calibrateDateBchron :: Bool -> CalCurve -> UncalC14 -> CalPDF
+calibrateDateBchron interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
+    let CalCurve mus cals tau1s = interpolateCalCurve $ getRelevantCalCurveSegment uncalC14 calCurve
+        ageFloat = fromIntegral age
+        ageSd2 = ageSd*ageSd
+        ageSd2Float = fromIntegral ageSd2
+        musFloat = VU.map fromIntegral mus
+        tau1sFloat = VU.map fromIntegral tau1s
+        dens = VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
+        densSum = VU.sum dens
+        densNorm = VU.map (/ densSum) dens
+        calsBCAD = VU.map (\x -> -x + 1950) cals
+    in CalPDF name calsBCAD densNorm
+
 -- | Take a raw calibration curve and an uncalibrated date and return
 -- a tuple with the relevant segment of the calibration curve in standard-
 -- and matrix-format
 prepareCalCurve :: Bool -> CalCurve -> UncalPDF -> (CalCurve, CalCurveMatrix)
-prepareCalCurve noInterpolate calCurve uncalPDF =
-    let -- prepare relevant segment of the calcurve
-        rawCalCurveSegment = getRelevantCalCurveSegment uncalPDF calCurve
-        calCurveSegment = makeBCADCalCurve $
+prepareCalCurve noInterpolate rawCalCurveSegment uncalPDF  =
+    let calCurveSegment = makeBCADCalCurve $
             if noInterpolate
             then rawCalCurveSegment
             else interpolateCalCurve rawCalCurveSegment
@@ -75,17 +107,8 @@ interpolateCalCurve (CalCurve bps cals sigmas) =
                 windows' :: Int -> [a] -> [[a]]
                 windows' n = map (take n) . tails
 
-getRelevantCalCurveSegment :: UncalPDF -> CalCurve -> CalCurve
-getRelevantCalCurveSegment (UncalPDF _ bps' _) (CalCurve bps cals sigmas) = 
-    let start = VU.head bps'
-        stop = VU.last bps'
-        startIndex = fromMaybe 0 $ VU.findIndex (<= start) bps
-        stopIndex = (VU.length bps - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse bps)
-        toIndex = stopIndex - startIndex
-    in CalCurve (VU.slice startIndex toIndex bps) (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex sigmas)
-
-getCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
-getCalCurveSegment (UncalC14 _ mean std) (CalCurve bps cals sigmas) = 
+getRelevantCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
+getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurve bps cals sigmas) = 
     let start = mean+5*std
         stop = mean-5*std
         startIndex = fromMaybe 0 $ VU.findIndex (<= start) bps
@@ -128,36 +151,6 @@ dnorm mu sigma x =
         c2 = c * c
         sigma2 = sigma * sigma
     in a*b
-
--- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: Bool -> CalCurve -> [UncalC14] -> [CalPDF]
-calibrateDates _ _ [] = []
-calibrateDates interpolate calCurve uncalDates =
-    map (calibrateDate interpolate calCurve) uncalDates `using` parList rpar
-
--- calibrateDate :: Bool -> CalCurve -> UncalC14 -> CalPDF
--- calibrateDate interpolate calCurve uncalDate =
---     let -- prepare PDF for uncalibrated date
---         uncalPDF = uncalToPDF uncalDate
---         -- prepare calCurve
---         (_,calCurveMatrix) = prepareCalCurve interpolate calCurve uncalPDF
---         -- perform projection (aka calibration)
---         calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
---     in calPDF
-
-calibrateDate :: Bool -> CalCurve -> UncalC14 -> CalPDF
-calibrateDate interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
-    let CalCurve mus cals tau1s = interpolateCalCurve $ getCalCurveSegment uncalC14 calCurve
-        ageFloat = fromIntegral age
-        ageSd2 = ageSd*ageSd
-        ageSd2Float = fromIntegral ageSd2
-        musFloat = VU.map fromIntegral mus
-        tau1sFloat = VU.map fromIntegral tau1s
-        dens = VU.map (\(mu,tau1) -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) $ VU.zip musFloat tau1sFloat
-        densSum = VU.sum dens
-        densNorm = VU.map (/ densSum) dens
-        calsBCAD = VU.map (\x -> -x + 1950) cals
-    in CalPDF name calsBCAD densNorm
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) = 

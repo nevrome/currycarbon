@@ -46,6 +46,7 @@ calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> parseUncalC14String
                                       <*> parseUncalC14FromFile
                                       <*> parseCalCurveFromFile
+                                      <*> parseCalibrationMethod
                                       <*> parseDontInterpolateCalCurve
                                       <*> parseQuiet
                                       <*> parseDensityFile
@@ -86,17 +87,31 @@ parseCalCurveFromFile = OP.option (Just <$> OP.str) (
     OP.value Nothing
     )
 
-parseQuiet :: OP.Parser (Bool)
-parseQuiet = OP.switch (
-    OP.long "quiet" <> 
-    OP.short 'q' <>
-    OP.help "Suppress the printing of calibration results to the command line"
+parseCalibrationMethod :: OP.Parser CalibrationMethod
+parseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
+    OP.long "method" <>
+    OP.help "The calibration algorithm that should be used: Bchron (default) or MatrixMultiplication" <>
+    OP.value Bchron
     )
+  where
+    readCalibrationMethod :: String -> Either String CalibrationMethod
+    readCalibrationMethod s = case s of
+        "MatrixMultiplication"  -> Right MatrixMultiplication
+        "Bchron"                -> Right Bchron
+        _                       -> Left "must be Bchron or MatrixMultiplication"
 
 parseDontInterpolateCalCurve :: OP.Parser (Bool)
 parseDontInterpolateCalCurve = OP.switch (
     OP.long "noInterpolation" <> 
     OP.help "Don't interpolate the calibration curve"
+    )
+
+
+parseQuiet :: OP.Parser (Bool)
+parseQuiet = OP.switch (
+    OP.long "quiet" <> 
+    OP.short 'q' <>
+    OP.help "Suppress the printing of calibration results to the command line"
     )
 
 parseDensityFile :: OP.Parser (Maybe FilePath)

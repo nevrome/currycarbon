@@ -1,3 +1,4 @@
+- V 0.15.0: Added another calibration algorithm (following the implementation by Andrew Parnell in Bchron) and a method switch for the CLI
 - V 0.14.0: Introduced strictness, which brought a significant increase in performance. See the discussion here: https://old.reddit.com/r/haskell/comments/picjy6/how_could_i_improve_the_performance_of_my/
 - V 0.13.0: Major rewrite with the vector library - includes multiple bugfixes, but is surprisingly slow
 - V 0.12.0: Renamed some core functions
