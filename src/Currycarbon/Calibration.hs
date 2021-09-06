@@ -84,6 +84,15 @@ getRelevantCalCurveSegment (UncalPDF _ bps' _) (CalCurve bps cals sigmas) =
         toIndex = stopIndex - startIndex
     in CalCurve (VU.slice startIndex toIndex bps) (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex sigmas)
 
+getCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
+getCalCurveSegment (UncalC14 _ mean std) (CalCurve bps cals sigmas) = 
+    let start = mean+5*std
+        stop = mean-5*std
+        startIndex = fromMaybe 0 $ VU.findIndex (<= start) bps
+        stopIndex = (VU.length bps - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse bps)
+        toIndex = stopIndex - startIndex
+    in CalCurve (VU.slice startIndex toIndex bps) (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex sigmas)
+
 makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 makeCalCurveMatrix (UncalPDF _ bps' _) (CalCurve bps cals sigmas) =
     let bpsFloat = VU.map fromIntegral bps
@@ -137,8 +146,8 @@ calibrateDates interpolate calCurve uncalDates =
 --     in calPDF
 
 calibrateDate :: Bool -> CalCurve -> UncalC14 -> CalPDF
-calibrateDate interpolate calCurve (UncalC14 name age ageSd) =
-    let (CalCurve mus cals tau1s) = interpolateCalCurve calCurve
+calibrateDate interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
+    let CalCurve mus cals tau1s = interpolateCalCurve $ getCalCurveSegment uncalC14 calCurve
         ageFloat = fromIntegral age
         ageSd2 = ageSd*ageSd
         ageSd2Float = fromIntegral ageSd2
@@ -147,8 +156,8 @@ calibrateDate interpolate calCurve (UncalC14 name age ageSd) =
         dens = VU.map (\(mu,tau1) -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) $ VU.zip musFloat tau1sFloat
         densSum = VU.sum dens
         densNorm = VU.map (/ densSum) dens
-        ageGrid = VU.reverse $ VU.fromList [(VU.last cals) .. (VU.head cals)]
-    in CalPDF name (VU.map (\x -> -x + 1950) ageGrid) densNorm
+        calsBCAD = VU.map (\x -> -x + 1950) cals
+    in CalPDF name calsBCAD densNorm
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) = 
