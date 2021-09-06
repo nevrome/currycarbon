@@ -24,7 +24,11 @@ import Data.Vector.Generic (convert)
 import Data.Maybe (fromMaybe)
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: CalibrationMethod -> Bool -> CalCurve -> [UncalC14] -> [CalPDF]
+calibrateDates :: CalibrationMethod -- ^ Calibration method
+                  -> Bool -- ^ Should the calibration curve be interpolated for year-wise output?
+                  -> CalCurve -- ^ Calibration curve
+                  -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates
+                  -> [CalPDF]
 calibrateDates _ _ _ [] = []
 calibrateDates MatrixMultiplication interpolate calCurve uncalDates =
     map (calibrateDateMatrixMult interpolate calCurve) uncalDates `using` parList rpar
@@ -123,7 +127,7 @@ makeCalCurveMatrix (UncalPDF _ bps' _) (CalCurve bps cals sigmas) =
         buildMatrix bps_ sigmas_ uncalbps_ = V.map (\x -> VU.map (fillCell x) uncalbps_) $ V.zip (convert bps_) (convert sigmas_)
         fillCell :: (Float, Float) -> Float -> Float
         fillCell (bp, sigma) matrixPosBP = 
-            if abs (bp - matrixPosBP) < 5*sigma
+            if abs (bp - matrixPosBP) < 6*sigma
             then dnorm bp sigma matrixPosBP
             else 0
 
