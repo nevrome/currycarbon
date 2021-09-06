@@ -6,7 +6,9 @@ module Currycarbon.Calibration
       -- $calibration
       --
       -- This module implements the actual calibration logic
-        prepareCalCurve
+        getRelevantCalCurveSegment
+      , prepareCalCurveSegment
+      , makeCalCurveMatrix
       , uncalToPDF
       , calibrateDates
       , refineCalDates
@@ -31,42 +33,44 @@ calibrateDates Bchron interpolate calCurve uncalDates =
 
 calibrateDateMatrixMult :: Bool -> CalCurve -> UncalC14 -> CalPDF
 calibrateDateMatrixMult interpolate calCurve uncalC14 =
-    let -- prepare PDF for uncalibrated date
+    let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
+        calCurveSegment = prepareCalCurveSegment interpolate True rawCalCurveSegment
         uncalPDF = uncalToPDF uncalC14
-        -- prepare relevant segment of the calcurve
-        rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
-        -- prepare calCurve
-        (_,calCurveMatrix) = prepareCalCurve interpolate rawCalCurveSegment uncalPDF
-        -- perform projection (aka calibration)
-        calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
-    in calPDF
+        calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
+        calPDF = projectUncalOverCalCurve uncalPDF calCurveMatrix
+    in normalizeCalPDF calPDF
 
 calibrateDateBchron :: Bool -> CalCurve -> UncalC14 -> CalPDF
 calibrateDateBchron interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
-    let CalCurve mus cals tau1s = interpolateCalCurve $ getRelevantCalCurveSegment uncalC14 calCurve
+    let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
+        CalCurve mus cals tau1s = prepareCalCurveSegment interpolate False rawCalCurveSegment
         ageFloat = fromIntegral age
         ageSd2 = ageSd*ageSd
         ageSd2Float = fromIntegral ageSd2
         musFloat = VU.map fromIntegral mus
         tau1sFloat = VU.map fromIntegral tau1s
         dens = VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
-        densSum = VU.sum dens
-        densNorm = VU.map (/ densSum) dens
         calsBCAD = VU.map (\x -> -x + 1950) cals
-    in CalPDF name calsBCAD densNorm
+    in normalizeCalPDF $ CalPDF name calsBCAD dens
 
--- | Take a raw calibration curve and an uncalibrated date and return
--- a tuple with the relevant segment of the calibration curve in standard-
--- and matrix-format
-prepareCalCurve :: Bool -> CalCurve -> UncalPDF -> (CalCurve, CalCurveMatrix)
-prepareCalCurve noInterpolate rawCalCurveSegment uncalPDF  =
-    let calCurveSegment = makeBCADCalCurve $
-            if noInterpolate
-            then rawCalCurveSegment
-            else interpolateCalCurve rawCalCurveSegment
-        -- transform calCurve to matrix
-        calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
-    in (calCurveSegment,calCurveMatrix)
+-- | Take an uncalibrated date and a raw calibration curve and return
+-- the relevant segment of the calibration curve
+getRelevantCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
+getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurve bps cals sigmas) = 
+    let start = mean+5*std
+        stop = mean-5*std
+        startIndex = fromMaybe 0 $ VU.findIndex (<= start) bps
+        stopIndex = (VU.length bps - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse bps)
+        toIndex = stopIndex - startIndex
+    in CalCurve (VU.slice startIndex toIndex bps) (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex sigmas)
+
+-- | Modify a calibration curve (segment) with multiple optional steps, 
+-- including interpolation and transforming dates to BC/AD format
+prepareCalCurveSegment :: Bool -> Bool -> CalCurve -> CalCurve
+prepareCalCurveSegment interpolate makeBCAD calCurve0 =
+    let calCurve1 = if interpolate then interpolateCalCurve calCurve0 else calCurve0
+        calCurve2 = if makeBCAD then makeBCADCalCurve calCurve1 else calCurve1
+    in calCurve2
 
 makeBCADCalCurve :: CalCurve -> CalCurve
 makeBCADCalCurve (CalCurve bps cals sigmas) = CalCurve (VU.map (\a -> -a+1950) bps) (VU.map (\b -> -b+1950) cals) sigmas
@@ -107,15 +111,7 @@ interpolateCalCurve (CalCurve bps cals sigmas) =
                 windows' :: Int -> [a] -> [[a]]
                 windows' n = map (take n) . tails
 
-getRelevantCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
-getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurve bps cals sigmas) = 
-    let start = mean+5*std
-        stop = mean-5*std
-        startIndex = fromMaybe 0 $ VU.findIndex (<= start) bps
-        stopIndex = (VU.length bps - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse bps)
-        toIndex = stopIndex - startIndex
-    in CalCurve (VU.slice startIndex toIndex bps) (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex sigmas)
-
+-- | Construct a matrix representation of a calibration curve for a given date
 makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 makeCalCurveMatrix (UncalPDF _ bps' _) (CalCurve bps cals sigmas) =
     let bpsFloat = VU.map fromIntegral bps

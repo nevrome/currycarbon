@@ -36,7 +36,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method noInterp
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
         calCurve <- maybe (return $ loadCalCurve intcal20) readCalCurve calCurveFile
-        let calPDFs = calibrateDates method noInterpolate calCurve dates
+        let calPDFs = calibrateDates method (not noInterpolate) calCurve dates
         -- write density file
         when (isJust densityFile) $ do
             writeCalPDFs (fromJust densityFile) calPDFs
@@ -51,12 +51,12 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method noInterp
         when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
             hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date: " ++
                             show (head dates)
-            let uncalPDF = uncalToPDF $ head dates
-                (calCurveSegment,calCurveMatric) = prepareCalCurve noInterpolate calCurve uncalPDF
+            let firstC14 = head dates
+                calCurveSegment = prepareCalCurveSegment (not noInterpolate) True $ getRelevantCalCurveSegment firstC14 calCurve
             when (isJust calCurveSegmentFile) $ do
                 writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
             when (isJust calCurveMatrixFile) $ do
-                writeCalCurveMatrixFile (fromJust calCurveMatrixFile) calCurveMatric
+                writeCalCurveMatrixFile (fromJust calCurveMatrixFile) $ makeCalCurveMatrix (uncalToPDF firstC14) calCurveSegment
         -- finished
         hPutStrLn stderr "Done"
 
