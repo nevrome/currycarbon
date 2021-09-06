@@ -43,15 +43,14 @@ calibrateDateMatrixMult interpolate calCurve uncalC14 =
 calibrateDateBchron :: Bool -> CalCurve -> UncalC14 -> CalPDF
 calibrateDateBchron interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
     let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
-        CalCurve mus cals tau1s = prepareCalCurveSegment interpolate False rawCalCurveSegment
-        ageFloat = fromIntegral age
+        CalCurve mus cals tau1s = prepareCalCurveSegment interpolate True rawCalCurveSegment
+        ageFloat = -(fromIntegral age)+1950
         ageSd2 = ageSd*ageSd
         ageSd2Float = fromIntegral ageSd2
         musFloat = VU.map fromIntegral mus
         tau1sFloat = VU.map fromIntegral tau1s
         dens = VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
-        calsBCAD = VU.map (\x -> -x + 1950) cals
-    in normalizeCalPDF $ CalPDF name calsBCAD dens
+    in normalizeCalPDF $ CalPDF name cals dens
 
 -- | Take an uncalibrated date and a raw calibration curve and return
 -- the relevant segment of the calibration curve
