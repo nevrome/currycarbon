@@ -20,7 +20,7 @@ bchron <- tibble::tibble(
   density_bchron = bchronRaw$Date1$densities
 )
 
-bchron |> dplyr::left_join(
+bchron |> dplyr::full_join(
   test, by = "calBCAD"
 ) |>
   tidyr::pivot_longer(

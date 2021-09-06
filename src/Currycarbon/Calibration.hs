@@ -126,15 +126,29 @@ calibrateDates _ _ [] = []
 calibrateDates interpolate calCurve uncalDates =
     map (calibrateDate interpolate calCurve) uncalDates `using` parList rpar
 
+-- calibrateDate :: Bool -> CalCurve -> UncalC14 -> CalPDF
+-- calibrateDate interpolate calCurve uncalDate =
+--     let -- prepare PDF for uncalibrated date
+--         uncalPDF = uncalToPDF uncalDate
+--         -- prepare calCurve
+--         (_,calCurveMatrix) = prepareCalCurve interpolate calCurve uncalPDF
+--         -- perform projection (aka calibration)
+--         calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
+--     in calPDF
+
 calibrateDate :: Bool -> CalCurve -> UncalC14 -> CalPDF
-calibrateDate interpolate calCurve uncalDate =
-    let -- prepare PDF for uncalibrated date
-        uncalPDF = uncalToPDF uncalDate
-        -- prepare calCurve
-        (_,calCurveMatrix) = prepareCalCurve interpolate calCurve uncalPDF
-        -- perform projection (aka calibration)
-        calPDF = normalizeCalPDF $ projectUncalOverCalCurve uncalPDF calCurveMatrix
-    in calPDF
+calibrateDate interpolate calCurve (UncalC14 name age ageSd) =
+    let (CalCurve mus cals tau1s) = interpolateCalCurve calCurve
+        ageFloat = fromIntegral age
+        ageSd2 = ageSd*ageSd
+        ageSd2Float = fromIntegral ageSd2
+        musFloat = VU.map fromIntegral mus
+        tau1sFloat = VU.map fromIntegral tau1s
+        dens = VU.map (\(mu,tau1) -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) $ VU.zip musFloat tau1sFloat
+        densSum = VU.sum dens
+        densNorm = VU.map (/ densSum) dens
+        ageGrid = VU.reverse $ VU.fromList [(VU.last cals) .. (VU.head cals)]
+    in CalPDF name (VU.map (\x -> -x + 1950) ageGrid) densNorm
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) = 
