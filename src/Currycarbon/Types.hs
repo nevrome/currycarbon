@@ -14,7 +14,15 @@ import qualified Data.Vector as V
 -- | Different calibration algorithms implemented in currycarbon
 data CalibrationMethod =
     MatrixMultiplication -- ^ Matrix multiplication method
-  | Bchron -- ^ Algorithm similar to the clever implementation in the R package Bchron by Andrew Parnell
+  | Bchron { 
+      distribution :: CalibrationDistribution
+    } -- ^ Algorithm similar to the clever implementation in the R package Bchron by Andrew Parnell
+
+data CalibrationDistribution = 
+    NormalDist
+  | StudentTDist {
+      ndf :: Double
+    }
 
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14 = UncalC14 {   

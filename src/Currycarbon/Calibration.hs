@@ -22,6 +22,9 @@ import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
 import Data.Vector.Generic (convert)
 import Data.Maybe (fromMaybe)
+import Statistics.Distribution (density)
+import Statistics.Distribution.StudentT (studentT)
+--import Statistics.Distribution.Normal (normalDistr)
 
 -- | Calibrates a list of dates with the provided calibration curve
 calibrateDates :: CalibrationMethod -- ^ Calibration method
@@ -32,8 +35,8 @@ calibrateDates :: CalibrationMethod -- ^ Calibration method
 calibrateDates _ _ _ [] = []
 calibrateDates MatrixMultiplication interpolate calCurve uncalDates =
     map (calibrateDateMatrixMult interpolate calCurve) uncalDates `using` parList rpar
-calibrateDates Bchron interpolate calCurve uncalDates =
-    map (calibrateDateBchron interpolate calCurve) uncalDates `using` parList rpar
+calibrateDates Bchron{distribution=distr} interpolate calCurve uncalDates =
+    map (calibrateDateBchron distr interpolate calCurve) uncalDates `using` parList rpar
 
 calibrateDateMatrixMult :: Bool -> CalCurve -> UncalC14 -> CalPDF
 calibrateDateMatrixMult interpolate calCurve uncalC14 =
@@ -44,8 +47,8 @@ calibrateDateMatrixMult interpolate calCurve uncalC14 =
         calPDF = projectUncalOverCalCurve uncalPDF calCurveMatrix
     in normalizeCalPDF calPDF
 
-calibrateDateBchron :: Bool -> CalCurve -> UncalC14 -> CalPDF
-calibrateDateBchron interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
+calibrateDateBchron :: CalibrationDistribution -> Bool -> CalCurve -> UncalC14 -> CalPDF
+calibrateDateBchron distr interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
     let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
         CalCurve cals mus tau1s = prepareCalCurveSegment interpolate True rawCalCurveSegment
         ageFloat = -(fromIntegral age)+1950
@@ -53,7 +56,9 @@ calibrateDateBchron interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
         ageSd2Float = fromIntegral ageSd2
         musFloat = VU.map fromIntegral mus
         tau1sFloat = VU.map fromIntegral tau1s
-        dens = VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
+        dens = case distr of
+            NormalDist -> VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
+            StudentTDist numberOfDegreesOfFreedom -> VU.zipWith (\mu tau1 -> dt numberOfDegreesOfFreedom ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
     in normalizeCalPDF $ CalPDF name cals dens
 
 -- | Take an uncalibrated date and a raw calibration curve and return
@@ -150,6 +155,11 @@ dnorm mu sigma x =
         c2 = c * c
         sigma2 = sigma * sigma
     in a*b
+    -- alternative implemenation with the statistics package: 
+    -- realToFrac $ density (normalDistr (realToFrac mu) (realToFrac sigma)) (realToFrac x)
+
+dt :: Double -> Float -> Float
+dt dof x = realToFrac $ density (studentT (realToFrac dof)) (realToFrac x) -- dof: number of degrees of freedom
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) = 
@@ -175,7 +185,7 @@ refineCalDate (CalPDF name bps dens) =
         cumsumDensities = scanl1 (+) $ map snd sortedDensities
         isIn68 = map (< 0.683) cumsumDensities
         isIn95 = map (< 0.954) cumsumDensities
-        contextualizedDensities = reverse $ sort $ zipWith3 (\(year,density) in68 in95 -> (year,density,in68,in95)) sortedDensities isIn68 isIn95
+        contextualizedDensities = reverse $ sort $ zipWith3 (\(y,d) in68 in95 -> (y,d,in68,in95)) sortedDensities isIn68 isIn95
     in CalC14 name (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
     where
         densities2HDR68 :: [(Int, Float, Bool, Bool)] -> [HDR]

@@ -88,17 +88,17 @@ parseCalCurveFromFile = OP.option (Just <$> OP.str) (
     )
 
 parseCalibrationMethod :: OP.Parser CalibrationMethod
-parseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
+parseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethodString) (
     OP.long "method" <>
-    OP.help "The calibration algorithm that should be used: Bchron (default) or MatrixMultiplication" <>
-    OP.value Bchron
+    OP.help "The calibration algorithm that should be used: \
+            \\"<Method>,<Distribution>,<NumberOfDegreesOfFreedom>\". \
+            \The default setting is equivalent to \"Bchron,StudentT,100\" \
+            \which copies the algorithm implemented in the Bchron R package. \
+            \Alternatively we implemented  \"MatrixMult\", which comes without further arguments. \
+            \For the Bchron algorithm with a normal distribution (\"Bchron,Normal\") \
+            \the degrees of freedom argument is not relevant" <>
+    OP.value (Bchron $ StudentTDist 100)
     )
-  where
-    readCalibrationMethod :: String -> Either String CalibrationMethod
-    readCalibrationMethod s = case s of
-        "MatrixMultiplication"  -> Right MatrixMultiplication
-        "Bchron"                -> Right Bchron
-        _                       -> Left "must be Bchron or MatrixMultiplication"
 
 parseDontInterpolateCalCurve :: OP.Parser (Bool)
 parseDontInterpolateCalCurve = OP.switch (

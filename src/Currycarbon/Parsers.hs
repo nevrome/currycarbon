@@ -15,6 +15,31 @@ import qualified Data.Vector as V
 -- This module contains a number of functions to manage data input and 
 -- output plumbing for different datatypes
 
+-- CalibrationMethod
+readCalibrationMethodString :: String -> Either String CalibrationMethod
+readCalibrationMethodString s =
+    case P.runParser parseCalibrationMethodString () "" s of
+        Left err -> error $ "Error in parsing method from string: " ++ show err
+        Right x -> Right x
+
+parseCalibrationMethodString :: P.Parser CalibrationMethod
+parseCalibrationMethodString = do
+    P.try bchron P.<|> matrixMultiplication
+    where
+        bchron = do
+            _ <- P.string "Bchron,"
+            P.try studentT P.<|> normal
+        studentT = do
+            _ <- P.string "StudentT,"
+            dof <- read <$> P.many1 P.digit
+            return (Bchron $ StudentTDist dof)
+        normal = do
+            _ <- P.string "Normal"
+            return (Bchron NormalDist)
+        matrixMultiplication = do
+            _ <- P.string "MatrixMult"
+            return MatrixMultiplication
+
 -- CalC14
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 writeCalC14s path calC14s = writeFile path $ 
