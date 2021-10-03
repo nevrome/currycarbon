@@ -152,7 +152,7 @@ calCurveLineParser = do
   bp <- read <$> P.many1 P.digit
   _ <- P.oneOf ","
   sigma <- read <$> P.many1 P.digit
-  return (bp, calBP, sigma)
+  return (calBP, bp, sigma)
 
 comments :: P.Parser String
 comments = do 

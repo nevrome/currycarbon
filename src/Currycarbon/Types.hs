@@ -33,8 +33,8 @@ data UncalPDF = UncalPDF {
 
 -- | A data type to represent a calibration curve
 data CalCurve = CalCurve {
-      _calCurveBPs :: VU.Vector Int -- ^ Years BP or BC
-    , _calCurveCals :: VU.Vector Int -- ^ Years calBP or calBC
+      _calCurveCals :: VU.Vector Int -- ^ Years calBP or calBC
+    , _calCurveBPs :: VU.Vector Int -- ^ Years BP or BC
     , _calCurveSigmas :: VU.Vector Int -- ^ Standard deviation (one sigma in years)
     } deriving Show
 
