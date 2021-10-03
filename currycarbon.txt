@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.16.0
+@version 0.18.0
 
 module Currycarbon.CalCurves.Intcal20
 
@@ -25,7 +25,12 @@ MatrixMultiplication :: CalibrationMethod
 
 -- | Algorithm similar to the clever implementation in the R package Bchron
 --   by Andrew Parnell
-Bchron :: CalibrationMethod
+Bchron :: CalibrationDistribution -> CalibrationMethod
+[distribution] :: CalibrationMethod -> CalibrationDistribution
+data CalibrationDistribution
+NormalDist :: CalibrationDistribution
+StudentTDist :: Double -> CalibrationDistribution
+[ndf] :: CalibrationDistribution -> Double
 
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14
@@ -59,11 +64,11 @@ UncalPDF :: String -> Vector Int -> Vector Float -> UncalPDF
 data CalCurve
 CalCurve :: Vector Int -> Vector Int -> Vector Int -> CalCurve
 
--- | Years BP or BC
-[_calCurveBPs] :: CalCurve -> Vector Int
-
 -- | Years calBP or calBC
 [_calCurveCals] :: CalCurve -> Vector Int
+
+-- | Years BP or BC
+[_calCurveBPs] :: CalCurve -> Vector Int
 
 -- | Standard deviation (one sigma in years)
 [_calCurveSigmas] :: CalCurve -> Vector Int
@@ -132,6 +137,8 @@ instance GHC.Show.Show Currycarbon.Types.HDR
 instance GHC.Show.Show Currycarbon.Types.CalC14
 
 module Currycarbon.Parsers
+readCalibrationMethodString :: String -> Either String CalibrationMethod
+parseCalibrationMethodString :: Parser CalibrationMethod
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 renderCalC14ForFile :: CalC14 -> String
 renderCalC14s :: [CalC14] -> String
