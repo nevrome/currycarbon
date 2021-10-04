@@ -52,8 +52,15 @@ Available options:
                            calibration curve will be read and used for
                            calibration. If no file is provided, currycarbon will
                            use the intcal20 curve.
-  --method ARG             The calibration algorithm that should be used: Bchron
-                           (default) or MatrixMultiplication
+  --method ARG             The calibration algorithm that should be used:
+                           "<Method>,<Distribution>,<NumberOfDegreesOfFreedom>".
+                           The default setting is equivalent to
+                           "Bchron,StudentT,100" which copies the algorithm
+                           implemented in the Bchron R package. Alternatively we
+                           implemented "MatrixMult", which comes without further
+                           arguments. For the Bchron algorithm with a normal
+                           distribution ("Bchron,Normal") the degrees of freedom
+                           argument is not relevant
   --noInterpolation        Don't interpolate the calibration curve
   -q,--quiet               Suppress the printing of calibration results to the
                            command line
