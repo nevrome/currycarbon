@@ -5,8 +5,10 @@ import           Currycarbon.CalCurves.Intcal20
 import           Currycarbon.Calibration
 import           Currycarbon.Parsers
 import           Currycarbon.Types
+import           Currycarbon.Utils
 
 import           Control.Monad      (when, unless)
+import           Data.Either        (rights, lefts)
 import           Data.Maybe         (fromJust, isJust)
 import           System.IO          (hPutStrLn, stderr)
 
@@ -36,29 +38,40 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method noInterp
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
         calCurve <- maybe (return $ loadCalCurve intcal20) readCalCurve calCurveFile
-        let calPDFs = calibrateDates method (not noInterpolate) calCurve dates
-        -- write density file
-        when (isJust densityFile) $ do
-            writeCalPDFs (fromJust densityFile) calPDFs
-        -- print or write high density regions
-        when (not quiet || isJust hdrFile) $ do
-            let calC14s = refineCalDates calPDFs
-            unless quiet $ do
-                putStrLn $ renderCalC14s calC14s
-            when (isJust hdrFile) $ do
-                writeCalC14s (fromJust hdrFile) calC14s
-        -- write calcurve segment file
-        when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
-            hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date: " ++
-                            show (head dates)
-            let firstC14 = head dates
-                calCurveSegment = prepareCalCurveSegment (not noInterpolate) True $ getRelevantCalCurveSegment firstC14 calCurve
-            when (isJust calCurveSegmentFile) $ do
-                writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
-            when (isJust calCurveMatrixFile) $ do
-                writeCalCurveMatrixFile (fromJust calCurveMatrixFile) $ makeCalCurveMatrix (uncalToPDF firstC14) calCurveSegment
-        -- finished
+        let errorOrCalPDFs = calibrateDates method (not noInterpolate) calCurve dates
+            calPDFs = rights errorOrCalPDFs
+        -- cover the case of failed calibration
+        if null calPDFs
+        then do
+            reportCalibrationErrors $ lefts errorOrCalPDFs
+            hPutStrLn stderr "Calibration failed for all input dates."
+        else do
+            -- write density file
+            when (isJust densityFile) $ do
+                writeCalPDFs (fromJust densityFile) calPDFs
+            -- print or write high density regions
+            when (not quiet || isJust hdrFile) $ do
+                let calC14s = refineCalDates calPDFs
+                unless quiet $ do
+                    putStrLn $ renderCalC14s calC14s
+                when (isJust hdrFile) $ do
+                    writeCalC14s (fromJust hdrFile) calC14s
+            -- write calcurve segment file
+            when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
+                hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date: " ++
+                                show (head dates)
+                let firstC14 = head dates
+                    calCurveSegment = prepareCalCurveSegment (not noInterpolate) True $ getRelevantCalCurveSegment firstC14 calCurve
+                when (isJust calCurveSegmentFile) $ do
+                    writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
+                when (isJust calCurveMatrixFile) $ do
+                    writeCalCurveMatrixFile (fromJust calCurveMatrixFile) $ makeCalCurveMatrix (uncalToPDF firstC14) calCurveSegment
+            -- finished
+            reportCalibrationErrors $ lefts errorOrCalPDFs
         hPutStrLn stderr "Done"
+
+reportCalibrationErrors :: [CurrycarbonException] -> IO ()
+reportCalibrationErrors = mapM_ (hPutStrLn stderr . renderCurrycarbonException)
 
 -- | Helper function to replace empty input names with a sequence of numbers, 
 -- to get each input date an unique identifier

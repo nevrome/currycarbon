@@ -1,3 +1,4 @@
+- V 0.19.0: Added functionality to filter out dates outside of the range of the calibration curve and report and error in this case.
 - V 0.18.0: Implemented calibration with a StudentT distribution to mimic Bchron and established that as the new default. Reimplemented the --method option of the CLI tool to reflect that change.
 - V 0.17.0: Changed argument order in CalCurve data type to adjust to the order in .14C files
 - V 0.16.0: Refactoring in the library to simplify and clarify the interface

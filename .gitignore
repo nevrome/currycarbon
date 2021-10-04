@@ -4,3 +4,4 @@ docs/_build/
 playground/data/
 *.prof
 .Rproj.user
+.Rhistory

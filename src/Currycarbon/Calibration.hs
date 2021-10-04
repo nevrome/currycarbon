@@ -15,6 +15,7 @@ module Currycarbon.Calibration
     ) where
 
 import Currycarbon.Types
+import Currycarbon.Utils
 
 import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
@@ -31,35 +32,47 @@ calibrateDates :: CalibrationMethod -- ^ Calibration method
                   -> Bool -- ^ Should the calibration curve be interpolated for year-wise output?
                   -> CalCurve -- ^ Calibration curve
                   -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates
-                  -> [CalPDF]
+                  -> [Either CurrycarbonException CalPDF]
 calibrateDates _ _ _ [] = []
 calibrateDates MatrixMultiplication interpolate calCurve uncalDates =
     map (calibrateDateMatrixMult interpolate calCurve) uncalDates `using` parList rpar
 calibrateDates Bchron{distribution=distr} interpolate calCurve uncalDates =
     map (calibrateDateBchron distr interpolate calCurve) uncalDates `using` parList rpar
 
-calibrateDateMatrixMult :: Bool -> CalCurve -> UncalC14 -> CalPDF
+calibrateDateMatrixMult :: Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateMatrixMult interpolate calCurve uncalC14 =
-    let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
-        calCurveSegment = prepareCalCurveSegment interpolate True rawCalCurveSegment
-        uncalPDF = uncalToPDF uncalC14
-        calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
-        calPDF = projectUncalOverCalCurve uncalPDF calCurveMatrix
-    in normalizeCalPDF calPDF
+    if isOutsideRangeOfCalCurve calCurve uncalC14
+    then Left $ CurrycarbonCalibrationRangeException $ _uncalC14Id uncalC14
+    else
+        let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
+            calCurveSegment = prepareCalCurveSegment interpolate True rawCalCurveSegment
+            uncalPDF = uncalToPDF uncalC14
+            calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
+            calPDF = projectUncalOverCalCurve uncalPDF calCurveMatrix
+        in Right $ normalizeCalPDF calPDF
 
-calibrateDateBchron :: CalibrationDistribution -> Bool -> CalCurve -> UncalC14 -> CalPDF
+calibrateDateBchron :: CalibrationDistribution -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateBchron distr interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
-    let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
-        CalCurve cals mus tau1s = prepareCalCurveSegment interpolate True rawCalCurveSegment
-        ageFloat = -(fromIntegral age)+1950
-        ageSd2 = ageSd*ageSd
-        ageSd2Float = fromIntegral ageSd2
-        musFloat = VU.map fromIntegral mus
-        tau1sFloat = VU.map fromIntegral tau1s
-        dens = case distr of
-            NormalDist -> VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
-            StudentTDist numberOfDegreesOfFreedom -> VU.zipWith (\mu tau1 -> dt numberOfDegreesOfFreedom ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
-    in normalizeCalPDF $ CalPDF name cals dens
+    if isOutsideRangeOfCalCurve calCurve uncalC14
+    then Left $ CurrycarbonCalibrationRangeException $ _uncalC14Id uncalC14
+    else 
+        let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
+            CalCurve cals mus tau1s = prepareCalCurveSegment interpolate True rawCalCurveSegment
+            ageFloat = -(fromIntegral age)+1950
+            ageSd2 = ageSd*ageSd
+            ageSd2Float = fromIntegral ageSd2
+            musFloat = VU.map fromIntegral mus
+            tau1sFloat = VU.map fromIntegral tau1s
+            dens = case distr of
+                NormalDist -> 
+                    VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
+                StudentTDist degreesOfFreedom -> 
+                    VU.zipWith (\mu tau1 -> dt degreesOfFreedom ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
+        in Right $ normalizeCalPDF $ CalPDF name cals dens
+
+isOutsideRangeOfCalCurve :: CalCurve -> UncalC14 -> Bool
+isOutsideRangeOfCalCurve (CalCurve _ bps _) (UncalC14 _ age _) = 
+    age < VU.minimum bps || age > VU.maximum bps
 
 -- | Take an uncalibrated date and a raw calibration curve and return
 -- the relevant segment of the calibration curve
