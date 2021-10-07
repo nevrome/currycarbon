@@ -29,7 +29,7 @@ chmod +x currycarbon-Linux
 
 ```
 Usage: currycarbon [--version] [DATES] [-i|--inputFile ARG] 
-                   [--calibrationCurveFile ARG] [--method ARG] 
+                   [--calibrationCurveFile ARG] [--method ARG] [--allowOutside] 
                    [--noInterpolation] [-q|--quiet] [--densityFile ARG] 
                    [--hdrFile ARG] [--calCurveSegmentFile ARG] 
                    [--calCurveMatrixFile ARG]
@@ -61,6 +61,8 @@ Available options:
                            arguments. For the Bchron algorithm with a normal
                            distribution ("Bchron,Normal") the degrees of freedom
                            argument is not relevant
+  --allowOutside           Allow calibrations to run outside the range of the
+                           calibration curve
   --noInterpolation        Don't interpolate the calibration curve
   -q,--quiet               Suppress the printing of calibration results to the
                            command line
