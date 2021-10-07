@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.19.0
+@version 0.20.1
 
 module Currycarbon.CalCurves.Intcal20
 
@@ -136,6 +136,21 @@ instance GHC.Show.Show Currycarbon.Types.CalPDF
 instance GHC.Show.Show Currycarbon.Types.HDR
 instance GHC.Show.Show Currycarbon.Types.CalC14
 
+module Currycarbon.Utils
+
+-- | Different exceptions for currycarbon
+data CurrycarbonException
+
+-- | An exception to describe an issue in the currycarbon CLI input parsing
+CurrycarbonCLIParsingException :: String -> CurrycarbonException
+
+-- | An exection to describe the case that a date is not in the range of
+--   the supplied calibration curve
+CurrycarbonCalibrationRangeException :: String -> CurrycarbonException
+renderCurrycarbonException :: CurrycarbonException -> String
+instance GHC.Show.Show Currycarbon.Utils.CurrycarbonException
+instance GHC.Exception.Type.Exception Currycarbon.Utils.CurrycarbonException
+
 module Currycarbon.Parsers
 readCalibrationMethodString :: String -> Either String CalibrationMethod
 parseCalibrationMethodString :: Parser CalibrationMethod
@@ -162,21 +177,6 @@ calCurveFileParser :: Parser [(Int, Int, Int)]
 calCurveLineParser :: Parser (Int, Int, Int)
 comments :: Parser String
 
-module Currycarbon.Utils
-
--- | Different exceptions for currycarbon
-data CurrycarbonException
-
--- | An exception to describe an issue in the currycarbon CLI input parsing
-CurrycarbonCLIParsingException :: String -> CurrycarbonException
-
--- | An exection to describe the case that a date is not in the range of
---   the supplied calibration curve
-CurrycarbonCalibrationRangeException :: String -> CurrycarbonException
-renderCurrycarbonException :: CurrycarbonException -> String
-instance GHC.Show.Show Currycarbon.Utils.CurrycarbonException
-instance GHC.Exception.Type.Exception Currycarbon.Utils.CurrycarbonException
-
 module Currycarbon.Calibration
 
 -- | Take an uncalibrated date and a raw calibration curve and return the
@@ -196,7 +196,7 @@ makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 uncalToPDF :: UncalC14 -> UncalPDF
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: CalibrationMethod -> Bool -> CalCurve -> [UncalC14] -> [Either CurrycarbonException CalPDF]
+calibrateDates :: CalibrationMethod -> Bool -> Bool -> CalCurve -> [UncalC14] -> [Either CurrycarbonException CalPDF]
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date
@@ -207,7 +207,7 @@ module Currycarbon.CLI.RunCalibrate
 -- | A data type to represent the options to the CLI module function
 --   runCalibrate
 data CalibrateOptions
-CalibrateOptions :: [UncalC14] -> [FilePath] -> Maybe FilePath -> CalibrationMethod -> Bool -> Bool -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> CalibrateOptions
+CalibrateOptions :: [UncalC14] -> [FilePath] -> Maybe FilePath -> CalibrationMethod -> Bool -> Bool -> Bool -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> CalibrateOptions
 
 -- | Uncalibrated dates that should be calibrated
 [_calibrateUncalC14] :: CalibrateOptions -> [UncalC14]
@@ -220,6 +220,9 @@ CalibrateOptions :: [UncalC14] -> [FilePath] -> Maybe FilePath -> CalibrationMet
 
 -- | Calibration algorithm that should be used
 [_calibrateCalibrationMethod] :: CalibrateOptions -> CalibrationMethod
+
+-- | Allow calibration to run outside of the range of the calibration curve
+[_calibrateAllowOutside] :: CalibrateOptions -> Bool
 
 -- | Don't interpolate the calibration curve
 [_calibrateDontInterpolateCalCurve] :: CalibrateOptions -> Bool
