@@ -16,6 +16,6 @@ instance Exception CurrycarbonException
 
 renderCurrycarbonException :: CurrycarbonException -> String 
 renderCurrycarbonException (CurrycarbonCLIParsingException s) = 
-    "/!\\ Issue when parsing the input: " ++ s
+    "/!\\ Issue when parsing the input:\n" ++ s
 renderCurrycarbonException (CurrycarbonCalibrationRangeException sampleName) =
     "/!\\ Sample: " ++ sampleName ++ "\nOutside of calibration range. It will be ignored."

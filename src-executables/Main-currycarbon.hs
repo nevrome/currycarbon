@@ -1,13 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import           Paths_currycarbon                  (version)
-import           Currycarbon.Parsers
-import           Currycarbon.Types
 import           Currycarbon.CLI.RunCalibrate       (runCalibrate, 
                                                      CalibrateOptions (..))
+import           Currycarbon.Parsers
+import           Currycarbon.Types
+import           Currycarbon.Utils
+import           Paths_currycarbon                  (version)
 
+import           Control.Exception                  (catch)
 import           Data.Version                       (showVersion)
 import qualified Options.Applicative                as OP
+import           System.Exit                        (exitFailure)
+import           System.IO                          (hPutStrLn, stderr)
 
 -- * CLI interface configuration
 --
@@ -22,9 +26,13 @@ data Options = CmdCalibrate CalibrateOptions
 main :: IO ()
 main = do
     cmdOpts <- OP.customExecParser p optParserInfo
-    runCmd cmdOpts
+    catch (runCmd cmdOpts) handler
     where
         p = OP.prefs OP.showHelpOnEmpty
+        handler :: CurrycarbonException -> IO ()
+        handler e = do
+            hPutStrLn stderr $ renderCurrycarbonException e
+            exitFailure
 
 runCmd :: Options -> IO ()
 runCmd o = case o of
@@ -33,7 +41,7 @@ runCmd o = case o of
 optParserInfo :: OP.ParserInfo Options
 optParserInfo = OP.info (OP.helper <*> versionOption <*> optParser) (
     OP.briefDesc <>
-    OP.progDesc "Simple intercept calibration for one or multiple radiocarbon dates"
+    OP.progDesc "Intercept calibration of radiocarbon dates"
     )
 
 versionOption :: OP.Parser (a -> a)

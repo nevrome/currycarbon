@@ -1,12 +1,14 @@
 module Currycarbon.Parsers where
 
 import Currycarbon.Types
+import Currycarbon.Utils
 
+import           Control.Exception              (throwIO)
 import           Data.List                      (intercalate)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed            as VU
+import qualified Data.Vector                    as V
 
 -- * Parsing, rendering and writing functions
 --
@@ -19,7 +21,7 @@ import qualified Data.Vector as V
 readCalibrationMethodString :: String -> Either String CalibrationMethod
 readCalibrationMethodString s =
     case P.runParser parseCalibrationMethodString () "" s of
-        Left err -> error $ "Error in parsing method from string: " ++ show err
+        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
         Right x -> Right x
 
 parseCalibrationMethodString :: P.Parser CalibrationMethod
@@ -82,7 +84,7 @@ renderHDR (HDR stop start)
     | start < 0 && stop <= 0  = show (-start) ++ "-" ++ show (-stop) ++ "BC"
     | start < 0 && stop > 0   = show (-start) ++ "BC-" ++ show stop ++ "AD"
     | start >= 0 && stop >= 0 = show start ++ "-" ++ show stop ++ "AD"
-    | otherwise = error $ "this should never happen: " ++ show start ++ "-" ++ show stop
+    | otherwise = error $ "This should never happen: " ++ show start ++ "-" ++ show stop
 
 -- CalCurveMatrix
 writeCalCurveMatrixFile :: FilePath -> CalCurveMatrix -> IO ()
@@ -111,7 +113,7 @@ readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
     s <- readFile uncalFile
     case P.runParser uncalC14SepByNewline () "" s of
-        Left err -> error $ "Error in parsing dates from file: " ++ show err
+        Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
         Right x -> return x
     where
         uncalC14SepByNewline :: P.Parser [UncalC14]
@@ -120,7 +122,7 @@ readUncalC14FromFile uncalFile = do
 readUncalC14String :: String -> Either String [UncalC14]
 readUncalC14String s = 
     case P.runParser uncalC14SepBySemicolon () "" s of
-        Left err -> error $ "Error in parsing dates from string: " ++ show err
+        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
         Right x -> Right x
     where 
         uncalC14SepBySemicolon :: P.Parser [UncalC14]

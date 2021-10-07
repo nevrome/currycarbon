@@ -4,7 +4,7 @@
 
 # currycarbon
 
-An experimental radiocarbon calibration module written in and for [Haskell](https://www.haskell.org). Comes with a small CLI app to run calibration on the commandline.
+Radiocarbon calibration module written in and for [Haskell](https://www.haskell.org). Comes with a small CLI app to run calibration on the command line.
 
 ### Library
 
