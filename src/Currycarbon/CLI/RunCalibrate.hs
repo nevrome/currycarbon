@@ -18,6 +18,7 @@ data CalibrateOptions = CalibrateOptions {
       , _calibrateUncalC14File :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
       , _calibrateCalCurveFile :: Maybe FilePath -- ^ Path to a .14c file
       , _calibrateCalibrationMethod :: CalibrationMethod -- ^ Calibration algorithm that should be used
+      , _calibrateAllowOutside :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve 
       , _calibrateDontInterpolateCalCurve :: Bool -- ^ Don't interpolate the calibration curve
       , _calibrateQuiet :: Bool -- ^ Suppress the printing of calibration results to the command line
       , _calibrateDensityFile :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
@@ -28,7 +29,7 @@ data CalibrateOptions = CalibrateOptions {
 
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
-runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
+runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOutside noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
     -- compile dates
     entitiesFromFile <- mapM readUncalC14FromFile uncalFile
     let dates = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
@@ -38,7 +39,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method noInterp
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
         calCurve <- maybe (return $ loadCalCurve intcal20) readCalCurve calCurveFile
-        let errorOrCalPDFs = calibrateDates method (not noInterpolate) calCurve dates
+        let errorOrCalPDFs = calibrateDates method allowOutside (not noInterpolate) calCurve dates
             calPDFs = rights errorOrCalPDFs
         -- cover the case of failed calibration
         if null calPDFs

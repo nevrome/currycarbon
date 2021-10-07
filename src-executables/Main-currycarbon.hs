@@ -47,6 +47,7 @@ calibrateOptParser = CalibrateOptions <$> parseUncalC14String
                                       <*> parseUncalC14FromFile
                                       <*> parseCalCurveFromFile
                                       <*> parseCalibrationMethod
+                                      <*> parseAllowOutside
                                       <*> parseDontInterpolateCalCurve
                                       <*> parseQuiet
                                       <*> parseDensityFile
@@ -100,12 +101,17 @@ parseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethodString)
     OP.value (Bchron $ StudentTDist 100)
     )
 
+parseAllowOutside :: OP.Parser (Bool)
+parseAllowOutside = OP.switch (
+    OP.long "allowOutside" <> 
+    OP.help "Allow calibrations to run outside the range of the calibration curve"
+    )
+
 parseDontInterpolateCalCurve :: OP.Parser (Bool)
 parseDontInterpolateCalCurve = OP.switch (
     OP.long "noInterpolation" <> 
     OP.help "Don't interpolate the calibration curve"
     )
-
 
 parseQuiet :: OP.Parser (Bool)
 parseQuiet = OP.switch (

@@ -29,19 +29,20 @@ import Statistics.Distribution.StudentT (studentT)
 
 -- | Calibrates a list of dates with the provided calibration curve
 calibrateDates :: CalibrationMethod -- ^ Calibration method
+                  -> Bool -- ^ Should calibration be allowed to run outside of the range of the calibration curve? 
                   -> Bool -- ^ Should the calibration curve be interpolated for year-wise output?
                   -> CalCurve -- ^ Calibration curve
                   -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates
                   -> [Either CurrycarbonException CalPDF]
-calibrateDates _ _ _ [] = []
-calibrateDates MatrixMultiplication interpolate calCurve uncalDates =
-    map (calibrateDateMatrixMult interpolate calCurve) uncalDates `using` parList rpar
-calibrateDates Bchron{distribution=distr} interpolate calCurve uncalDates =
-    map (calibrateDateBchron distr interpolate calCurve) uncalDates `using` parList rpar
+calibrateDates _ _ _ _ [] = []
+calibrateDates MatrixMultiplication allowOutside interpolate calCurve uncalDates =
+    map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates `using` parList rpar
+calibrateDates Bchron{distribution=distr} allowOutside interpolate calCurve uncalDates =
+    map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates `using` parList rpar
 
-calibrateDateMatrixMult :: Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
-calibrateDateMatrixMult interpolate calCurve uncalC14 =
-    if isOutsideRangeOfCalCurve calCurve uncalC14
+calibrateDateMatrixMult :: Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
+    if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ _uncalC14Id uncalC14
     else
         let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
@@ -51,9 +52,9 @@ calibrateDateMatrixMult interpolate calCurve uncalC14 =
             calPDF = projectUncalOverCalCurve uncalPDF calCurveMatrix
         in Right $ normalizeCalPDF calPDF
 
-calibrateDateBchron :: CalibrationDistribution -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
-calibrateDateBchron distr interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
-    if isOutsideRangeOfCalCurve calCurve uncalC14
+calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
+    if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ _uncalC14Id uncalC14
     else 
         let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
