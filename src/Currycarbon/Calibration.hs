@@ -17,7 +17,7 @@ module Currycarbon.Calibration
 import Currycarbon.Types
 import Currycarbon.Utils
 
-import Control.Parallel.Strategies (parList, using, rpar)
+import Control.Parallel.Strategies (parListChunk, using, rpar)
 import Data.List (sort, tails, sortBy, groupBy)
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
@@ -36,9 +36,10 @@ calibrateDates :: CalibrationMethod -- ^ Calibration method
                   -> [Either CurrycarbonException CalPDF]
 calibrateDates _ _ _ _ [] = []
 calibrateDates MatrixMultiplication allowOutside interpolate calCurve uncalDates =
-    map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates `using` parList rpar
+    map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates `using` parListChunk 20 rpar
 calibrateDates Bchron{distribution=distr} allowOutside interpolate calCurve uncalDates =
-    map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates `using` parList rpar
+    map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates `using` parListChunk 100 rpar
+-- TODO: the chunking into 20/100 elements is arbitrary and requires solid testing
 
 calibrateDateMatrixMult :: Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
