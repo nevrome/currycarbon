@@ -108,7 +108,7 @@ writeCalPDFs path calPDFs =
 
 renderCalPDF :: CalPDF -> Builder
 renderCalPDF (CalPDF name bps dens) = 
-    let nameBuilder = stringUtf8 (show name)
+    let nameBuilder = stringUtf8 name
         densList = VU.toList $ VU.zip bps dens
         builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
     in mconcat builderList
