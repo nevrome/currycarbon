@@ -1,9 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Currycarbon.Parsers where
 
 import Currycarbon.Types
 import Currycarbon.Utils
 
 import           Control.Exception              (throwIO)
+import qualified Data.ByteString.Lazy           as BL
+import           Data.ByteString.Builder
 import           Data.List                      (intercalate)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
@@ -100,13 +104,14 @@ renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
 -- CalPDF
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 writeCalPDFs path calPDFs =
-    writeFile path $ 
-        "sample,calBCAD,density\n"
-        ++ concatMap renderCalPDF calPDFs
+    BL.writeFile path $ "sample,calBCAD,density\n" <> toLazyByteString (mconcat $ map renderCalPDF calPDFs)
 
-renderCalPDF :: CalPDF -> String
-renderCalPDF (CalPDF name bps dens) =
-    concatMap (\(year,prob) -> show name ++ "," ++ show year ++ "," ++ show prob ++ "\n") $ VU.toList $ VU.zip bps dens
+renderCalPDF :: CalPDF -> Builder
+renderCalPDF (CalPDF name bps dens) = 
+    let nameBuilder = stringUtf8 (show name)
+        densList = VU.toList $ VU.zip bps dens
+        builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
+    in mconcat builderList
 
 -- UncalC14
 readUncalC14FromFile :: FilePath -> IO [UncalC14]

@@ -40,6 +40,7 @@ calibrateDates MatrixMultiplication allowOutside interpolate calCurve uncalDates
 calibrateDates Bchron{distribution=distr} allowOutside interpolate calCurve uncalDates =
     map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates `using` parListChunk 100 rpar
 -- TODO: the chunking into 20/100 elements is arbitrary and requires solid testing
+-- Maybe a special condition for less than X dates is useful
 
 calibrateDateMatrixMult :: Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
