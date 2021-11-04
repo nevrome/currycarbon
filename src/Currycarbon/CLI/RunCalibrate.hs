@@ -55,6 +55,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
                 let calC14s = refineCalDates calPDFs
                 unless quiet $ do
                     putStrLn $ renderCalC14s calC14s
+                    cliPlotCalPDF $ head calPDFs
                 when (isJust hdrFile) $ do
                     writeCalC14s (fromJust hdrFile) calC14s
             -- write calcurve segment file

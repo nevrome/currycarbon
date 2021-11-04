@@ -113,6 +113,31 @@ renderCalPDF (CalPDF name bps dens) =
         builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
     in mconcat builderList
 
+cliPlotCalPDF :: CalPDF -> IO ()
+cliPlotCalPDF (CalPDF _ bps dens) =
+     let binDens = meanBinDens 4.0 40 dens
+         row4 = map (\x -> if x == 4 then '.' else ' ') binDens
+         row3 = map (\x -> if x >= 3 then '.' else ' ') binDens
+         row2 = map (\x -> if x >= 2 then '.' else ' ') binDens
+         row1 = map (\x -> if x >= 1 then '.' else ' ') binDens
+         row0 = map (\x -> if x >= 0 then '.' else ' ') binDens
+     in putStrLn $ row4 ++ "\n" ++ row3 ++ "\n" ++ row2 ++ "\n" ++ row1 ++ "\n" ++ row0 ++ "\n"
+     where
+        meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
+        meanBinDens scaling bins dens_ =
+            let binWidth = quot (VU.length dens_) bins
+                meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery binWidth $ VU.toList dens_
+                maxDens = maximum meanDens
+            in map (\x -> round $ (x / maxDens) * scaling) meanDens
+
+-- https://stackoverflow.com/a/8681226/3216883
+splitEvery :: Int -> [a] -> [[a]]
+splitEvery _ [] = []
+splitEvery n list = first : splitEvery n rest
+  where
+    (first,rest) = splitAt n list
+
+
 -- UncalC14
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
