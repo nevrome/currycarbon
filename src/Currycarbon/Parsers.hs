@@ -122,16 +122,17 @@ renderCalPDF (CalPDF name bps dens) =
 
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
 renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
-     let binDens = meanBinDens (fromIntegral rows) cols dens
-         plotRows = map (\x -> map (getSymbol x) binDens) $ reverse [0..rows]
-         plotRowsIndent = map (replicate 8 ' ' ++) plotRows
-         xAxis = constructXAxis (VU.head bps) (VU.last bps) (length binDens)
-     in intercalate "\n" plotRowsIndent ++ "\n" ++ xAxis
+     let binWidth = quot (VU.length dens) cols
+        -- last bin will often be shorter, which renders the whole plot 
+        -- slightly incorrect for the last column
+         binDens = meanBinDens (fromIntegral rows) binWidth dens
+         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getSymbol x) binDens) $ reverse [0..rows]
+         xAxis = constructXAxis (VU.head bps) (VU.last bps) (length binDens) binWidth
+     in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
         meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
-        meanBinDens scaling bins dens_ =
-            let binWidth = quot (VU.length dens_) bins
-                meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery binWidth $ VU.toList dens_
+        meanBinDens scaling binWidth dens_ =
+            let meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery binWidth $ VU.toList dens_
                 maxDens = maximum meanDens
             in map (\x -> round $ (x / maxDens) * scaling) meanDens
         splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
@@ -145,15 +146,14 @@ renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
             | x == y = '*'
             | x < y = '\''
             | otherwise = ' '
-        constructXAxis :: Int -> Int -> Int -> String
-        constructXAxis start stop l =
+        constructXAxis :: Int -> Int -> Int -> Int -> String
+        constructXAxis start stop l binWidth =
             let startS = padString 6 (show $ roundTo10 start)
                 stopS = show (roundTo10 stop)
-                axisLength = abs (stop - start) `quot` l
-                axis = zipWith (axisSymbol axisLength) [0 .. (l - 1)] [1 .. l]
+                axis = zipWith (axisSymbol binWidth) [0 .. (l - 1)] [1 .. l]
             in  startS ++ " <" ++ axis ++ "> " ++ stopS
             where 
-                axisSymbol axisL a b = if has100 (start + axisL * a) (start + axisL * b) then '|' else '~'
+                axisSymbol axisL a b = if has100 (start + axisL * a + 1) (start + axisL * b) then '|' else '~'
                 has100 a b = any (\x -> rem (abs x) 100 == 0) [a..b]
         roundTo10 :: Int -> Int
         roundTo10 x = 
