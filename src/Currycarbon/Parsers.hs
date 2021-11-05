@@ -113,15 +113,14 @@ renderCalPDF (CalPDF name bps dens) =
         builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
     in mconcat builderList
 
-cliPlotCalPDF :: CalPDF -> IO ()
-cliPlotCalPDF (CalPDF _ bps dens) =
-     let binDens = meanBinDens 4.0 40 dens
-         row4 = map (\x -> if x == 4 then '.' else ' ') binDens
-         row3 = map (\x -> if x >= 3 then '.' else ' ') binDens
-         row2 = map (\x -> if x >= 2 then '.' else ' ') binDens
-         row1 = map (\x -> if x >= 1 then '.' else ' ') binDens
-         row0 = map (\x -> if x >= 0 then '.' else ' ') binDens
-     in putStrLn $ row4 ++ "\n" ++ row3 ++ "\n" ++ row2 ++ "\n" ++ row1 ++ "\n" ++ row0 ++ "\n"
+cliPlotCalPDF :: Int -> Int -> CalPDF -> IO ()
+cliPlotCalPDF rows cols (CalPDF _ bps dens) =
+     let binDens = meanBinDens (fromIntegral rows) cols dens
+         plotRows = map ((replicate 8 ' ' ++) . \x -> map (\y -> if y == x then '.' else ' ') binDens) $ reverse [0..rows]
+         xAxis = padString 6 (show $ roundTo10 $ VU.head bps) ++ 
+            " <" ++ replicate (length binDens) '~' ++ "> " ++
+            show (roundTo10 $ VU.last bps)
+     in putStrLn $ intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
         meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
         meanBinDens scaling bins dens_ =
@@ -129,6 +128,13 @@ cliPlotCalPDF (CalPDF _ bps dens) =
                 meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery binWidth $ VU.toList dens_
                 maxDens = maximum meanDens
             in map (\x -> round $ (x / maxDens) * scaling) meanDens
+        padString :: Int -> String -> String
+        padString l x = replicate (l - length x) ' ' ++ x
+        roundTo10 :: Int -> Int
+        roundTo10 x = 
+            let (dec,rest) = quotRem (abs x) 10
+                roundedDec = if rest >= 5 then dec + 1 else dec
+            in roundedDec * 10 * signum x
 
 -- https://stackoverflow.com/a/8681226/3216883
 splitEvery :: Int -> [a] -> [[a]]
