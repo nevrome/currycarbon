@@ -13,6 +13,8 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Data.Vector.Unboxed            as VU
 import qualified Data.Vector                    as V
+import Currycarbon.Types (CalPDF(CalPDF))
+import Data.Data (ConstrRep(CharConstr))
 
 -- * Parsing, rendering and writing functions
 --
@@ -45,6 +47,11 @@ parseCalibrationMethodString = do
         matrixMultiplication = do
             _ <- P.string "MatrixMult"
             return MatrixMultiplication
+
+-- CalC14 & CalPDF
+renderCalC14CalPDF :: [(CalC14, CalPDF)] -> String
+renderCalC14CalPDF xs =
+    intercalate "\n" $ map (\x -> renderCalC14 (fst x) ++ "\n" ++ renderCLIPlotCalPDF 5 50 (snd x)) xs
 
 -- CalC14
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
@@ -113,14 +120,15 @@ renderCalPDF (CalPDF name bps dens) =
         builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
     in mconcat builderList
 
-cliPlotCalPDF :: Int -> Int -> CalPDF -> IO ()
-cliPlotCalPDF rows cols (CalPDF _ bps dens) =
+renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
+renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
      let binDens = meanBinDens (fromIntegral rows) cols dens
-         plotRows = map ((replicate 8 ' ' ++) . \x -> map (\y -> if y == x then '.' else ' ') binDens) $ reverse [0..rows]
+         plotRows = map (\x -> map (getSymbol x) binDens) $ reverse [0..rows]
+         plotRowsIndent = map (replicate 8 ' ' ++) plotRows
          xAxis = padString 6 (show $ roundTo10 $ VU.head bps) ++ 
             " <" ++ replicate (length binDens) '~' ++ "> " ++
             show (roundTo10 $ VU.last bps)
-     in putStrLn $ intercalate "\n" plotRows ++ "\n" ++ xAxis
+     in intercalate "\n" plotRowsIndent ++ "\n" ++ xAxis
      where
         meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
         meanBinDens scaling bins dens_ =
@@ -135,6 +143,11 @@ cliPlotCalPDF rows cols (CalPDF _ bps dens) =
             let (dec,rest) = quotRem (abs x) 10
                 roundedDec = if rest >= 5 then dec + 1 else dec
             in roundedDec * 10 * signum x
+        getSymbol :: Int -> Int -> Char
+        getSymbol x y
+            | x == y = '*'
+            | x < y = '\''
+            | otherwise = ' '
 
 -- https://stackoverflow.com/a/8681226/3216883
 splitEvery :: Int -> [a] -> [[a]]

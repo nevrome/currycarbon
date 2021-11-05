@@ -11,6 +11,7 @@ import           Control.Monad      (when, unless)
 import           Data.Either        (rights, lefts)
 import           Data.Maybe         (fromJust, isJust)
 import           System.IO          (hPutStrLn, stderr)
+import System.Posix.Internals (puts)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
@@ -54,8 +55,8 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
             when (not quiet || isJust hdrFile) $ do
                 let calC14s = refineCalDates calPDFs
                 unless quiet $ do
-                    putStrLn $ renderCalC14s calC14s
-                    cliPlotCalPDF 5 40 $ head calPDFs
+                    --putStrLn $ renderCalC14s calC14s
+                    putStrLn $ renderCalC14CalPDF $ zip calC14s calPDFs
                 when (isJust hdrFile) $ do
                     writeCalC14s (fromJust hdrFile) calC14s
             -- write calcurve segment file
