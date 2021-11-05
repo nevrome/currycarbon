@@ -25,6 +25,7 @@ import Data.Vector.Generic (convert)
 import Data.Maybe (fromMaybe)
 import Statistics.Distribution (density)
 import Statistics.Distribution.StudentT (studentT)
+import Currycarbon.Types (CalPDF(CalPDF))
 --import Statistics.Distribution.Normal (normalDistr)
 
 -- | Calibrates a list of dates with the provided calibration curve
@@ -52,7 +53,7 @@ calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
             uncalPDF = uncalToPDF uncalC14
             calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
             calPDF = projectUncalOverCalCurve uncalPDF calCurveMatrix
-        in Right $ normalizeCalPDF calPDF
+        in Right $ trimLowDensityEdgesCalPDF $ normalizeCalPDF calPDF
 
 calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
@@ -71,7 +72,7 @@ calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 n
                     VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
                 StudentTDist degreesOfFreedom -> 
                     VU.zipWith (\mu tau1 -> dt degreesOfFreedom ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
-        in Right $ normalizeCalPDF $ CalPDF name cals dens
+        in Right $ trimLowDensityEdgesCalPDF $ normalizeCalPDF $ CalPDF name cals dens
 
 isOutsideRangeOfCalCurve :: CalCurve -> UncalC14 -> Bool
 isOutsideRangeOfCalCurve (CalCurve _ bps _) (UncalC14 _ age _) = 
@@ -189,6 +190,15 @@ projectUncalOverCalCurve (UncalPDF name _ dens) (CalCurveMatrix _ cals matrix) =
     where
         vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> VU.Vector Float
         vectorMatrixMultSum vec mat = convert $ V.map (\x -> VU.sum $ VU.zipWith (*) x vec) mat
+
+trimLowDensityEdgesCalPDF :: CalPDF -> CalPDF
+trimLowDensityEdgesCalPDF (CalPDF name cals dens) =
+    let firstAboveThreshold = fromMaybe 0 (VU.findIndex (> 0.00001) dens)
+        lastAboveThreshold = fromMaybe 0 (VU.findIndex (> 0.00001) $ VU.reverse dens)
+        untilLastAboveThreshold = VU.length dens - firstAboveThreshold - lastAboveThreshold
+        calsSlice = VU.slice firstAboveThreshold untilLastAboveThreshold cals
+        densSlice = VU.slice firstAboveThreshold untilLastAboveThreshold dens
+    in CalPDF name calsSlice densSlice
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
