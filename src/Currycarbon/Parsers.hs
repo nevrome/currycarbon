@@ -125,9 +125,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
      let binDens = meanBinDens (fromIntegral rows) cols dens
          plotRows = map (\x -> map (getSymbol x) binDens) $ reverse [0..rows]
          plotRowsIndent = map (replicate 8 ' ' ++) plotRows
-         xAxis = padString 6 (show $ roundTo10 $ VU.head bps) ++ 
-            " <" ++ replicate (length binDens) '~' ++ "> " ++
-            show (roundTo10 $ VU.last bps)
+         xAxis = constructXAxis (VU.head bps) (VU.last bps) (length binDens)
      in intercalate "\n" plotRowsIndent ++ "\n" ++ xAxis
      where
         meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
@@ -136,26 +134,32 @@ renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
                 meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery binWidth $ VU.toList dens_
                 maxDens = maximum meanDens
             in map (\x -> round $ (x / maxDens) * scaling) meanDens
+        splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
+        splitEvery _ [] = []
+        splitEvery n list = first : splitEvery n rest
+            where (first,rest) = splitAt n list
         padString :: Int -> String -> String
         padString l x = replicate (l - length x) ' ' ++ x
-        roundTo10 :: Int -> Int
-        roundTo10 x = 
-            let (dec,rest) = quotRem (abs x) 10
-                roundedDec = if rest >= 5 then dec + 1 else dec
-            in roundedDec * 10 * signum x
         getSymbol :: Int -> Int -> Char
         getSymbol x y
             | x == y = '*'
             | x < y = '\''
             | otherwise = ' '
-
--- https://stackoverflow.com/a/8681226/3216883
-splitEvery :: Int -> [a] -> [[a]]
-splitEvery _ [] = []
-splitEvery n list = first : splitEvery n rest
-  where
-    (first,rest) = splitAt n list
-
+        constructXAxis :: Int -> Int -> Int -> String
+        constructXAxis start stop l =
+            let startS = padString 6 (show $ roundTo10 start)
+                stopS = show (roundTo10 stop)
+                axisLength = abs (stop - start) `quot` l
+                axis = zipWith (axisSymbol axisLength) [0 .. (l - 1)] [1 .. l]
+            in  startS ++ " <" ++ axis ++ "> " ++ stopS
+            where 
+                axisSymbol axisL a b = if has100 (start + axisL * a) (start + axisL * b) then '|' else '~'
+                has100 a b = any (\x -> rem (abs x) 100 == 0) [a..b]
+        roundTo10 :: Int -> Int
+        roundTo10 x = 
+            let (dec,rest) = quotRem (abs x) 10
+                roundedDec = if rest >= 5 then dec + 1 else dec
+            in roundedDec * 10 * signum x
 
 -- UncalC14
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
