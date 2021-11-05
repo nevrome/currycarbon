@@ -13,7 +13,7 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Data.Vector.Unboxed            as VU
 import qualified Data.Vector                    as V
-import Currycarbon.Types (CalPDF(CalPDF))
+import Currycarbon.Types (CalPDF(CalPDF), UncalC14 (UncalC14))
 import Data.Data (ConstrRep(CharConstr))
 
 -- * Parsing, rendering and writing functions
@@ -22,6 +22,19 @@ import Data.Data (ConstrRep(CharConstr))
 --
 -- This module contains a number of functions to manage data input and 
 -- output plumbing for different datatypes
+
+-- render pretty output
+renderCalDatesPretty :: [(UncalC14, CalC14, CalPDF)] -> String
+renderCalDatesPretty xs =
+    intercalate "\n" $ map renderCalDatePretty xs
+
+renderCalDatePretty :: (UncalC14, CalC14, CalPDF) -> String
+renderCalDatePretty (uncalC14, calC14, calPDF) =
+    intercalate "\n" [
+          renderUncalC14 uncalC14
+        , renderCalC14 calC14
+        , renderCLIPlotCalPDF 5 50 calPDF
+        ]
 
 -- CalibrationMethod
 readCalibrationMethodString :: String -> Either String CalibrationMethod
@@ -48,11 +61,6 @@ parseCalibrationMethodString = do
             _ <- P.string "MatrixMult"
             return MatrixMultiplication
 
--- CalC14 & CalPDF
-renderCalC14CalPDF :: [(CalC14, CalPDF)] -> String
-renderCalC14CalPDF xs =
-    intercalate "\n" $ map (\x -> renderCalC14 (fst x) ++ "\n" ++ renderCLIPlotCalPDF 5 50 (snd x)) xs
-
 -- CalC14
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 writeCalC14s path calC14s = writeFile path $ 
@@ -76,8 +84,8 @@ renderCalC14s xs =
 
 renderCalC14 :: CalC14 -> String
 renderCalC14 (CalC14 name hdrs68 hdrs95) =
-       "Sample: " ++ name ++ "\n" 
-    ++ "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
+--       "Sample: " ++ name ++ "\n" 
+       "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
     ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
 
 -- HDR
@@ -162,6 +170,9 @@ renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
             in roundedDec * 10 * signum x
 
 -- UncalC14
+renderUncalC14 :: UncalC14 -> String
+renderUncalC14 (UncalC14 name bp sigma) = "Sample: " ++ name ++ " ~> " ++ show bp ++ "+-" ++ show sigma
+
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
     s <- readFile uncalFile

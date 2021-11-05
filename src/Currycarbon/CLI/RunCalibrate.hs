@@ -8,7 +8,7 @@ import           Currycarbon.Types
 import           Currycarbon.Utils
 
 import           Control.Monad      (when, unless)
-import           Data.Either        (rights, lefts)
+import           Data.Either        (rights, lefts, isRight)
 import           Data.Maybe         (fromJust, isJust)
 import           System.IO          (hPutStrLn, stderr)
 import System.Posix.Internals (puts)
@@ -33,14 +33,15 @@ runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOutside noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
     -- compile dates
     entitiesFromFile <- mapM readUncalC14FromFile uncalFile
-    let dates = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
-    if null dates
+    let uncalDatesRenamed = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
+    if null uncalDatesRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon calibrate -h"
     else do
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
         calCurve <- maybe (return $ loadCalCurve intcal20) readCalCurve calCurveFile
-        let errorOrCalPDFs = calibrateDates method allowOutside (not noInterpolate) calCurve dates
+        let errorOrCalPDFs = calibrateDates method allowOutside (not noInterpolate) calCurve uncalDatesRenamed
+            dates = map fst $ filter (isRight . snd) $ zip uncalDatesRenamed errorOrCalPDFs
             calPDFs = rights errorOrCalPDFs
         -- cover the case of failed calibration
         if null calPDFs
@@ -56,13 +57,13 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
                 let calC14s = refineCalDates calPDFs
                 unless quiet $ do
                     --putStrLn $ renderCalC14s calC14s
-                    putStrLn $ renderCalC14CalPDF $ zip calC14s calPDFs
+                    putStrLn $ renderCalDatesPretty $ zip3 dates calC14s calPDFs
                 when (isJust hdrFile) $ do
                     writeCalC14s (fromJust hdrFile) calC14s
             -- write calcurve segment file
             when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
-                hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date: " ++
-                                show (head dates)
+                hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date, " ++
+                                renderUncalC14 (head dates)
                 let firstC14 = head dates
                     calCurveSegment = prepareCalCurveSegment (not noInterpolate) True $ getRelevantCalCurveSegment firstC14 calCurve
                 when (isJust calCurveSegmentFile) $ do
