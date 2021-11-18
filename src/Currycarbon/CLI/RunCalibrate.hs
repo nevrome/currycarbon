@@ -11,7 +11,6 @@ import           Control.Monad      (when, unless)
 import           Data.Either        (rights, lefts, isRight)
 import           Data.Maybe         (fromJust, isJust)
 import           System.IO          (hPutStrLn, stderr)
-import System.Posix.Internals (puts)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {

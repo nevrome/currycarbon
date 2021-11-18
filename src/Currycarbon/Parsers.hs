@@ -13,8 +13,6 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Data.Vector.Unboxed            as VU
 import qualified Data.Vector                    as V
-import Currycarbon.Types (CalPDF(CalPDF), UncalC14 (UncalC14))
-import Data.Data (ConstrRep(CharConstr))
 
 -- * Parsing, rendering and writing functions
 --
@@ -83,8 +81,7 @@ renderCalC14s xs =
     ++ intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 name hdrs68 hdrs95) =
---       "Sample: " ++ name ++ "\n" 
+renderCalC14 (CalC14 _ hdrs68 hdrs95) =
        "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
     ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
 

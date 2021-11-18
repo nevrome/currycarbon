@@ -25,7 +25,7 @@ import Data.Vector.Generic (convert)
 import Data.Maybe (fromMaybe)
 import Statistics.Distribution (density)
 import Statistics.Distribution.StudentT (studentT)
-import Currycarbon.Types (CalPDF(CalPDF))
+
 --import Statistics.Distribution.Normal (normalDistr)
 
 -- | Calibrates a list of dates with the provided calibration curve
