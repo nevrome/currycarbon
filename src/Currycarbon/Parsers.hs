@@ -155,11 +155,12 @@ renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
         constructXAxis start stop l binWidth =
             let startS = padString 6 (show $ roundTo10 start)
                 stopS = show (roundTo10 stop)
-                axis = zipWith (axisSymbol binWidth) [0 .. (l - 1)] [1 .. l]
+                tickFreq = if abs (start - stop) < 1500 then 100 else 1000
+                axis = zipWith (axisSymbol binWidth tickFreq) [0 .. (l - 1)] [1 .. l]
             in  startS ++ " <" ++ axis ++ "> " ++ stopS
             where 
-                axisSymbol axisL a b = if has100 (start + axisL * a + 1) (start + axisL * b) then '|' else '~'
-                has100 a b = any (\x -> rem (abs x) 100 == 0) [a..b]
+                axisSymbol axisL tickFreq a b = if hasTick tickFreq (start + axisL * a + 1) (start + axisL * b) then '|' else '~'
+                hasTick tickFreq a b = any (\x -> rem (abs x) tickFreq == 0) [a..b]
         roundTo10 :: Int -> Int
         roundTo10 x = 
             let (dec,rest) = quotRem (abs x) 10
