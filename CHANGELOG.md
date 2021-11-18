@@ -1,3 +1,4 @@
+- V 0.21.0: Added a neat CLI density plot for calibrated dates
 - V 0.20.2: Some performance improvements for the calibration of large numbers of dates
 - V 0.20.1: Better (parsing) error handling
 - V 0.20.0: Added an option --allowOutside to allow for calibrations to run outside the range of the calibration curve
