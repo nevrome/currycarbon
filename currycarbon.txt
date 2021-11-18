@@ -152,6 +152,8 @@ instance GHC.Show.Show Currycarbon.Utils.CurrycarbonException
 instance GHC.Exception.Type.Exception Currycarbon.Utils.CurrycarbonException
 
 module Currycarbon.Parsers
+renderCalDatesPretty :: [(UncalC14, CalC14, CalPDF)] -> String
+renderCalDatePretty :: (UncalC14, CalC14, CalPDF) -> String
 readCalibrationMethodString :: String -> Either String CalibrationMethod
 parseCalibrationMethodString :: Parser CalibrationMethod
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
@@ -166,6 +168,8 @@ writeCalCurveMatrixFile :: FilePath -> CalCurveMatrix -> IO ()
 renderCalCurveMatrixFile :: CalCurveMatrix -> String
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 renderCalPDF :: CalPDF -> Builder
+renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
+renderUncalC14 :: UncalC14 -> String
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14String :: String -> Either String [UncalC14]
 parseUncalC14 :: Parser UncalC14
