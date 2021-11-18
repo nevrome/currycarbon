@@ -21,6 +21,19 @@ import qualified Data.Vector                    as V
 -- This module contains a number of functions to manage data input and 
 -- output plumbing for different datatypes
 
+-- render pretty output
+renderCalDatesPretty :: [(UncalC14, CalC14, CalPDF)] -> String
+renderCalDatesPretty xs =
+    intercalate "\n" $ map renderCalDatePretty xs
+
+renderCalDatePretty :: (UncalC14, CalC14, CalPDF) -> String
+renderCalDatePretty (uncalC14, calC14, calPDF) =
+    intercalate "\n" [
+          renderUncalC14 uncalC14
+        , renderCalC14 calC14
+        , renderCLIPlotCalPDF 5 50 calPDF
+        ]
+
 -- CalibrationMethod
 readCalibrationMethodString :: String -> Either String CalibrationMethod
 readCalibrationMethodString s =
@@ -68,9 +81,8 @@ renderCalC14s xs =
     ++ intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 name hdrs68 hdrs95) =
-       "Sample: " ++ name ++ "\n" 
-    ++ "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
+renderCalC14 (CalC14 _ hdrs68 hdrs95) =
+       "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
     ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
 
 -- HDR
@@ -113,7 +125,52 @@ renderCalPDF (CalPDF name bps dens) =
         builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
     in mconcat builderList
 
+renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
+renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
+     let binWidth = quot (VU.length dens) cols
+        -- last bin will often be shorter, which renders the whole plot 
+        -- slightly incorrect for the last column
+         binDens = meanBinDens (fromIntegral rows) binWidth dens
+         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getSymbol x) binDens) $ reverse [0..rows]
+         xAxis = constructXAxis (VU.head bps) (VU.last bps) (length binDens) binWidth
+     in intercalate "\n" plotRows ++ "\n" ++ xAxis
+     where
+        meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
+        meanBinDens scaling binWidth dens_ =
+            let meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery binWidth $ VU.toList dens_
+                maxDens = maximum meanDens
+            in map (\x -> round $ (x / maxDens) * scaling) meanDens
+        splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
+        splitEvery _ [] = []
+        splitEvery n list = first : splitEvery n rest
+            where (first,rest) = splitAt n list
+        padString :: Int -> String -> String
+        padString l x = replicate (l - length x) ' ' ++ x
+        getSymbol :: Int -> Int -> Char
+        getSymbol x y
+            | x == y = '*'
+            | x < y = '\''
+            | otherwise = ' '
+        constructXAxis :: Int -> Int -> Int -> Int -> String
+        constructXAxis start stop l binWidth =
+            let startS = padString 6 (show $ roundTo10 start)
+                stopS = show (roundTo10 stop)
+                tickFreq = if abs (start - stop) < 1500 then 100 else 1000
+                axis = zipWith (axisSymbol binWidth tickFreq) [0 .. (l - 1)] [1 .. l]
+            in  startS ++ " <" ++ axis ++ "> " ++ stopS
+            where 
+                axisSymbol axisL tickFreq a b = if hasTick tickFreq (start + axisL * a + 1) (start + axisL * b) then '|' else '~'
+                hasTick tickFreq a b = any (\x -> rem (abs x) tickFreq == 0) [a..b]
+        roundTo10 :: Int -> Int
+        roundTo10 x = 
+            let (dec,rest) = quotRem (abs x) 10
+                roundedDec = if rest >= 5 then dec + 1 else dec
+            in roundedDec * 10 * signum x
+
 -- UncalC14
+renderUncalC14 :: UncalC14 -> String
+renderUncalC14 (UncalC14 name bp sigma) = "Sample: " ++ name ++ " ~> [" ++ show bp ++ "±" ++ show sigma ++ "BP]"
+
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
     s <- readFile uncalFile
