@@ -169,7 +169,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
 
 -- UncalC14
 renderUncalC14 :: UncalC14 -> String
-renderUncalC14 (UncalC14 name bp sigma) = "Sample: " ++ name ++ " ~> " ++ show bp ++ "+-" ++ show sigma
+renderUncalC14 (UncalC14 name bp sigma) = "Sample: " ++ name ++ " ~> [" ++ show bp ++ "±" ++ show sigma ++ "BP]"
 
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
