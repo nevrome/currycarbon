@@ -1,3 +1,4 @@
+- V 0.21.1: Splitted up the calibration module for better readability
 - V 0.21.0: Added a neat CLI density plot for calibrated dates
 - V 0.20.2: Some performance improvements for the calibration of large numbers of dates
 - V 0.20.1: Better (parsing) error handling

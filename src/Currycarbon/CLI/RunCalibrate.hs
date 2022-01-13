@@ -2,7 +2,7 @@ module Currycarbon.CLI.RunCalibrate
     (CalibrateOptions (..), runCalibrate) where
 
 import           Currycarbon.CalCurves.Intcal20
-import           Currycarbon.Calibration
+import           Currycarbon.Calibration.Calibration
 import           Currycarbon.Parsers
 import           Currycarbon.Types
 import           Currycarbon.Utils
