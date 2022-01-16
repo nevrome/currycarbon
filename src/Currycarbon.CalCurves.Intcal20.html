@@ -1,9 +1,19 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Currycarbon.CalCurves.Intcal20</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-2"></span><span>
-</span><span id="line-3"></span><span class="hs-comment">-- | The complete intcal20 calibration curve in a large string (Reimer et al. 2020, doi:10.1017/RDC.2020.41)</span><span>
-</span><span id="line-4"></span><span class="annot"><a href="Currycarbon.CalCurves.Intcal20.html#intcal20"><span class="hs-identifier hs-type">intcal20</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
-</span><span id="line-5"></span><span id="intcal20"><span class="annot"><span class="annottext">intcal20 :: String
-</span><a href="Currycarbon.CalCurves.Intcal20.html#intcal20"><span class="hs-identifier hs-var hs-var">intcal20</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Parsers.html"><span class="hs-identifier">Currycarbon.Parsers</span></a></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Currycarbon.Parsers.html#loadCalCurve"><span class="hs-identifier">loadCalCurve</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Types.html"><span class="hs-identifier">Currycarbon.Types</span></a></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier">CalCurve</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- | The intcal20 calibration curve (Reimer et al. 2020, doi:10.1017/RDC.2020.41)</span><span>
+</span><span id="line-7"></span><span class="annot"><a href="Currycarbon.CalCurves.Intcal20.html#intcal20"><span class="hs-identifier hs-type">intcal20</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier hs-type">CalCurve</span></a></span><span>
+</span><span id="line-8"></span><span id="intcal20"><span class="annot"><span class="annottext">intcal20 :: CalCurve
+</span><a href="Currycarbon.CalCurves.Intcal20.html#intcal20"><span class="hs-identifier hs-var hs-var">intcal20</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; CalCurve
+</span><a href="Currycarbon.Parsers.html#loadCalCurve"><span class="hs-identifier hs-var">loadCalCurve</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="Currycarbon.CalCurves.Intcal20.html#intcal20String"><span class="hs-identifier hs-var">intcal20String</span></a></span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- | The complete intcal20 calibration curve in a large string</span><span>
+</span><span id="line-11"></span><span class="annot"><a href="Currycarbon.CalCurves.Intcal20.html#intcal20String"><span class="hs-identifier hs-type">intcal20String</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-12"></span><span id="intcal20String"><span class="annot"><span class="annottext">intcal20String :: String
+</span><a href="Currycarbon.CalCurves.Intcal20.html#intcal20String"><span class="hs-identifier hs-var hs-var">intcal20String</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;\
     \##Atmospheric data from Reimer et al (2020)\n\
     \# Reimer et al. 2020\n\
@@ -9517,4 +9527,4 @@
     \2,195,11,-23.8,1.4\n\
     \1,197,11,-24.1,1.4\n\
     \0,199,11,-24.5,1.4\n&quot;</span></span><span>
-</span><span id="line-9518"></span></pre></body></html>
+</span><span id="line-9525"></span></pre></body></html>

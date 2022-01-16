@@ -9,12 +9,6 @@
 @package currycarbon
 @version 0.21.2
 
-module Currycarbon.CalCurves.Intcal20
-
--- | The complete intcal20 calibration curve in a large string (Reimer et
---   al. 2020, doi:10.1017/RDC.2020.41)
-intcal20 :: String
-
 module Currycarbon.Types
 
 -- | Different calibration algorithms implemented in currycarbon
@@ -212,6 +206,15 @@ calCurveFileParser :: Parser [(Int, Int, Int)]
 calCurveLineParser :: Parser (Int, Int, Int)
 comments :: Parser String
 
+module Currycarbon.CalCurves.Intcal20
+
+-- | The intcal20 calibration curve (Reimer et al. 2020,
+--   doi:10.1017/RDC.2020.41)
+intcal20 :: CalCurve
+
+-- | The complete intcal20 calibration curve in a large string
+intcal20String :: String
+
 module Currycarbon.Calibration.MatrixMult
 calibrateDateMatrixMult :: Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
 
@@ -224,6 +227,14 @@ makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 uncalToPDF :: UncalC14 -> UncalPDF
 
 module Currycarbon.Calibration.Bchron
+
+-- | Intercept calibration as implemented in the Bchron R package
+--   
+--   | &gt;&gt;&gt; :{ import Currycarbon.CalCurves.Intcal20 let calResult
+--   = calibrateDateBchron NormalDist False True intcal20 (UncalC14 "" 3000
+--   30) in ((Right (CalPDF _ age dens)) -&gt; VU.zip (VU.take 3 age)
+--   (VU.take 3 dens)) calResult :}
+--   [(-1413,1.0703295e-5),(-1412,1.4653518e-5),(-1411,1.799142e-5)]
 calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
 
 module Currycarbon.Calibration.Calibration
