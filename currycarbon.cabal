@@ -28,3 +28,9 @@ executable currycarbon
     default-language:   Haskell2010
     ghc-options:        -O2 -threaded -with-rtsopts=-N
 
+Test-Suite currycarbon-test
+    type:               exitcode-stdio-1.0
+    main-is:            Spec.hs
+    hs-source-dirs:     test
+    build-depends:      currycarbon, base, doctest
+    default-language:   Haskell2010

@@ -10,6 +10,10 @@ import Data.Maybe (fromMaybe)
 import Statistics.Distribution (density)
 import Statistics.Distribution.StudentT (studentT)
 
+-- | get the density of a normal distribution at a point x
+-- 
+-- >>> dnorm 1.0 1.0 1.0
+-- 0.3989423
 dnorm :: Float -> Float -> Float -> Float 
 dnorm mu sigma x = 
     let a = recip (sqrt (2 * pi * sigma2))
@@ -21,6 +25,10 @@ dnorm mu sigma x =
     -- alternative implemenation with the statistics package: 
     -- realToFrac $ density (normalDistr (realToFrac mu) (realToFrac sigma)) (realToFrac x)
 
+-- | get the density of student's-t distribution at a point x
+-- 
+-- >>> dt 1.0 1.0
+-- 0.15915494
 dt :: Double -> Float -> Float
 dt dof x = realToFrac $ density (studentT (realToFrac dof)) (realToFrac x) -- dof: number of degrees of freedom
 
