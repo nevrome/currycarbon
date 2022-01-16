@@ -2,6 +2,8 @@
 
 module Currycarbon.Calibration.Bchron (calibrateDateBchron) where
 
+
+import Currycarbon.CalCurves.Intcal20 -- only for the doctest
 import Currycarbon.Calibration.Utils
 import Currycarbon.Types
 import Currycarbon.Utils
@@ -10,10 +12,10 @@ import qualified Data.Vector.Unboxed as VU
 
 -- | Intercept calibration as implemented in the Bchron R package
 --
--- | >>> :{
---   import Currycarbon.CalCurves.Intcal20
+-- >>> :{
 --   let calResult = calibrateDateBchron NormalDist False True intcal20 (UncalC14 "" 3000 30)
---   in (\(Right (CalPDF _ age dens)) -> VU.zip (VU.take 3 age) (VU.take 3 dens)) calResult
+--       simplifyResult = \(Right (CalPDF _ age dens)) -> VU.zip (VU.take 3 age) (VU.take 3 dens)
+--   in simplifyResult calResult
 -- :}
 -- [(-1413,1.0703295e-5),(-1412,1.4653518e-5),(-1411,1.799142e-5)]
 calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
