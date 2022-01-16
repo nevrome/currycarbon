@@ -137,7 +137,21 @@ instance GHC.Show.Show Currycarbon.Types.HDR
 instance GHC.Show.Show Currycarbon.Types.CalC14
 
 module Currycarbon.Calibration.Utils
+
+-- | get the density of a normal distribution at a point x
+--   
+--   <pre>
+--   &gt;&gt;&gt; dnorm 1.0 1.0 1.0
+--   0.3989423
+--   </pre>
 dnorm :: Float -> Float -> Float -> Float
+
+-- | get the density of student's-t distribution at a point x
+--   
+--   <pre>
+--   &gt;&gt;&gt; dt 1.0 1.0
+--   0.15915494
+--   </pre>
 dt :: Double -> Float -> Float
 isOutsideRangeOfCalCurve :: CalCurve -> UncalC14 -> Bool
 
