@@ -1,8 +1,15 @@
 module Currycarbon.CalCurves.Intcal20 where
 
--- | The complete intcal20 calibration curve in a large string (Reimer et al. 2020, doi:10.1017/RDC.2020.41)
-intcal20 :: String
-intcal20 = "\
+import Currycarbon.Parsers ( loadCalCurve )
+import Currycarbon.Types ( CalCurve )
+
+-- | The intcal20 calibration curve (Reimer et al. 2020, doi:10.1017/RDC.2020.41)
+intcal20 :: CalCurve
+intcal20 = loadCalCurve intcal20String
+
+-- | The complete intcal20 calibration curve in a large string
+intcal20String :: String
+intcal20String = "\
     \##Atmospheric data from Reimer et al (2020)\n\
     \# Reimer et al. 2020\n\
     \# Reimer P, Austin WEN, Bard E, Bayliss A, Blackwell PG, Bronk Ramsey C, Butzin M, Cheng H,\n\

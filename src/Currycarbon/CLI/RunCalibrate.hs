@@ -38,7 +38,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
     else do
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
-        calCurve <- maybe (return $ loadCalCurve intcal20) readCalCurve calCurveFile
+        calCurve <- maybe (return intcal20) readCalCurve calCurveFile
         let errorOrCalPDFs = calibrateDates method allowOutside (not noInterpolate) calCurve uncalDatesRenamed
             dates = map fst $ filter (isRight . snd) $ zip uncalDatesRenamed errorOrCalPDFs
             calPDFs = rights errorOrCalPDFs
