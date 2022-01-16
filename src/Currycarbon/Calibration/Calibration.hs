@@ -43,6 +43,13 @@ calibrateDates Bchron{distribution=distr} allowOutside interpolate calCurve unca
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
+-- 
+-- >>> :{
+--   let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
+--       densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
+--   in refineCalDates [CalPDF {_calPDFid = "", _calPDFBPs = years, _calPDFDens = densities}]
+-- :}
+-- [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 refineCalDates :: [CalPDF] -> [CalC14]
 refineCalDates = map refineCalDate
 
