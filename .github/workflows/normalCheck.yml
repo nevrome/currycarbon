@@ -67,13 +67,13 @@ jobs:
     - name: Test
       run: |
         stack test \
-        --system-ghc \
-        --coverage
+        --system-ghc
+    #     --coverage
 
-    - name: Generate coverage report
-      uses: 8c6794b6/hpc-codecov-action@v2
-      with:
-        target: stack:currycarbon-tests
+    # - name: Generate coverage report
+    #   uses: 8c6794b6/hpc-codecov-action@v2
+    #   with:
+    #     target: stack:currycarbon-tests
 
-    - name: Send coverage report
-      uses: codecov/codecov-action@v2
+    # - name: Send coverage report
+    #   uses: codecov/codecov-action@v2
