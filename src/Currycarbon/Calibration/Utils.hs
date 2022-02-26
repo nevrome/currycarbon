@@ -4,7 +4,6 @@ module Currycarbon.Calibration.Utils where
 
 import Currycarbon.Types
 
-import Data.List (tails)
 import qualified Data.Vector.Unboxed as VU
 import Data.Maybe (fromMaybe)
 import Statistics.Distribution (density)

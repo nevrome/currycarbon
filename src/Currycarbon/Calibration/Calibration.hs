@@ -44,7 +44,7 @@ calibrateDates :: CalibrateDatesConf
                   -> CalCurve -- ^ Calibration curve
                   -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates  
                   -> [Either CurrycarbonException CalPDF]
-calibrateDates calConf _ [] = []
+calibrateDates _ _ [] = []
 calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDates =
     map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates
 calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDates =
