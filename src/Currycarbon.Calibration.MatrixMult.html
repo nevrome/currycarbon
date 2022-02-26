@@ -20,18 +20,18 @@
 -&gt; CalCurve
 -&gt; UncalC14
 -&gt; Either CurrycarbonException CalPDF
-</span><a href="Currycarbon.Calibration.MatrixMult.html#calibrateDateMatrixMult"><span class="hs-identifier hs-var hs-var">calibrateDateMatrixMult</span></a></span></span><span> </span><span id="local-6989586621679070067"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679070067"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679070066"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679070066"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span> </span><span id="local-6989586621679070065"><span class="annot"><span class="annottext">CalCurve
-</span><a href="#local-6989586621679070065"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679070064"><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679070064"><span class="hs-identifier hs-var">uncalC14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Currycarbon.Calibration.MatrixMult.html#calibrateDateMatrixMult"><span class="hs-identifier hs-var hs-var">calibrateDateMatrixMult</span></a></span></span><span> </span><span id="local-6989586621679069880"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679069880"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679069879"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679069879"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span> </span><span id="local-6989586621679069878"><span class="annot"><span class="annottext">CalCurve
+</span><a href="#local-6989586621679069878"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679069877"><span class="annot"><span class="annottext">UncalC14
+</span><a href="#local-6989586621679069877"><span class="hs-identifier hs-var">uncalC14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-19"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
 </span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679070067"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621679069880"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">CalCurve -&gt; UncalC14 -&gt; Bool
 </span><a href="Currycarbon.Calibration.Utils.html#isOutsideRangeOfCalCurve"><span class="hs-identifier hs-var">isOutsideRangeOfCalCurve</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurve
-</span><a href="#local-6989586621679070065"><span class="hs-identifier hs-var">calCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679070064"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
+</span><a href="#local-6989586621679069878"><span class="hs-identifier hs-var">calCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
+</span><a href="#local-6989586621679069877"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
 </span><span id="line-20"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">CurrycarbonException -&gt; Either CurrycarbonException CalPDF
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(CurrycarbonException -&gt; Either CurrycarbonException CalPDF)
@@ -42,33 +42,33 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">UncalC14 -&gt; String
 </span><a href="Currycarbon.Types.html#_uncalC14Id"><span class="hs-identifier hs-var hs-var">_uncalC14Id</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679070064"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
+</span><a href="#local-6989586621679069877"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
 </span><span id="line-21"></span><span>    </span><span class="hs-keyword">else</span><span>
-</span><span id="line-22"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070058"><span class="annot"><span class="annottext">rawCalCurveSegment :: CalCurve
-</span><a href="#local-6989586621679070058"><span class="hs-identifier hs-var hs-var">rawCalCurveSegment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalC14 -&gt; CalCurve -&gt; CalCurve
+</span><span id="line-22"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679069871"><span class="annot"><span class="annottext">rawCalCurveSegment :: CalCurve
+</span><a href="#local-6989586621679069871"><span class="hs-identifier hs-var hs-var">rawCalCurveSegment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalC14 -&gt; CalCurve -&gt; CalCurve
 </span><a href="Currycarbon.Calibration.Utils.html#getRelevantCalCurveSegment"><span class="hs-identifier hs-var">getRelevantCalCurveSegment</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679070064"><span class="hs-identifier hs-var">uncalC14</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurve
-</span><a href="#local-6989586621679070065"><span class="hs-identifier hs-var">calCurve</span></a></span><span>
-</span><span id="line-23"></span><span>            </span><span id="local-6989586621679070056"><span class="annot"><span class="annottext">calCurveSegment :: CalCurve
-</span><a href="#local-6989586621679070056"><span class="hs-identifier hs-var hs-var">calCurveSegment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; CalCurve -&gt; CalCurve
+</span><a href="#local-6989586621679069877"><span class="hs-identifier hs-var">uncalC14</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurve
+</span><a href="#local-6989586621679069878"><span class="hs-identifier hs-var">calCurve</span></a></span><span>
+</span><span id="line-23"></span><span>            </span><span id="local-6989586621679069869"><span class="annot"><span class="annottext">calCurveSegment :: CalCurve
+</span><a href="#local-6989586621679069869"><span class="hs-identifier hs-var hs-var">calCurveSegment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; CalCurve -&gt; CalCurve
 </span><a href="Currycarbon.Calibration.Utils.html#prepareCalCurveSegment"><span class="hs-identifier hs-var">prepareCalCurveSegment</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679070066"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679069879"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">CalCurve
-</span><a href="#local-6989586621679070058"><span class="hs-identifier hs-var">rawCalCurveSegment</span></a></span><span>
-</span><span id="line-24"></span><span>            </span><span id="local-6989586621679070054"><span class="annot"><span class="annottext">uncalPDF :: UncalPDF
-</span><a href="#local-6989586621679070054"><span class="hs-identifier hs-var hs-var">uncalPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalC14 -&gt; UncalPDF
+</span><a href="#local-6989586621679069871"><span class="hs-identifier hs-var">rawCalCurveSegment</span></a></span><span>
+</span><span id="line-24"></span><span>            </span><span id="local-6989586621679069867"><span class="annot"><span class="annottext">uncalPDF :: UncalPDF
+</span><a href="#local-6989586621679069867"><span class="hs-identifier hs-var hs-var">uncalPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalC14 -&gt; UncalPDF
 </span><a href="Currycarbon.Calibration.MatrixMult.html#uncalToPDF"><span class="hs-identifier hs-var">uncalToPDF</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679070064"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
-</span><span id="line-25"></span><span>            </span><span id="local-6989586621679070053"><span class="annot"><span class="annottext">calCurveMatrix :: CalCurveMatrix
-</span><a href="#local-6989586621679070053"><span class="hs-identifier hs-var hs-var">calCurveMatrix</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalPDF -&gt; CalCurve -&gt; CalCurveMatrix
+</span><a href="#local-6989586621679069877"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
+</span><span id="line-25"></span><span>            </span><span id="local-6989586621679069866"><span class="annot"><span class="annottext">calCurveMatrix :: CalCurveMatrix
+</span><a href="#local-6989586621679069866"><span class="hs-identifier hs-var hs-var">calCurveMatrix</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalPDF -&gt; CalCurve -&gt; CalCurveMatrix
 </span><a href="Currycarbon.Calibration.MatrixMult.html#makeCalCurveMatrix"><span class="hs-identifier hs-var">makeCalCurveMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">UncalPDF
-</span><a href="#local-6989586621679070054"><span class="hs-identifier hs-var">uncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurve
-</span><a href="#local-6989586621679070056"><span class="hs-identifier hs-var">calCurveSegment</span></a></span><span>
-</span><span id="line-26"></span><span>            </span><span id="local-6989586621679070052"><span class="annot"><span class="annottext">calPDF :: CalPDF
-</span><a href="#local-6989586621679070052"><span class="hs-identifier hs-var hs-var">calPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalPDF -&gt; CalCurveMatrix -&gt; CalPDF
+</span><a href="#local-6989586621679069867"><span class="hs-identifier hs-var">uncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurve
+</span><a href="#local-6989586621679069869"><span class="hs-identifier hs-var">calCurveSegment</span></a></span><span>
+</span><span id="line-26"></span><span>            </span><span id="local-6989586621679069865"><span class="annot"><span class="annottext">calPDF :: CalPDF
+</span><a href="#local-6989586621679069865"><span class="hs-identifier hs-var hs-var">calPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalPDF -&gt; CalCurveMatrix -&gt; CalPDF
 </span><a href="Currycarbon.Calibration.MatrixMult.html#projectUncalOverCalCurve"><span class="hs-identifier hs-var">projectUncalOverCalCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalPDF
-</span><a href="#local-6989586621679070054"><span class="hs-identifier hs-var">uncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveMatrix
-</span><a href="#local-6989586621679070053"><span class="hs-identifier hs-var">calCurveMatrix</span></a></span><span>
+</span><a href="#local-6989586621679069867"><span class="hs-identifier hs-var">uncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveMatrix
+</span><a href="#local-6989586621679069866"><span class="hs-identifier hs-var">calCurveMatrix</span></a></span><span>
 </span><span id="line-27"></span><span>        </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">CalPDF -&gt; Either CurrycarbonException CalPDF
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(CalPDF -&gt; Either CurrycarbonException CalPDF)
@@ -79,78 +79,78 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">CalPDF -&gt; CalPDF
 </span><a href="Currycarbon.Calibration.Utils.html#normalizeCalPDF"><span class="hs-identifier hs-var">normalizeCalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">CalPDF
-</span><a href="#local-6989586621679070052"><span class="hs-identifier hs-var">calPDF</span></a></span><span>
+</span><a href="#local-6989586621679069865"><span class="hs-identifier hs-var">calPDF</span></a></span><span>
 </span><span id="line-28"></span><span>
 </span><span id="line-29"></span><span class="hs-comment">-- | Construct a matrix representation of a calibration curve for a given date</span><span>
 </span><span id="line-30"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#makeCalCurveMatrix"><span class="hs-identifier hs-type">makeCalCurveMatrix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier hs-type">CalCurve</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-type">CalCurveMatrix</span></a></span><span>
 </span><span id="line-31"></span><span id="makeCalCurveMatrix"><span class="annot"><span class="annottext">makeCalCurveMatrix :: UncalPDF -&gt; CalCurve -&gt; CalCurveMatrix
 </span><a href="Currycarbon.Calibration.MatrixMult.html#makeCalCurveMatrix"><span class="hs-identifier hs-var hs-var">makeCalCurveMatrix</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679070047"><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070047"><span class="hs-identifier hs-var">bps'</span></a></span></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier hs-type">CalCurve</span></a></span><span> </span><span id="local-6989586621679070045"><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070045"><span class="hs-identifier hs-var">cals</span></a></span></span><span> </span><span id="local-6989586621679070044"><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070044"><span class="hs-identifier hs-var">bps</span></a></span></span><span> </span><span id="local-6989586621679070043"><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070043"><span class="hs-identifier hs-var">sigmas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-32"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070042"><span class="annot"><span class="annottext">bpsFloat :: Vector Float
-</span><a href="#local-6989586621679070042"><span class="hs-identifier hs-var hs-var">bpsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Float) -&gt; Vector Int -&gt; Vector Float
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679069860"><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679069860"><span class="hs-identifier hs-var">bps'</span></a></span></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier hs-type">CalCurve</span></a></span><span> </span><span id="local-6989586621679069858"><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679069858"><span class="hs-identifier hs-var">cals</span></a></span></span><span> </span><span id="local-6989586621679069857"><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679069857"><span class="hs-identifier hs-var">bps</span></a></span></span><span> </span><span id="local-6989586621679069856"><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679069856"><span class="hs-identifier hs-var">sigmas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679069855"><span class="annot"><span class="annottext">bpsFloat :: Vector Float
+</span><a href="#local-6989586621679069855"><span class="hs-identifier hs-var hs-var">bpsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Float) -&gt; Vector Int -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070044"><span class="hs-identifier hs-var">bps</span></a></span><span>
-</span><span id="line-33"></span><span>        </span><span id="local-6989586621679070040"><span class="annot"><span class="annottext">sigmasFloat :: Vector Float
-</span><a href="#local-6989586621679070040"><span class="hs-identifier hs-var hs-var">sigmasFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Float) -&gt; Vector Int -&gt; Vector Float
+</span><a href="#local-6989586621679069857"><span class="hs-identifier hs-var">bps</span></a></span><span>
+</span><span id="line-33"></span><span>        </span><span id="local-6989586621679069853"><span class="annot"><span class="annottext">sigmasFloat :: Vector Float
+</span><a href="#local-6989586621679069853"><span class="hs-identifier hs-var hs-var">sigmasFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Float) -&gt; Vector Int -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070043"><span class="hs-identifier hs-var">sigmas</span></a></span><span>
-</span><span id="line-34"></span><span>        </span><span id="local-6989586621679070039"><span class="annot"><span class="annottext">uncalbps :: Vector Int
-</span><a href="#local-6989586621679070039"><span class="hs-identifier hs-var hs-var">uncalbps</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Int) -&gt; Vector Int -&gt; Vector Int
+</span><a href="#local-6989586621679069856"><span class="hs-identifier hs-var">sigmas</span></a></span><span>
+</span><span id="line-34"></span><span>        </span><span id="local-6989586621679069852"><span class="annot"><span class="annottext">uncalbps :: Vector Int
+</span><a href="#local-6989586621679069852"><span class="hs-identifier hs-var hs-var">uncalbps</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Int) -&gt; Vector Int -&gt; Vector Int
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
-</span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679070038"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070038"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070038"><span class="hs-identifier hs-var">x</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679069851"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679069851"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679069851"><span class="hs-identifier hs-var">x</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1950</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070047"><span class="hs-identifier hs-var">bps'</span></a></span><span>
-</span><span id="line-35"></span><span>        </span><span id="local-6989586621679070036"><span class="annot"><span class="annottext">uncalbpsFloat :: Vector Float
-</span><a href="#local-6989586621679070036"><span class="hs-identifier hs-var hs-var">uncalbpsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Float) -&gt; Vector Int -&gt; Vector Float
+</span><a href="#local-6989586621679069860"><span class="hs-identifier hs-var">bps'</span></a></span><span>
+</span><span id="line-35"></span><span>        </span><span id="local-6989586621679069849"><span class="annot"><span class="annottext">uncalbpsFloat :: Vector Float
+</span><a href="#local-6989586621679069849"><span class="hs-identifier hs-var hs-var">uncalbpsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Float) -&gt; Vector Int -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070039"><span class="hs-identifier hs-var">uncalbps</span></a></span><span>
+</span><a href="#local-6989586621679069852"><span class="hs-identifier hs-var">uncalbps</span></a></span><span>
 </span><span id="line-36"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Vector Int -&gt; Vector Int -&gt; Vector (Vector Float) -&gt; CalCurveMatrix
 </span><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-var">CalCurveMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070039"><span class="hs-identifier hs-var">uncalbps</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070045"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">(Vector (Vector Float) -&gt; CalCurveMatrix)
+</span><a href="#local-6989586621679069852"><span class="hs-identifier hs-var">uncalbps</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679069858"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">(Vector (Vector Float) -&gt; CalCurveMatrix)
 -&gt; Vector (Vector Float) -&gt; CalCurveMatrix
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector Float
 -&gt; Vector Float -&gt; Vector Float -&gt; Vector (Vector Float)
-</span><a href="#local-6989586621679070034"><span class="hs-identifier hs-var">buildMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070042"><span class="hs-identifier hs-var">bpsFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070040"><span class="hs-identifier hs-var">sigmasFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070036"><span class="hs-identifier hs-var">uncalbpsFloat</span></a></span><span>
+</span><a href="#local-6989586621679069847"><span class="hs-identifier hs-var">buildMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069855"><span class="hs-identifier hs-var">bpsFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069853"><span class="hs-identifier hs-var">sigmasFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069849"><span class="hs-identifier hs-var">uncalbpsFloat</span></a></span><span>
 </span><span id="line-37"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-38"></span><span>        </span><span class="annot"><a href="#local-6989586621679070034"><span class="hs-identifier hs-type">buildMatrix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span>
-</span><span id="line-39"></span><span>        </span><span id="local-6989586621679070034"><span class="annot"><span class="annottext">buildMatrix :: Vector Float
+</span><span id="line-38"></span><span>        </span><span class="annot"><a href="#local-6989586621679069847"><span class="hs-identifier hs-type">buildMatrix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>        </span><span id="local-6989586621679069847"><span class="annot"><span class="annottext">buildMatrix :: Vector Float
 -&gt; Vector Float -&gt; Vector Float -&gt; Vector (Vector Float)
-</span><a href="#local-6989586621679070034"><span class="hs-identifier hs-var hs-var">buildMatrix</span></a></span></span><span> </span><span id="local-6989586621679070033"><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070033"><span class="hs-identifier hs-var">bps_</span></a></span></span><span> </span><span id="local-6989586621679070032"><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070032"><span class="hs-identifier hs-var">sigmas_</span></a></span></span><span> </span><span id="local-6989586621679070031"><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070031"><span class="hs-identifier hs-var">uncalbps_</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Float, Float) -&gt; Vector Float)
+</span><a href="#local-6989586621679069847"><span class="hs-identifier hs-var hs-var">buildMatrix</span></a></span></span><span> </span><span id="local-6989586621679069846"><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069846"><span class="hs-identifier hs-var">bps_</span></a></span></span><span> </span><span id="local-6989586621679069845"><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069845"><span class="hs-identifier hs-var">sigmas_</span></a></span></span><span> </span><span id="local-6989586621679069844"><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069844"><span class="hs-identifier hs-var">uncalbps_</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Float, Float) -&gt; Vector Float)
 -&gt; Vector (Float, Float) -&gt; Vector (Vector Float)
 forall a b. (a -&gt; b) -&gt; Vector a -&gt; Vector b
-</span><span class="hs-identifier hs-var">V.map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679070029"><span class="annot"><span class="annottext">(Float, Float)
-</span><a href="#local-6989586621679070029"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; Vector Float -&gt; Vector Float
+</span><span class="hs-identifier hs-var">V.map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679069842"><span class="annot"><span class="annottext">(Float, Float)
+</span><a href="#local-6989586621679069842"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; Vector Float -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Float, Float) -&gt; Float -&gt; Float
-</span><a href="#local-6989586621679070028"><span class="hs-identifier hs-var">fillCell</span></a></span><span> </span><span class="annot"><span class="annottext">(Float, Float)
-</span><a href="#local-6989586621679070029"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070031"><span class="hs-identifier hs-var">uncalbps_</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Vector (Float, Float) -&gt; Vector (Vector Float))
+</span><a href="#local-6989586621679069841"><span class="hs-identifier hs-var">fillCell</span></a></span><span> </span><span class="annot"><span class="annottext">(Float, Float)
+</span><a href="#local-6989586621679069842"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069844"><span class="hs-identifier hs-var">uncalbps_</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Vector (Float, Float) -&gt; Vector (Vector Float))
 -&gt; Vector (Float, Float) -&gt; Vector (Vector Float)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector Float -&gt; Vector Float -&gt; Vector (Float, Float)
@@ -160,36 +160,36 @@ forall (v :: * -&gt; *) a (w :: * -&gt; *).
 (Vector v a, Vector w a) =&gt;
 v a -&gt; w a
 </span><span class="hs-identifier hs-var">convert</span></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070033"><span class="hs-identifier hs-var">bps_</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector Float -&gt; Vector Float
+</span><a href="#local-6989586621679069846"><span class="hs-identifier hs-var">bps_</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector Float -&gt; Vector Float
 forall (v :: * -&gt; *) a (w :: * -&gt; *).
 (Vector v a, Vector w a) =&gt;
 v a -&gt; w a
 </span><span class="hs-identifier hs-var">convert</span></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070032"><span class="hs-identifier hs-var">sigmas_</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-40"></span><span>        </span><span class="annot"><a href="#local-6989586621679070028"><span class="hs-identifier hs-type">fillCell</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
-</span><span id="line-41"></span><span>        </span><span id="local-6989586621679070028"><span class="annot"><span class="annottext">fillCell :: (Float, Float) -&gt; Float -&gt; Float
-</span><a href="#local-6989586621679070028"><span class="hs-identifier hs-var hs-var">fillCell</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679070026"><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070026"><span class="hs-identifier hs-var">bp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679070025"><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070025"><span class="hs-identifier hs-var">sigma</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679070024"><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070024"><span class="hs-identifier hs-var">matrixPosBP</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><a href="#local-6989586621679069845"><span class="hs-identifier hs-var">sigmas_</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>        </span><span class="annot"><a href="#local-6989586621679069841"><span class="hs-identifier hs-type">fillCell</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
+</span><span id="line-41"></span><span>        </span><span id="local-6989586621679069841"><span class="annot"><span class="annottext">fillCell :: (Float, Float) -&gt; Float -&gt; Float
+</span><a href="#local-6989586621679069841"><span class="hs-identifier hs-var hs-var">fillCell</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069839"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679069839"><span class="hs-identifier hs-var">bp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069838"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679069838"><span class="hs-identifier hs-var">sigma</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679069837"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679069837"><span class="hs-identifier hs-var">matrixPosBP</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
 </span><span id="line-42"></span><span>            </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float
 forall a. Num a =&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">abs</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070026"><span class="hs-identifier hs-var">bp</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+</span><a href="#local-6989586621679069839"><span class="hs-identifier hs-var">bp</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070024"><span class="hs-identifier hs-var">matrixPosBP</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Bool
+</span><a href="#local-6989586621679069837"><span class="hs-identifier hs-var">matrixPosBP</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">6</span></span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070025"><span class="hs-identifier hs-var">sigma</span></a></span><span>
+</span><a href="#local-6989586621679069838"><span class="hs-identifier hs-var">sigma</span></a></span><span>
 </span><span id="line-43"></span><span>            </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float -&gt; Float
 </span><a href="Currycarbon.Calibration.Utils.html#dnorm"><span class="hs-identifier hs-var">dnorm</span></a></span><span> </span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070026"><span class="hs-identifier hs-var">bp</span></a></span><span> </span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070025"><span class="hs-identifier hs-var">sigma</span></a></span><span> </span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070024"><span class="hs-identifier hs-var">matrixPosBP</span></a></span><span>
+</span><a href="#local-6989586621679069839"><span class="hs-identifier hs-var">bp</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679069838"><span class="hs-identifier hs-var">sigma</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679069837"><span class="hs-identifier hs-var">matrixPosBP</span></a></span><span>
 </span><span id="line-44"></span><span>            </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0</span></span><span>
 </span><span id="line-45"></span><span>
@@ -197,87 +197,87 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span id="line-47"></span><span class="hs-comment">-- probability density table</span><span>
 </span><span id="line-48"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#uncalToPDF"><span class="hs-identifier hs-type">uncalToPDF</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-type">UncalC14</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span>
 </span><span id="line-49"></span><span id="uncalToPDF"><span class="annot"><span class="annottext">uncalToPDF :: UncalC14 -&gt; UncalPDF
-</span><a href="Currycarbon.Calibration.MatrixMult.html#uncalToPDF"><span class="hs-identifier hs-var hs-var">uncalToPDF</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-type">UncalC14</span></a></span><span> </span><span id="local-6989586621679070018"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679070018"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679070017"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070017"><span class="hs-identifier hs-var">mean</span></a></span></span><span> </span><span id="local-6989586621679070016"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070016"><span class="hs-identifier hs-var">std</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-50"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070015"><span class="annot"><span class="annottext">meanFloat :: Float
-</span><a href="#local-6989586621679070015"><span class="hs-identifier hs-var hs-var">meanFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
+</span><a href="Currycarbon.Calibration.MatrixMult.html#uncalToPDF"><span class="hs-identifier hs-var hs-var">uncalToPDF</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-type">UncalC14</span></a></span><span> </span><span id="local-6989586621679069831"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679069831"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679069830"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679069830"><span class="hs-identifier hs-var">mean</span></a></span></span><span> </span><span id="local-6989586621679069829"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679069829"><span class="hs-identifier hs-var">std</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679069828"><span class="annot"><span class="annottext">meanFloat :: Float
+</span><a href="#local-6989586621679069828"><span class="hs-identifier hs-var hs-var">meanFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070017"><span class="hs-identifier hs-var">mean</span></a></span><span>
-</span><span id="line-51"></span><span>        </span><span id="local-6989586621679070014"><span class="annot"><span class="annottext">stdFloat :: Float
-</span><a href="#local-6989586621679070014"><span class="hs-identifier hs-var hs-var">stdFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
+</span><a href="#local-6989586621679069830"><span class="hs-identifier hs-var">mean</span></a></span><span>
+</span><span id="line-51"></span><span>        </span><span id="local-6989586621679069827"><span class="annot"><span class="annottext">stdFloat :: Float
+</span><a href="#local-6989586621679069827"><span class="hs-identifier hs-var hs-var">stdFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070016"><span class="hs-identifier hs-var">std</span></a></span><span>
-</span><span id="line-52"></span><span>        </span><span id="local-6989586621679070013"><span class="annot"><span class="annottext">years :: Vector Int
-</span><a href="#local-6989586621679070013"><span class="hs-identifier hs-var hs-var">years</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector Int -&gt; Vector Int
+</span><a href="#local-6989586621679069829"><span class="hs-identifier hs-var">std</span></a></span><span>
+</span><span id="line-52"></span><span>        </span><span id="local-6989586621679069826"><span class="annot"><span class="annottext">years :: Vector Int
+</span><a href="#local-6989586621679069826"><span class="hs-identifier hs-var hs-var">years</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector Int -&gt; Vector Int
 forall a. Unbox a =&gt; Vector a -&gt; Vector a
 </span><span class="hs-identifier hs-var">VU.reverse</span></span><span> </span><span class="annot"><span class="annottext">(Vector Int -&gt; Vector Int) -&gt; Vector Int -&gt; Vector Int
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; Vector Int
 forall a. Unbox a =&gt; [a] -&gt; Vector a
 </span><span class="hs-identifier hs-var">VU.fromList</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070017"><span class="hs-identifier hs-var">mean</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621679069830"><span class="hs-identifier hs-var">mean</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">5</span></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070016"><span class="hs-identifier hs-var">std</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">..</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070017"><span class="hs-identifier hs-var">mean</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621679069829"><span class="hs-identifier hs-var">std</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">..</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679069830"><span class="hs-identifier hs-var">mean</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">5</span></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679070016"><span class="hs-identifier hs-var">std</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
-</span><span id="line-53"></span><span>        </span><span id="local-6989586621679070010"><span class="annot"><span class="annottext">yearsFloat :: Vector Float
-</span><a href="#local-6989586621679070010"><span class="hs-identifier hs-var hs-var">yearsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Float) -&gt; Vector Int -&gt; Vector Float
+</span><a href="#local-6989586621679069829"><span class="hs-identifier hs-var">std</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-53"></span><span>        </span><span id="local-6989586621679069823"><span class="annot"><span class="annottext">yearsFloat :: Vector Float
+</span><a href="#local-6989586621679069823"><span class="hs-identifier hs-var hs-var">yearsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Float) -&gt; Vector Int -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070013"><span class="hs-identifier hs-var">years</span></a></span><span>
-</span><span id="line-54"></span><span>        </span><span id="local-6989586621679070009"><span class="annot"><span class="annottext">probabilities :: Vector Float
-</span><a href="#local-6989586621679070009"><span class="hs-identifier hs-var hs-var">probabilities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; Vector Float -&gt; Vector Float
+</span><a href="#local-6989586621679069826"><span class="hs-identifier hs-var">years</span></a></span><span>
+</span><span id="line-54"></span><span>        </span><span id="local-6989586621679069822"><span class="annot"><span class="annottext">probabilities :: Vector Float
+</span><a href="#local-6989586621679069822"><span class="hs-identifier hs-var hs-var">probabilities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; Vector Float -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float -&gt; Float
 </span><a href="Currycarbon.Calibration.Utils.html#dnorm"><span class="hs-identifier hs-var">dnorm</span></a></span><span> </span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070015"><span class="hs-identifier hs-var">meanFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679070014"><span class="hs-identifier hs-var">stdFloat</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070010"><span class="hs-identifier hs-var">yearsFloat</span></a></span><span>
+</span><a href="#local-6989586621679069828"><span class="hs-identifier hs-var">meanFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679069827"><span class="hs-identifier hs-var">stdFloat</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069823"><span class="hs-identifier hs-var">yearsFloat</span></a></span><span>
 </span><span id="line-55"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">String -&gt; Vector Int -&gt; Vector Float -&gt; UncalPDF
 </span><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-var">UncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679070018"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070013"><span class="hs-identifier hs-var">years</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070009"><span class="hs-identifier hs-var">probabilities</span></a></span><span>
+</span><a href="#local-6989586621679069831"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679069826"><span class="hs-identifier hs-var">years</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069822"><span class="hs-identifier hs-var">probabilities</span></a></span><span>
 </span><span id="line-56"></span><span>
 </span><span id="line-57"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#projectUncalOverCalCurve"><span class="hs-identifier hs-type">projectUncalOverCalCurve</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-type">CalCurveMatrix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-type">CalPDF</span></a></span><span>
 </span><span id="line-58"></span><span id="projectUncalOverCalCurve"><span class="annot"><span class="annottext">projectUncalOverCalCurve :: UncalPDF -&gt; CalCurveMatrix -&gt; CalPDF
-</span><a href="Currycarbon.Calibration.MatrixMult.html#projectUncalOverCalCurve"><span class="hs-identifier hs-var hs-var">projectUncalOverCalCurve</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span id="local-6989586621679070008"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679070008"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679070007"><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070007"><span class="hs-identifier hs-var">dens</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-type">CalCurveMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679070006"><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070006"><span class="hs-identifier hs-var">cals</span></a></span></span><span> </span><span id="local-6989586621679070005"><span class="annot"><span class="annottext">Vector (Vector Float)
-</span><a href="#local-6989586621679070005"><span class="hs-identifier hs-var">matrix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Currycarbon.Calibration.MatrixMult.html#projectUncalOverCalCurve"><span class="hs-identifier hs-var hs-var">projectUncalOverCalCurve</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span id="local-6989586621679069821"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679069821"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="annot"><span class="annottext">Vector Int
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679069820"><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069820"><span class="hs-identifier hs-var">dens</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-type">CalCurveMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679069819"><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679069819"><span class="hs-identifier hs-var">cals</span></a></span></span><span> </span><span id="local-6989586621679069818"><span class="annot"><span class="annottext">Vector (Vector Float)
+</span><a href="#local-6989586621679069818"><span class="hs-identifier hs-var">matrix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-59"></span><span>    </span><span class="annot"><span class="annottext">String -&gt; Vector Int -&gt; Vector Float -&gt; CalPDF
 </span><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-var">CalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679070008"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679070006"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">(Vector Float -&gt; CalPDF) -&gt; Vector Float -&gt; CalPDF
+</span><a href="#local-6989586621679069821"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679069819"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">(Vector Float -&gt; CalPDF) -&gt; Vector Float -&gt; CalPDF
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector Float -&gt; Vector (Vector Float) -&gt; Vector Float
-</span><a href="#local-6989586621679070003"><span class="hs-identifier hs-var">vectorMatrixMultSum</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070007"><span class="hs-identifier hs-var">dens</span></a></span><span> </span><span class="annot"><span class="annottext">Vector (Vector Float)
-</span><a href="#local-6989586621679070005"><span class="hs-identifier hs-var">matrix</span></a></span><span>
+</span><a href="#local-6989586621679069816"><span class="hs-identifier hs-var">vectorMatrixMultSum</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069820"><span class="hs-identifier hs-var">dens</span></a></span><span> </span><span class="annot"><span class="annottext">Vector (Vector Float)
+</span><a href="#local-6989586621679069818"><span class="hs-identifier hs-var">matrix</span></a></span><span>
 </span><span id="line-60"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-61"></span><span>        </span><span class="annot"><a href="#local-6989586621679070003"><span class="hs-identifier hs-type">vectorMatrixMultSum</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
-</span><span id="line-62"></span><span>        </span><span id="local-6989586621679070003"><span class="annot"><span class="annottext">vectorMatrixMultSum :: Vector Float -&gt; Vector (Vector Float) -&gt; Vector Float
-</span><a href="#local-6989586621679070003"><span class="hs-identifier hs-var hs-var">vectorMatrixMultSum</span></a></span></span><span> </span><span id="local-6989586621679070002"><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070002"><span class="hs-identifier hs-var">vec</span></a></span></span><span> </span><span id="local-6989586621679070001"><span class="annot"><span class="annottext">Vector (Vector Float)
-</span><a href="#local-6989586621679070001"><span class="hs-identifier hs-var">mat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector Float -&gt; Vector Float
+</span><span id="line-61"></span><span>        </span><span class="annot"><a href="#local-6989586621679069816"><span class="hs-identifier hs-type">vectorMatrixMultSum</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
+</span><span id="line-62"></span><span>        </span><span id="local-6989586621679069816"><span class="annot"><span class="annottext">vectorMatrixMultSum :: Vector Float -&gt; Vector (Vector Float) -&gt; Vector Float
+</span><a href="#local-6989586621679069816"><span class="hs-identifier hs-var hs-var">vectorMatrixMultSum</span></a></span></span><span> </span><span id="local-6989586621679069815"><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069815"><span class="hs-identifier hs-var">vec</span></a></span></span><span> </span><span id="local-6989586621679069814"><span class="annot"><span class="annottext">Vector (Vector Float)
+</span><a href="#local-6989586621679069814"><span class="hs-identifier hs-var">mat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector Float -&gt; Vector Float
 forall (v :: * -&gt; *) a (w :: * -&gt; *).
 (Vector v a, Vector w a) =&gt;
 v a -&gt; w a
@@ -285,8 +285,8 @@ v a -&gt; w a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(Vector Float -&gt; Float) -&gt; Vector (Vector Float) -&gt; Vector Float
 forall a b. (a -&gt; b) -&gt; Vector a -&gt; Vector b
-</span><span class="hs-identifier hs-var">V.map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679070000"><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070000"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Vector Float -&gt; Float
+</span><span class="hs-identifier hs-var">V.map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679069813"><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069813"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Vector Float -&gt; Float
 forall a. (Unbox a, Num a) =&gt; Vector a -&gt; a
 </span><span class="hs-identifier hs-var">VU.sum</span></span><span> </span><span class="annot"><span class="annottext">(Vector Float -&gt; Float) -&gt; Vector Float -&gt; Float
 forall a b. (a -&gt; b) -&gt; a -&gt; b
@@ -298,6 +298,6 @@ forall a b c.
 </span><span class="hs-identifier hs-var">VU.zipWith</span></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">(*)</span></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070000"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679070002"><span class="hs-identifier hs-var">vec</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector (Vector Float)
-</span><a href="#local-6989586621679070001"><span class="hs-identifier hs-var">mat</span></a></span></pre></body></html>
+</span><a href="#local-6989586621679069813"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679069815"><span class="hs-identifier hs-var">vec</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector (Vector Float)
+</span><a href="#local-6989586621679069814"><span class="hs-identifier hs-var">mat</span></a></span></pre></body></html>

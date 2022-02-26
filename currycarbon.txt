@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.21.2
+@version 0.22.0
 
 module Currycarbon.Types
 
@@ -259,7 +259,7 @@ makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
 uncalToPDF :: UncalC14 -> UncalPDF
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: CalibrationMethod -> Bool -> Bool -> CalCurve -> [UncalC14] -> [Either CurrycarbonException CalPDF]
+calibrateDates :: CalibrateDatesConf -> CalCurve -> [UncalC14] -> [Either CurrycarbonException CalPDF]
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date
@@ -273,6 +273,20 @@ calibrateDates :: CalibrationMethod -> Bool -> Bool -> CalCurve -> [UncalC14] ->
 --   [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 --   </pre>
 refineCalDates :: [CalPDF] -> [CalC14]
+
+-- | A data type to represent the options of the calibrateDates function
+data CalibrateDatesConf
+CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
+
+-- | Calibration algorithm that should be used
+[_calConfMethod] :: CalibrateDatesConf -> CalibrationMethod
+
+-- | Allow calibration to run outside of the range of the calibration curve
+[_calConfAllowOutside] :: CalibrateDatesConf -> Bool
+
+-- | Interpolate the calibration curve
+[_calConfInterpolateCalCurve] :: CalibrateDatesConf -> Bool
+defaultCalConf :: CalibrateDatesConf
 
 module Currycarbon.CLI.RunCalibrate
 
