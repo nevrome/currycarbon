@@ -12,7 +12,7 @@ extra-source-files:  README.md,
                      CHANGELOG.md
 
 library
-    exposed-modules:    Currycarbon.Parsers, Currycarbon.Types, Currycarbon.Utils,
+    exposed-modules:    Currycarbon, Currycarbon.Parsers, Currycarbon.Types, Currycarbon.Utils,
                         Currycarbon.CLI.RunCalibrate, Currycarbon.CalCurves.Intcal20, 
                         Currycarbon.Calibration.Utils, Currycarbon.Calibration.MatrixMult, 
                         Currycarbon.Calibration.Bchron, Currycarbon.Calibration.Calibration
