@@ -22,7 +22,6 @@ import Currycarbon.Calibration.MatrixMult
 import Currycarbon.Types
 import Currycarbon.Utils
 
-import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, sortBy, groupBy)
 import qualified Data.Vector.Unboxed as VU
 
@@ -47,9 +46,9 @@ calibrateDates :: CalibrateDatesConf
                   -> [Either CurrycarbonException CalPDF]
 calibrateDates calConf _ [] = []
 calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDates =
-    map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates `using` parList rpar
+    map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates
 calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDates =
-    map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates `using` parList rpar
+    map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
