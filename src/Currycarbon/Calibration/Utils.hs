@@ -60,19 +60,22 @@ makeBCADCalCurve (CalCurve cals bps sigmas) = CalCurve (VU.map (\b -> -b+1950) c
 
 interpolateCalCurve :: CalCurve -> CalCurve
 interpolateCalCurve (CalCurve cals bps sigmas) =
-    let obs = VU.toList $ VU.zip3 bps cals sigmas
-        obsFilled = concat $ map fillWindowsCal (timeWindows obs) ++ [[last obs]]
-    in CalCurve (VU.fromList $ map (\(_,b,_) -> b) obsFilled) (VU.fromList $ map (\(a,_,_) -> a) obsFilled) (VU.fromList $ map (\(_,_,c) -> c) obsFilled)
+    let obs = VU.zip3 cals bps sigmas
+        timeWindows = getTimeWindows obs
+        obsFilled = VU.concatMap fillTimeWindows timeWindows
+    in uncurry3 CalCurve $ VU.unzip3 obsFilled
     where
-        fillWindowsCal :: ((Int,Int,Int),(Int,Int,Int)) -> [(Int,Int,Int)]
-        fillWindowsCal ((bp1,calbp1,sigma1),(bp2,calbp2,sigma2)) =
+        getTimeWindows :: VU.Vector (Int,Int,Int) -> VU.Vector ((Int,Int,Int),(Int,Int,Int))
+        getTimeWindows xs = VU.zipWith (,) (VU.init xs) (VU.tail xs)
+        fillTimeWindows :: ((Int,Int,Int),(Int,Int,Int)) -> VU.Vector (Int,Int,Int)
+        fillTimeWindows ((calbp1,bp1,sigma1),(calbp2,bp2,sigma2)) =
             if calbp1 == calbp2 || calbp1+1 == calbp2 || calbp1-1 == calbp2 
-            then [(bp1,calbp1,sigma1)]
+            then VU.singleton (calbp1,bp1,sigma1)
             else 
-                let newCals = [calbp1,calbp1-1..calbp2+1]
-                    newBPs = map (snd . getInBetweenPointsInt (calbp1,bp1) (calbp2,bp2)) newCals
-                    newSigmas = map (snd . getInBetweenPointsInt (calbp1,sigma1) (calbp2,sigma2)) newCals
-                in zip3 newBPs newCals newSigmas
+                let newCals = VU.fromList [calbp1,calbp1-1..calbp2+1] -- range definition like this to trigger counting down
+                    newBPs = VU.map (snd . getInBetweenPointsInt (calbp1,bp1) (calbp2,bp2)) newCals
+                    newSigmas = VU.map (snd . getInBetweenPointsInt (calbp1,sigma1) (calbp2,sigma2)) newCals
+                in VU.zip3 newCals newBPs newSigmas
         getInBetweenPointsInt :: (Int, Int) -> (Int, Int) -> Int -> (Int, Int)
         getInBetweenPointsInt (x1,y1) (x2,y2) xPred =
             let (_,yPred) = getInBetweenPoints (fromIntegral x1,fromIntegral y1) (fromIntegral x2,fromIntegral y2) $ fromIntegral xPred
@@ -84,15 +87,8 @@ interpolateCalCurve (CalCurve cals bps sigmas) =
                 yDiffPerxDiff = yDiff/xDiff
                 xPredRel = x1 - xPred
             in (xPred, y1 + xPredRel * yDiffPerxDiff)
-        timeWindows :: [(a,b,c)] -> [((a,b,c),(a,b,c))]
-        timeWindows xs = map (\ts -> (head ts, last ts)) $ windows 2 xs
-            where
-                windows :: Int -> [a] -> [[a]]
-                windows n ys = takeLengthOf (drop (n-1) ys) (windows' n ys)
-                takeLengthOf :: [a] -> [b] -> [b]
-                takeLengthOf = zipWith (\_ x -> x)
-                windows' :: Int -> [a] -> [[a]]
-                windows' n = map (take n) . tails
+        uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)
+        uncurry3 f ~(a,b,c) = f a b c
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) = 
