@@ -8,24 +8,23 @@ module Currycarbon (
     -- * Calibration
     -- $calibration
     calibrateDates,
-    UncalC14,
+    UncalC14 (..),
     readUncalC14FromFile,
-    CalibrateDatesConf,
-    CalibrationMethod,
+    CalibrateDatesConf (..),
+    CalibrationMethod (..),
     defaultCalConf,
-    CalPDF,
+    CalPDF (..),
     writeCalPDFs,
 
     -- * Calibration curves
-    -- $calCurves
-    CalCurve,
+    CalCurve (..),
     intcal20,
     readCalCurve,
 
     -- * Derived output
     -- $derivedOutput
     refineCalDates,
-    CalC14,
+    CalC14 (..),
     renderCalDatesPretty,
     writeCalC14s
 
@@ -36,27 +35,26 @@ import Currycarbon.Parsers
 import Currycarbon.Types
 import Currycarbon.CalCurves.Intcal20
 
--- $calibration
---
--- The main function 'calibrateDates'  in this module calibrates radiocarbon 
--- dates, given the uncalibrated input dates, a calibration curve and some 
--- configuration options. 
--- 
--- * For the input dates there is a dedicated data type 'UncalC14'.
--- These can be read from a .csv file with 'readUncalC14FromFile'.
--- 
--- * Calibration curves are covered with the data type 'Calcurve'.
--- Only one curve is embedded in the package ('incal20'), others
--- can be read at runtime with 'readCalCurve'.
---
--- * The configuration options are managed in 'CalibrateDatesConf',
--- within which 'CalibrationMethod' is most important. For a solid
--- default I suggest to use 'defaultCalConf'.
---
--- 'calibrateDates' returns a list of calibrated dates in the rough
--- 'CalPDF' format, which can be written to a file with 'writeCalPDFs'.
--- See the Derived output section below for more pretty and output formats.
+{- $calibration
 
--- $calCurves
+The main function 'calibrateDates'  in this module calibrates radiocarbon 
+dates, given the uncalibrated input dates, a calibration curve and some 
+configuration options. 
+
+* For the input dates there is a dedicated data type 'UncalC14'.
+These can be read from a .csv file with 'readUncalC14FromFile'.
+
+* Calibration curves are covered with the data type 'Calcurve'.
+Only one curve is embedded in the package ('incal20'), others
+can be read at runtime with 'readCalCurve'.
+
+* The configuration options are managed in 'CalibrateDatesConf',
+within which 'CalibrationMethod' is most important. For a solid
+default I suggest to use 'defaultCalConf'.
+
+'calibrateDates' returns a list of calibrated dates in the rough
+'CalPDF' format, which can be written to a file with 'writeCalPDFs'.
+See the Derived output section below for more pretty and output formats.
+-}
 
 -- $derivedOutput
