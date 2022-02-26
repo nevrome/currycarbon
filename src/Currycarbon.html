@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | This module implements an algorithm for the calibration of </span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- [radiocarbon dates](https://en.wikipedia.org/wiki/Radiocarbon_dating).</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- This is a standard procedure in Archaeology and other fields working</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- with radiocarbon dating.</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Currycarbon</span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-7"></span><span>    </span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Calibration</span></span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><span class="hs-comment">-- $calibration</span></span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#calibrateDates"><span class="hs-identifier">calibrateDates</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier">UncalC14</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#readUncalC14FromFile"><span class="hs-identifier">readUncalC14FromFile</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#CalibrateDatesConf"><span class="hs-identifier">CalibrateDatesConf</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Currycarbon.Types.html#CalibrationMethod"><span class="hs-identifier">CalibrationMethod</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#defaultCalConf"><span class="hs-identifier">defaultCalConf</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier">CalPDF</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#writeCalPDFs"><span class="hs-identifier">writeCalPDFs</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Calibration curves</span></span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier">CalCurve</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><a href="Currycarbon.CalCurves.Intcal20.html#intcal20"><span class="hs-identifier">intcal20</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#readCalCurve"><span class="hs-identifier">readCalCurve</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Derived output</span></span><span>
+</span><span id="line-25"></span><span>    </span><span class="annot"><span class="hs-comment">-- $derivedOutput</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#refineCalDates"><span class="hs-identifier">refineCalDates</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span class="annot"><a href="Currycarbon.Types.html#CalC14"><span class="hs-identifier">CalC14</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#renderCalDatesPretty"><span class="hs-identifier">renderCalDatesPretty</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#writeCalC14s"><span class="hs-identifier">writeCalC14s</span></a></span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html"><span class="hs-identifier">Currycarbon.Calibration.Calibration</span></a></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Parsers.html"><span class="hs-identifier">Currycarbon.Parsers</span></a></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Types.html"><span class="hs-identifier">Currycarbon.Types</span></a></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.CalCurves.Intcal20.html"><span class="hs-identifier">Currycarbon.CalCurves.Intcal20</span></a></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-comment">{- $calibration
+
+The main function 'calibrateDates'  in this module calibrates radiocarbon 
+dates, given the uncalibrated input dates, a calibration curve and some 
+configuration options. 
+
+* For the input dates there is a dedicated data type 'UncalC14'.
+These can be read from a .csv file with 'readUncalC14FromFile'.
+
+* Calibration curves are covered with the data type 'Calcurve'.
+Only one curve is embedded in the package ('incal20'), others
+can be read at runtime with 'readCalCurve'.
+
+* The configuration options are managed in 'CalibrateDatesConf',
+within which 'CalibrationMethod' is most important. For a solid
+default I suggest to use 'defaultCalConf'.
+
+'calibrateDates' returns a list of calibrated dates in the rough
+'CalPDF' format, which can be written to a file with 'writeCalPDFs'.
+See the Derived output section below for more pretty and output formats.
+-}</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- $derivedOutput</span></pre></body></html>
