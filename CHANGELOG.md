@@ -1,3 +1,5 @@
+- V 0.22.0: Changed the interface of the important calibrateDates function with a new config data type CalibrateDatesConf
+- V 0.21.3: Refactored the calibration curve interpolation
 - V 0.21.2: Introduced doctest and added some tiny examples/tests to try it out
 - V 0.21.1: Split up the calibration module for better readability
 - V 0.21.0: Added a neat CLI density plot for calibrated dates
