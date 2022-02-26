@@ -12,6 +12,8 @@ module Currycarbon.Calibration.Calibration
       , uncalToPDF
       , calibrateDates
       , refineCalDates
+      , CalibrateDatesConf (..)
+      , defaultCalConf
     ) where
 
 import Currycarbon.Calibration.Utils
@@ -20,26 +22,34 @@ import Currycarbon.Calibration.MatrixMult
 import Currycarbon.Types
 import Currycarbon.Utils
 
-import Control.Parallel.Strategies (parListChunk, using, rpar)
+import Control.Parallel.Strategies (parList, using, rpar)
 import Data.List (sort, sortBy, groupBy)
 import qualified Data.Vector.Unboxed as VU
 
---import Statistics.Distribution.Normal (normalDistr)
+-- | A data type to represent the options of the calibrateDates function
+data CalibrateDatesConf = CalibrateDatesConf {
+        _calConfMethod :: CalibrationMethod -- ^ Calibration algorithm that should be used
+      , _calConfAllowOutside :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
+      , _calConfInterpolateCalCurve :: Bool -- ^ Interpolate the calibration curve
+    }
+
+defaultCalConf :: CalibrateDatesConf
+defaultCalConf = CalibrateDatesConf {
+        _calConfMethod = Bchron { distribution = StudentTDist 100 }
+      , _calConfAllowOutside = False 
+      , _calConfInterpolateCalCurve = True
+    }
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: CalibrationMethod -- ^ Calibration method
-                  -> Bool -- ^ Should calibration be allowed to run outside of the range of the calibration curve? 
-                  -> Bool -- ^ Should the calibration curve be interpolated for year-wise output?
+calibrateDates :: CalibrateDatesConf
                   -> CalCurve -- ^ Calibration curve
-                  -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates
+                  -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates  
                   -> [Either CurrycarbonException CalPDF]
-calibrateDates _ _ _ _ [] = []
-calibrateDates MatrixMultiplication allowOutside interpolate calCurve uncalDates =
-    map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates `using` parListChunk 20 rpar
-calibrateDates Bchron{distribution=distr} allowOutside interpolate calCurve uncalDates =
-    map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates `using` parListChunk 100 rpar
--- TODO: the chunking into 20/100 elements is arbitrary and requires solid testing
--- Maybe a special condition for less than X dates is useful
+calibrateDates calConf _ [] = []
+calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDates =
+    map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates `using` parList rpar
+calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDates =
+    map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates `using` parList rpar
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
