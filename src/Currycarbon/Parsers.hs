@@ -114,6 +114,23 @@ renderCalCurveMatrix (CalCurveMatrix bps cals curveDensities) =
     in header ++ intercalate "\n" body
 
 -- CalPDF
+-- | Write 'CalPDF's to the file system. The output file is a long .csv file with the following structure:
+-- 
+-- @
+-- sample,calBCAD,density
+-- ...
+-- Sample1,-1391,2.8917924e-4
+-- Sample1,-1390,3.3285577e-4
+-- Sample1,-1389,3.5674628e-4
+-- Sample1,-1388,3.750703e-4
+-- ...
+-- Sample2,-3678,1.8128564e-3
+-- Sample2,-3677,1.9512239e-3
+-- Sample2,-3676,2.0227064e-3
+-- Sample2,-3675,2.095691e-3
+-- ...
+-- @
+-- 
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 writeCalPDFs path calPDFs =
     BL.writeFile path $ "sample,calBCAD,density\n" <> toLazyByteString (mconcat $ map renderBuilderCalPDF calPDFs)
@@ -171,6 +188,16 @@ renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
 renderUncalC14 :: UncalC14 -> String
 renderUncalC14 (UncalC14 name bp sigma) = "Sample: " ++ name ++ " ~> [" ++ show bp ++ "±" ++ show sigma ++ "BP]"
 
+-- | Read uncalibrated radiocarbon dates from a file. The file should feature one radiocarbon date
+-- per line in the form "\<sample name\>,\<mean age BP\>,\<one sigma standard deviation\>", where 
+-- \<sample name\> is optional. A valid file could look like this:
+-- 
+-- @
+-- Sample1,5000,30
+-- 6000,50
+-- Sample3,4000,25
+-- @
+-- 
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
     s <- readFile uncalFile

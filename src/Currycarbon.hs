@@ -11,8 +11,8 @@ module Currycarbon (
     UncalC14 (..),
     readUncalC14FromFile,
     CalibrateDatesConf (..),
-    CalibrationMethod (..),
     defaultCalConf,
+    CalibrationMethod (..),
     CalPDF (..),
     writeCalPDFs,
 

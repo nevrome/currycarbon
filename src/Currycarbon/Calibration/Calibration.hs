@@ -25,18 +25,26 @@ import Currycarbon.Utils
 import Data.List (sort, sortBy, groupBy)
 import qualified Data.Vector.Unboxed as VU
 
--- | A data type to represent the options of the calibrateDates function
+-- | A data type to cover the configuration options of the calibrateDates function
 data CalibrateDatesConf = CalibrateDatesConf {
-        _calConfMethod :: CalibrationMethod -- ^ The calibration algorithm that should be used
-      , _calConfAllowOutside :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
-      , _calConfInterpolateCalCurve :: Bool -- ^ Interpolate the calibration curve before calibration.
-                                            -- This is a simple linear interpolation only to increase the output
-                                            -- resolution for earlier time periods, where the typical calibration
-                                            -- curves are less dense by default. With the interpolation, the output
-                                            -- will be a per-year density. The mechanism is inspired by the 
-                                            -- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)
-    }
+      -- | The calibration algorithm that should be used  
+        _calConfMethod :: CalibrationMethod
+      -- | Allow calibration to run outside of the range of the calibration curve
+      , _calConfAllowOutside :: Bool
+      -- | Interpolate the calibration curve before calibration.
+      -- This is a simple linear interpolation only to increase the output
+      -- resolution for earlier time periods, where the typical calibration
+      -- curves are less dense by default. With the interpolation, the output
+      -- will be a per-year density. The mechanism is inspired by the 
+      -- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)
+      , _calConfInterpolateCalCurve :: Bool 
+    } deriving (Show, Eq)
 
+-- | A default configuration ('CalibrateDatesConf') that should yield almost 
+-- identical calibration results to the the [Bchron R package](https://github.com/andrewcparnell/Bchron)
+--
+-- >>> defaultCalConf
+-- CalibrateDatesConf {_calConfMethod = Bchron {distribution = StudentTDist {ndf = 100.0}}, _calConfAllowOutside = False, _calConfInterpolateCalCurve = True}
 defaultCalConf :: CalibrateDatesConf
 defaultCalConf = CalibrateDatesConf {
         _calConfMethod = Bchron { distribution = StudentTDist 100 }

@@ -84,7 +84,7 @@ optParseUncalC14FromFile = OP.many (OP.strOption (
     OP.short 'i' <>
     OP.help "A file with a list of uncalibrated dates. \
             \Formated just as DATES, but with a new line for each input date. \
-            \DATES and --uncalFile can be combined and you can provide multiple instances of --uncalFile"
+            \DATES and --inputFile can be combined and you can provide multiple instances of --inputFile"
     ))
 
 optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)
