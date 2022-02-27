@@ -11,30 +11,93 @@
 </span><span id="line-11"></span><span class="hs-comment">--</span><span>
 </span><span id="line-12"></span><span class="hs-comment">-- This module defines the relevant data types for handling radiocarbon dates</span><span>
 </span><span id="line-13"></span><span>
-</span><span id="line-14"></span><span class="hs-comment">-- | Different calibration algorithms implemented in currycarbon</span><span>
-</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="CalibrationMethod"><span class="annot"><a href="Currycarbon.Types.html#CalibrationMethod"><span class="hs-identifier hs-var">CalibrationMethod</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-16"></span><span>    </span><span id="MatrixMultiplication"><span class="annot"><a href="Currycarbon.Types.html#MatrixMultiplication"><span class="hs-identifier hs-var">MatrixMultiplication</span></a></span></span><span> </span><span class="hs-comment">-- ^ Matrix multiplication method</span><span>
-</span><span id="line-17"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Bchron"><span class="annot"><a href="Currycarbon.Types.html#Bchron"><span class="hs-identifier hs-var">Bchron</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span>
-</span><span id="line-18"></span><span>      </span><span id="distribution"><span class="annot"><span class="annottext">CalibrationMethod -&gt; CalibrationDistribution
-</span><a href="Currycarbon.Types.html#distribution"><span class="hs-identifier hs-var hs-var">distribution</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalibrationDistribution"><span class="hs-identifier hs-type">CalibrationDistribution</span></a></span><span>
-</span><span id="line-19"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-comment">-- ^ Algorithm similar to the clever implementation in the R package Bchron by Andrew Parnell</span><span>
-</span><span id="line-20"></span><span>
-</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="CalibrationDistribution"><span class="annot"><a href="Currycarbon.Types.html#CalibrationDistribution"><span class="hs-identifier hs-var">CalibrationDistribution</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
-</span><span id="line-22"></span><span>    </span><span id="NormalDist"><span class="annot"><a href="Currycarbon.Types.html#NormalDist"><span class="hs-identifier hs-var">NormalDist</span></a></span></span><span>
-</span><span id="line-23"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="StudentTDist"><span class="annot"><a href="Currycarbon.Types.html#StudentTDist"><span class="hs-identifier hs-var">StudentTDist</span></a></span></span><span> </span><span class="hs-special">{</span><span>
-</span><span id="line-24"></span><span>      </span><span id="ndf"><span class="annot"><span class="annottext">CalibrationDistribution -&gt; Double
-</span><a href="Currycarbon.Types.html#ndf"><span class="hs-identifier hs-var hs-var">ndf</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
-</span><span id="line-25"></span><span>    </span><span class="hs-special">}</span><span>
-</span><span id="line-26"></span><span>
-</span><span id="line-27"></span><span class="hs-comment">-- | A data type to represent an uncalibrated radiocarbon date</span><span>
-</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="UncalC14"><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-var">UncalC14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UncalC14"><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-var">UncalC14</span></a></span></span><span> </span><span class="hs-special">{</span><span>   </span><span>
-</span><span id="line-29"></span><span>      </span><span id="_uncalC14Id"><span class="annot"><span class="annottext">UncalC14 -&gt; String
+</span><span id="line-14"></span><span class="hs-comment">-- | Different calibration algorithms implemented in currycarbon. Currently two distinct </span><span>
+</span><span id="line-15"></span><span class="hs-comment">-- implementations are available, although both of them are similar [Intercept calibration](https://en.wikipedia.org/wiki/Radiocarbon_calibration#Intercept)</span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- algorithms. Maybe more algorithms will be added in the future</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="CalibrationMethod"><span class="annot"><a href="Currycarbon.Types.html#CalibrationMethod"><span class="hs-identifier hs-var">CalibrationMethod</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-comment">-- | A matrix multiplication method generally following [this blog post by Martin Hinz](https://www.martinhinz.info/jekyll/update/blog/2016/06/03/simple_calibration.html).</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-comment">-- This method is slower and the underlying code more verbose than 'Bchron', but it </span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-comment">-- has some advantages regarding didactics and the inspection of intermediate data</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-comment">-- products for debugging.</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-comment">-- Using this method is thus generally not advisable, except for specific applications,</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-comment">-- where a more technical insight into C14 calibration is needed</span><span>
+</span><span id="line-24"></span><span>    </span><span id="MatrixMultiplication"><span class="annot"><a href="Currycarbon.Types.html#MatrixMultiplication"><span class="hs-identifier hs-var">MatrixMultiplication</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-comment">-- | A fast and reliable calibration algorithm very similar to the implementation in the </span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-comment">-- [R package Bchron by Andrew Parnell](https://github.com/andrewcparnell/Bchron/blob/master/R/BchronCalibrate.R).</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-comment">-- This algorithm can be run with a simple normal distribution ('NormalDist') or</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-comment">-- Student's t-distribution ('StudentTDist'), which is recommended</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Bchron"><span class="annot"><a href="Currycarbon.Types.html#Bchron"><span class="hs-identifier hs-var">Bchron</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="distribution"><span class="annot"><span class="annottext">CalibrationMethod -&gt; CalibrationDistribution
+</span><a href="Currycarbon.Types.html#distribution"><span class="hs-identifier hs-var hs-var">distribution</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalibrationDistribution"><span class="hs-identifier hs-type">CalibrationDistribution</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069517"><span id="local-6989586621679069519"><span id="local-6989586621679069521"><span class="annot"><span class="annottext">Int -&gt; CalibrationMethod -&gt; ShowS
+[CalibrationMethod] -&gt; ShowS
+CalibrationMethod -&gt; String
+(Int -&gt; CalibrationMethod -&gt; ShowS)
+-&gt; (CalibrationMethod -&gt; String)
+-&gt; ([CalibrationMethod] -&gt; ShowS)
+-&gt; Show CalibrationMethod
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [CalibrationMethod] -&gt; ShowS
+$cshowList :: [CalibrationMethod] -&gt; ShowS
+show :: CalibrationMethod -&gt; String
+$cshow :: CalibrationMethod -&gt; String
+showsPrec :: Int -&gt; CalibrationMethod -&gt; ShowS
+$cshowsPrec :: Int -&gt; CalibrationMethod -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069512"><span id="local-6989586621679069514"><span class="annot"><span class="annottext">CalibrationMethod -&gt; CalibrationMethod -&gt; Bool
+(CalibrationMethod -&gt; CalibrationMethod -&gt; Bool)
+-&gt; (CalibrationMethod -&gt; CalibrationMethod -&gt; Bool)
+-&gt; Eq CalibrationMethod
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: CalibrationMethod -&gt; CalibrationMethod -&gt; Bool
+$c/= :: CalibrationMethod -&gt; CalibrationMethod -&gt; Bool
+== :: CalibrationMethod -&gt; CalibrationMethod -&gt; Bool
+$c== :: CalibrationMethod -&gt; CalibrationMethod -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- | Statistical distributions to be used with the 'CalibrationMethod' 'Bchron'</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="CalibrationDistribution"><span class="annot"><a href="Currycarbon.Types.html#CalibrationDistribution"><span class="hs-identifier hs-var">CalibrationDistribution</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-comment">-- | Normal distribution</span><span>
+</span><span id="line-35"></span><span>    </span><span id="NormalDist"><span class="annot"><a href="Currycarbon.Types.html#NormalDist"><span class="hs-identifier hs-var">NormalDist</span></a></span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-comment">-- | Student's t-distribution.</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="StudentTDist"><span class="annot"><a href="Currycarbon.Types.html#StudentTDist"><span class="hs-identifier hs-var">StudentTDist</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-38"></span><span>      </span><span id="ndf"><span class="annot"><span class="annottext">CalibrationDistribution -&gt; Double
+</span><a href="Currycarbon.Types.html#ndf"><span class="hs-identifier hs-var hs-var">ndf</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-comment">-- ^ number of degrees of freedom </span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069502"><span id="local-6989586621679069504"><span id="local-6989586621679069506"><span class="annot"><span class="annottext">Int -&gt; CalibrationDistribution -&gt; ShowS
+[CalibrationDistribution] -&gt; ShowS
+CalibrationDistribution -&gt; String
+(Int -&gt; CalibrationDistribution -&gt; ShowS)
+-&gt; (CalibrationDistribution -&gt; String)
+-&gt; ([CalibrationDistribution] -&gt; ShowS)
+-&gt; Show CalibrationDistribution
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [CalibrationDistribution] -&gt; ShowS
+$cshowList :: [CalibrationDistribution] -&gt; ShowS
+show :: CalibrationDistribution -&gt; String
+$cshow :: CalibrationDistribution -&gt; String
+showsPrec :: Int -&gt; CalibrationDistribution -&gt; ShowS
+$cshowsPrec :: Int -&gt; CalibrationDistribution -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069498"><span id="local-6989586621679069500"><span class="annot"><span class="annottext">CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool
+(CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool)
+-&gt; (CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool)
+-&gt; Eq CalibrationDistribution
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool
+$c/= :: CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool
+== :: CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool
+$c== :: CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- | A data type to represent an uncalibrated radiocarbon date</span><span>
+</span><span id="line-43"></span><span class="hs-keyword">data</span><span> </span><span id="UncalC14"><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-var">UncalC14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UncalC14"><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-var">UncalC14</span></a></span></span><span> </span><span class="hs-special">{</span><span>   </span><span>
+</span><span id="line-44"></span><span>      </span><span id="_uncalC14Id"><span class="annot"><span class="annottext">UncalC14 -&gt; String
 </span><a href="Currycarbon.Types.html#_uncalC14Id"><span class="hs-identifier hs-var hs-var">_uncalC14Id</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-comment">-- ^ Sample identifier, e.g. a lab number</span><span>
-</span><span id="line-30"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalC14BP"><span class="annot"><span class="annottext">UncalC14 -&gt; Int
+</span><span id="line-45"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalC14BP"><span class="annot"><span class="annottext">UncalC14 -&gt; Int
 </span><a href="Currycarbon.Types.html#_uncalC14BP"><span class="hs-identifier hs-var hs-var">_uncalC14BP</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ C14 age in years BP</span><span>
-</span><span id="line-31"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalC14Sigma"><span class="annot"><span class="annottext">UncalC14 -&gt; Int
+</span><span id="line-46"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalC14Sigma"><span class="annot"><span class="annottext">UncalC14 -&gt; Int
 </span><a href="Currycarbon.Types.html#_uncalC14Sigma"><span class="hs-identifier hs-var hs-var">_uncalC14Sigma</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ C14 standard deviation (one sigma in years)</span><span>
-</span><span id="line-32"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069165"><span id="local-6989586621679069167"><span id="local-6989586621679069169"><span class="annot"><span class="annottext">Int -&gt; UncalC14 -&gt; ShowS
+</span><span id="line-47"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069488"><span id="local-6989586621679069490"><span id="local-6989586621679069492"><span class="annot"><span class="annottext">Int -&gt; UncalC14 -&gt; ShowS
 [UncalC14] -&gt; ShowS
 UncalC14 -&gt; String
 (Int -&gt; UncalC14 -&gt; ShowS)
@@ -47,18 +110,26 @@ show :: UncalC14 -&gt; String
 $cshow :: UncalC14 -&gt; String
 showsPrec :: Int -&gt; UncalC14 -&gt; ShowS
 $cshowsPrec :: Int -&gt; UncalC14 -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
-</span><span id="line-33"></span><span>
-</span><span id="line-34"></span><span class="hs-comment">-- | A data type to represent a year-wise probability density for uncalibrated dates</span><span>
-</span><span id="line-35"></span><span class="hs-comment">-- Although technically not correct, we still call this a probability density function (PDF)</span><span>
-</span><span id="line-36"></span><span class="hs-keyword">data</span><span> </span><span id="UncalPDF"><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-var">UncalPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UncalPDF"><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-var">UncalPDF</span></a></span></span><span> </span><span class="hs-special">{</span><span>
-</span><span id="line-37"></span><span>      </span><span id="_uncalPDFid"><span class="annot"><span class="annottext">UncalPDF -&gt; String
-</span><a href="Currycarbon.Types.html#_uncalPDFid"><span class="hs-identifier hs-var hs-var">_uncalPDFid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-comment">-- ^ Identifier, e.g. a lab number</span><span>
-</span><span id="line-38"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalPDFBPs"><span class="annot"><span class="annottext">UncalPDF -&gt; Vector Int
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069484"><span id="local-6989586621679069486"><span class="annot"><span class="annottext">UncalC14 -&gt; UncalC14 -&gt; Bool
+(UncalC14 -&gt; UncalC14 -&gt; Bool)
+-&gt; (UncalC14 -&gt; UncalC14 -&gt; Bool) -&gt; Eq UncalC14
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: UncalC14 -&gt; UncalC14 -&gt; Bool
+$c/= :: UncalC14 -&gt; UncalC14 -&gt; Bool
+== :: UncalC14 -&gt; UncalC14 -&gt; Bool
+$c== :: UncalC14 -&gt; UncalC14 -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- | A data type to represent a year-wise probability density for uncalibrated dates</span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- Although technically not correct, we still call this a probability density function (PDF)</span><span>
+</span><span id="line-51"></span><span class="hs-keyword">data</span><span> </span><span id="UncalPDF"><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-var">UncalPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UncalPDF"><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-var">UncalPDF</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-52"></span><span>      </span><span id="_uncalPDFid"><span class="annot"><span class="annottext">UncalPDF -&gt; String
+</span><a href="Currycarbon.Types.html#_uncalPDFid"><span class="hs-identifier hs-var hs-var">_uncalPDFid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-comment">-- ^ Sample identifier, e.g. a lab number</span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalPDFBPs"><span class="annot"><span class="annottext">UncalPDF -&gt; Vector Int
 </span><a href="Currycarbon.Types.html#_uncalPDFBPs"><span class="hs-identifier hs-var hs-var">_uncalPDFBPs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Years BP or BC</span><span>
-</span><span id="line-39"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalPDFDens"><span class="annot"><span class="annottext">UncalPDF -&gt; Vector Float
+</span><span id="line-54"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalPDFDens"><span class="annot"><span class="annottext">UncalPDF -&gt; Vector Float
 </span><a href="Currycarbon.Types.html#_uncalPDFDens"><span class="hs-identifier hs-var hs-var">_uncalPDFDens</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-comment">-- ^ Probability densities</span><span>
-</span><span id="line-40"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069154"><span id="local-6989586621679069156"><span id="local-6989586621679069158"><span class="annot"><span class="annottext">Int -&gt; UncalPDF -&gt; ShowS
+</span><span id="line-55"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069474"><span id="local-6989586621679069476"><span id="local-6989586621679069478"><span class="annot"><span class="annottext">Int -&gt; UncalPDF -&gt; ShowS
 [UncalPDF] -&gt; ShowS
 UncalPDF -&gt; String
 (Int -&gt; UncalPDF -&gt; ShowS)
@@ -72,16 +143,16 @@ $cshow :: UncalPDF -&gt; String
 showsPrec :: Int -&gt; UncalPDF -&gt; ShowS
 $cshowsPrec :: Int -&gt; UncalPDF -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
-</span><span id="line-41"></span><span>
-</span><span id="line-42"></span><span class="hs-comment">-- | A data type to represent a calibration curve</span><span>
-</span><span id="line-43"></span><span class="hs-keyword">data</span><span> </span><span id="CalCurve"><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier hs-var">CalCurve</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CalCurve"><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier hs-var">CalCurve</span></a></span></span><span> </span><span class="hs-special">{</span><span>
-</span><span id="line-44"></span><span>      </span><span id="_calCurveCals"><span class="annot"><span class="annottext">CalCurve -&gt; Vector Int
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="hs-comment">-- | A data type to represent a calibration curve</span><span>
+</span><span id="line-58"></span><span class="hs-keyword">data</span><span> </span><span id="CalCurve"><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier hs-var">CalCurve</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CalCurve"><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier hs-var">CalCurve</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-59"></span><span>      </span><span id="_calCurveCals"><span class="annot"><span class="annottext">CalCurve -&gt; Vector Int
 </span><a href="Currycarbon.Types.html#_calCurveCals"><span class="hs-identifier hs-var hs-var">_calCurveCals</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Years calBP or calBC</span><span>
-</span><span id="line-45"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveBPs"><span class="annot"><span class="annottext">CalCurve -&gt; Vector Int
+</span><span id="line-60"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveBPs"><span class="annot"><span class="annottext">CalCurve -&gt; Vector Int
 </span><a href="Currycarbon.Types.html#_calCurveBPs"><span class="hs-identifier hs-var hs-var">_calCurveBPs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Years BP or BC</span><span>
-</span><span id="line-46"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveSigmas"><span class="annot"><span class="annottext">CalCurve -&gt; Vector Int
+</span><span id="line-61"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveSigmas"><span class="annot"><span class="annottext">CalCurve -&gt; Vector Int
 </span><a href="Currycarbon.Types.html#_calCurveSigmas"><span class="hs-identifier hs-var hs-var">_calCurveSigmas</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Standard deviation (one sigma in years)</span><span>
-</span><span id="line-47"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069144"><span id="local-6989586621679069146"><span id="local-6989586621679069148"><span class="annot"><span class="annottext">Int -&gt; CalCurve -&gt; ShowS
+</span><span id="line-62"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069464"><span id="local-6989586621679069466"><span id="local-6989586621679069468"><span class="annot"><span class="annottext">Int -&gt; CalCurve -&gt; ShowS
 [CalCurve] -&gt; ShowS
 CalCurve -&gt; String
 (Int -&gt; CalCurve -&gt; ShowS)
@@ -95,16 +166,16 @@ $cshow :: CalCurve -&gt; String
 showsPrec :: Int -&gt; CalCurve -&gt; ShowS
 $cshowsPrec :: Int -&gt; CalCurve -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
-</span><span id="line-48"></span><span>
-</span><span id="line-49"></span><span class="hs-comment">-- | A data type to represent a calibration curve in a /wide/ matrix form</span><span>
-</span><span id="line-50"></span><span class="hs-keyword">data</span><span> </span><span id="CalCurveMatrix"><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-var">CalCurveMatrix</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CalCurveMatrix"><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-var">CalCurveMatrix</span></a></span></span><span> </span><span class="hs-special">{</span><span>
-</span><span id="line-51"></span><span>      </span><span id="_calCurveMatrixBPs"><span class="annot"><span class="annottext">CalCurveMatrix -&gt; Vector Int
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- | A data type to represent a calibration curve in a /wide/ matrix form</span><span>
+</span><span id="line-65"></span><span class="hs-keyword">data</span><span> </span><span id="CalCurveMatrix"><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-var">CalCurveMatrix</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CalCurveMatrix"><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-var">CalCurveMatrix</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-66"></span><span>      </span><span id="_calCurveMatrixBPs"><span class="annot"><span class="annottext">CalCurveMatrix -&gt; Vector Int
 </span><a href="Currycarbon.Types.html#_calCurveMatrixBPs"><span class="hs-identifier hs-var hs-var">_calCurveMatrixBPs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Row names of the calibration curve matrix: Years BP or BC</span><span>
-</span><span id="line-52"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveMatrixCalBPs"><span class="annot"><span class="annottext">CalCurveMatrix -&gt; Vector Int
+</span><span id="line-67"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveMatrixCalBPs"><span class="annot"><span class="annottext">CalCurveMatrix -&gt; Vector Int
 </span><a href="Currycarbon.Types.html#_calCurveMatrixCalBPs"><span class="hs-identifier hs-var hs-var">_calCurveMatrixCalBPs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Column names of the calibration curve matrix: Years calBP or calBC</span><span>
-</span><span id="line-53"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveMatrixDens"><span class="annot"><span class="annottext">CalCurveMatrix -&gt; Vector (Vector Float)
+</span><span id="line-68"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveMatrixDens"><span class="annot"><span class="annottext">CalCurveMatrix -&gt; Vector (Vector Float)
 </span><a href="Currycarbon.Types.html#_calCurveMatrixDens"><span class="hs-identifier hs-var hs-var">_calCurveMatrixDens</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- ^ Matrix (as a list of columns) with the probability densities</span><span>
-</span><span id="line-54"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069134"><span id="local-6989586621679069136"><span id="local-6989586621679069138"><span class="annot"><span class="annottext">Int -&gt; CalCurveMatrix -&gt; ShowS
+</span><span id="line-69"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069454"><span id="local-6989586621679069456"><span id="local-6989586621679069458"><span class="annot"><span class="annottext">Int -&gt; CalCurveMatrix -&gt; ShowS
 [CalCurveMatrix] -&gt; ShowS
 CalCurveMatrix -&gt; String
 (Int -&gt; CalCurveMatrix -&gt; ShowS)
@@ -120,16 +191,17 @@ $cshow :: CalCurveMatrix -&gt; String
 showsPrec :: Int -&gt; CalCurveMatrix -&gt; ShowS
 $cshowsPrec :: Int -&gt; CalCurveMatrix -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
-</span><span id="line-55"></span><span>
-</span><span id="line-56"></span><span class="hs-comment">-- | A data type to represent a year-wise probability density for calibrated ages</span><span>
-</span><span id="line-57"></span><span class="hs-keyword">data</span><span> </span><span id="CalPDF"><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-var">CalPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CalPDF"><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-var">CalPDF</span></a></span></span><span> </span><span class="hs-special">{</span><span>
-</span><span id="line-58"></span><span>      </span><span id="_calPDFid"><span class="annot"><span class="annottext">CalPDF -&gt; String
-</span><a href="Currycarbon.Types.html#_calPDFid"><span class="hs-identifier hs-var hs-var">_calPDFid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-comment">-- ^ Identifier, e.g. a lab number</span><span>
-</span><span id="line-59"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calPDFBPs"><span class="annot"><span class="annottext">CalPDF -&gt; Vector Int
-</span><a href="Currycarbon.Types.html#_calPDFBPs"><span class="hs-identifier hs-var hs-var">_calPDFBPs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Years calBP or calBC</span><span>
-</span><span id="line-60"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calPDFDens"><span class="annot"><span class="annottext">CalPDF -&gt; Vector Float
-</span><a href="Currycarbon.Types.html#_calPDFDens"><span class="hs-identifier hs-var hs-var">_calPDFDens</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-comment">-- ^ Probability densities</span><span>
-</span><span id="line-61"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069124"><span id="local-6989586621679069126"><span id="local-6989586621679069128"><span class="annot"><span class="annottext">Int -&gt; CalPDF -&gt; ShowS
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="hs-comment">-- | A data type to represent a year-wise probability density for calibrated dates.</span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- Although technically not correct, we still call this a probability density function (PDF)</span><span>
+</span><span id="line-73"></span><span class="hs-keyword">data</span><span> </span><span id="CalPDF"><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-var">CalPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CalPDF"><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-var">CalPDF</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-74"></span><span>      </span><span id="_calPDFid"><span class="annot"><span class="annottext">CalPDF -&gt; String
+</span><a href="Currycarbon.Types.html#_calPDFid"><span class="hs-identifier hs-var hs-var">_calPDFid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-comment">-- ^ Sample identifier, e.g. a lab number</span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calPDFBPs"><span class="annot"><span class="annottext">CalPDF -&gt; Vector Int
+</span><a href="Currycarbon.Types.html#_calPDFBPs"><span class="hs-identifier hs-var hs-var">_calPDFBPs</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Calibrated years calBP or calBC/AD (depending on the context)</span><span>
+</span><span id="line-76"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calPDFDens"><span class="annot"><span class="annottext">CalPDF -&gt; Vector Float
+</span><a href="Currycarbon.Types.html#_calPDFDens"><span class="hs-identifier hs-var hs-var">_calPDFDens</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-comment">-- ^ Probability densities for each year in '_calPDFBPs'</span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069444"><span id="local-6989586621679069446"><span id="local-6989586621679069448"><span class="annot"><span class="annottext">Int -&gt; CalPDF -&gt; ShowS
 [CalPDF] -&gt; ShowS
 CalPDF -&gt; String
 (Int -&gt; CalPDF -&gt; ShowS)
@@ -143,16 +215,16 @@ $cshow :: CalPDF -&gt; String
 showsPrec :: Int -&gt; CalPDF -&gt; ShowS
 $cshowsPrec :: Int -&gt; CalPDF -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
-</span><span id="line-62"></span><span>
-</span><span id="line-63"></span><span class="hs-comment">-- | A data type to represent a human readable summary of a calibrated radiocarbon date</span><span>
-</span><span id="line-64"></span><span class="hs-keyword">data</span><span> </span><span id="CalC14"><span class="annot"><a href="Currycarbon.Types.html#CalC14"><span class="hs-identifier hs-var">CalC14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CalC14"><span class="annot"><a href="Currycarbon.Types.html#CalC14"><span class="hs-identifier hs-var">CalC14</span></a></span></span><span> </span><span class="hs-special">{</span><span>
-</span><span id="line-65"></span><span>      </span><span id="_calC14id"><span class="annot"><span class="annottext">CalC14 -&gt; String
+</span><span id="line-78"></span><span>
+</span><span id="line-79"></span><span class="hs-comment">-- | A data type to represent a human readable summary of a calibrated radiocarbon date</span><span>
+</span><span id="line-80"></span><span class="hs-keyword">data</span><span> </span><span id="CalC14"><span class="annot"><a href="Currycarbon.Types.html#CalC14"><span class="hs-identifier hs-var">CalC14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CalC14"><span class="annot"><a href="Currycarbon.Types.html#CalC14"><span class="hs-identifier hs-var">CalC14</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-81"></span><span>      </span><span id="_calC14id"><span class="annot"><span class="annottext">CalC14 -&gt; String
 </span><a href="Currycarbon.Types.html#_calC14id"><span class="hs-identifier hs-var hs-var">_calC14id</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-comment">-- ^ Identifier, e.g. a lab number</span><span>
-</span><span id="line-66"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calC14HDROneSigma"><span class="annot"><span class="annottext">CalC14 -&gt; [HDR]
+</span><span id="line-82"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calC14HDROneSigma"><span class="annot"><span class="annottext">CalC14 -&gt; [HDR]
 </span><a href="Currycarbon.Types.html#_calC14HDROneSigma"><span class="hs-identifier hs-var hs-var">_calC14HDROneSigma</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-type">HDR</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ One-sigma high density regions</span><span>
-</span><span id="line-67"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calC14HDRTwoSigma"><span class="annot"><span class="annottext">CalC14 -&gt; [HDR]
+</span><span id="line-83"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calC14HDRTwoSigma"><span class="annot"><span class="annottext">CalC14 -&gt; [HDR]
 </span><a href="Currycarbon.Types.html#_calC14HDRTwoSigma"><span class="hs-identifier hs-var hs-var">_calC14HDRTwoSigma</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-type">HDR</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-comment">-- ^ Two-sigma high density regions</span><span>
-</span><span id="line-68"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069114"><span id="local-6989586621679069116"><span id="local-6989586621679069118"><span class="annot"><span class="annottext">Int -&gt; CalC14 -&gt; ShowS
+</span><span id="line-84"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069434"><span id="local-6989586621679069436"><span id="local-6989586621679069438"><span class="annot"><span class="annottext">Int -&gt; CalC14 -&gt; ShowS
 [CalC14] -&gt; ShowS
 CalC14 -&gt; String
 (Int -&gt; CalC14 -&gt; ShowS)
@@ -166,17 +238,17 @@ $cshow :: CalC14 -&gt; String
 showsPrec :: Int -&gt; CalC14 -&gt; ShowS
 $cshowsPrec :: Int -&gt; CalC14 -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
-</span><span id="line-69"></span><span>
-</span><span id="line-70"></span><span class="hs-comment">-- | A data type to represent a high density region of a probability distribution.</span><span>
-</span><span id="line-71"></span><span class="hs-comment">-- A high density region is here defined as an age range, within which the respective </span><span>
-</span><span id="line-72"></span><span class="hs-comment">-- cummulative probability (e.g. of an calibrated radiocarbon date density curve) </span><span>
-</span><span id="line-73"></span><span class="hs-comment">-- is above a certain threshold</span><span>
-</span><span id="line-74"></span><span class="hs-keyword">data</span><span> </span><span id="HDR"><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-var">HDR</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="HDR"><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-var">HDR</span></a></span></span><span> </span><span class="hs-special">{</span><span>
-</span><span id="line-75"></span><span>      </span><span id="_hdrstart"><span class="annot"><span class="annottext">HDR -&gt; Int
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="hs-comment">-- | A data type to represent a high density region of a probability distribution.</span><span>
+</span><span id="line-87"></span><span class="hs-comment">-- A high density region is here defined as an age range, within which the respective </span><span>
+</span><span id="line-88"></span><span class="hs-comment">-- cummulative probability (e.g. of an calibrated radiocarbon date density curve) </span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- is above a certain threshold</span><span>
+</span><span id="line-90"></span><span class="hs-keyword">data</span><span> </span><span id="HDR"><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-var">HDR</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="HDR"><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-var">HDR</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-91"></span><span>      </span><span id="_hdrstart"><span class="annot"><span class="annottext">HDR -&gt; Int
 </span><a href="Currycarbon.Types.html#_hdrstart"><span class="hs-identifier hs-var hs-var">_hdrstart</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ Start of the high density region</span><span>
-</span><span id="line-76"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_hdrstop"><span class="annot"><span class="annottext">HDR -&gt; Int
+</span><span id="line-92"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_hdrstop"><span class="annot"><span class="annottext">HDR -&gt; Int
 </span><a href="Currycarbon.Types.html#_hdrstop"><span class="hs-identifier hs-var hs-var">_hdrstop</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- ^ End of the high density region</span><span>
-</span><span id="line-77"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069105"><span id="local-6989586621679069107"><span id="local-6989586621679069109"><span class="annot"><span class="annottext">Int -&gt; HDR -&gt; ShowS
+</span><span id="line-93"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069425"><span id="local-6989586621679069427"><span id="local-6989586621679069429"><span class="annot"><span class="annottext">Int -&gt; HDR -&gt; ShowS
 [HDR] -&gt; ShowS
 HDR -&gt; String
 (Int -&gt; HDR -&gt; ShowS)
@@ -189,5 +261,12 @@ show :: HDR -&gt; String
 $cshow :: HDR -&gt; String
 showsPrec :: Int -&gt; HDR -&gt; ShowS
 $cshowsPrec :: Int -&gt; HDR -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
-</span><span id="line-78"></span></pre></body></html>
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069421"><span id="local-6989586621679069423"><span class="annot"><span class="annottext">HDR -&gt; HDR -&gt; Bool
+(HDR -&gt; HDR -&gt; Bool) -&gt; (HDR -&gt; HDR -&gt; Bool) -&gt; Eq HDR
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: HDR -&gt; HDR -&gt; Bool
+$c/= :: HDR -&gt; HDR -&gt; Bool
+== :: HDR -&gt; HDR -&gt; Bool
+$c== :: HDR -&gt; HDR -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span></pre></body></html>

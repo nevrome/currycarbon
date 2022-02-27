@@ -11,19 +11,40 @@
 
 module Currycarbon.Types
 
--- | Different calibration algorithms implemented in currycarbon
+-- | Different calibration algorithms implemented in currycarbon. Currently
+--   two distinct implementations are available, although both of them are
+--   similar <a>Intercept calibration</a> algorithms. Maybe more algorithms
+--   will be added in the future
 data CalibrationMethod
 
--- | Matrix multiplication method
+-- | A matrix multiplication method generally following <a>this blog post
+--   by Martin Hinz</a>. This method is slower and the underlying code more
+--   verbose than <a>Bchron</a>, but it has some advantages regarding
+--   didactics and the inspection of intermediate data products for
+--   debugging. Using this method is thus generally not advisable, except
+--   for specific applications, where a more technical insight into C14
+--   calibration is needed
 MatrixMultiplication :: CalibrationMethod
 
--- | Algorithm similar to the clever implementation in the R package Bchron
---   by Andrew Parnell
+-- | A fast and reliable calibration algorithm very similar to the
+--   implementation in the <a>R package Bchron by Andrew Parnell</a>. This
+--   algorithm can be run with a simple normal distribution
+--   (<a>NormalDist</a>) or Student's t-distribution (<a>StudentTDist</a>),
+--   which is recommended
 Bchron :: CalibrationDistribution -> CalibrationMethod
 [distribution] :: CalibrationMethod -> CalibrationDistribution
+
+-- | Statistical distributions to be used with the <a>CalibrationMethod</a>
+--   <a>Bchron</a>
 data CalibrationDistribution
+
+-- | Normal distribution
 NormalDist :: CalibrationDistribution
+
+-- | Student's t-distribution.
 StudentTDist :: Double -> CalibrationDistribution
+
+-- | number of degrees of freedom
 [ndf] :: CalibrationDistribution -> Double
 
 -- | A data type to represent an uncalibrated radiocarbon date
@@ -45,7 +66,7 @@ UncalC14 :: String -> Int -> Int -> UncalC14
 data UncalPDF
 UncalPDF :: String -> Vector Int -> Vector Float -> UncalPDF
 
--- | Identifier, e.g. a lab number
+-- | Sample identifier, e.g. a lab number
 [_uncalPDFid] :: UncalPDF -> String
 
 -- | Years BP or BC
@@ -82,17 +103,18 @@ CalCurveMatrix :: Vector Int -> Vector Int -> Vector (Vector Float) -> CalCurveM
 [_calCurveMatrixDens] :: CalCurveMatrix -> Vector (Vector Float)
 
 -- | A data type to represent a year-wise probability density for
---   calibrated ages
+--   calibrated dates. Although technically not correct, we still call this
+--   a probability density function (PDF)
 data CalPDF
 CalPDF :: String -> Vector Int -> Vector Float -> CalPDF
 
--- | Identifier, e.g. a lab number
+-- | Sample identifier, e.g. a lab number
 [_calPDFid] :: CalPDF -> String
 
--- | Years calBP or calBC
+-- | Calibrated years calBP or calBC/AD (depending on the context)
 [_calPDFBPs] :: CalPDF -> Vector Int
 
--- | Probability densities
+-- | Probability densities for each year in <a>_calPDFBPs</a>
 [_calPDFDens] :: CalPDF -> Vector Float
 
 -- | A data type to represent a human readable summary of a calibrated
@@ -122,11 +144,17 @@ HDR :: Int -> Int -> HDR
 
 -- | End of the high density region
 [_hdrstop] :: HDR -> Int
+instance GHC.Classes.Eq Currycarbon.Types.CalibrationDistribution
+instance GHC.Show.Show Currycarbon.Types.CalibrationDistribution
+instance GHC.Classes.Eq Currycarbon.Types.CalibrationMethod
+instance GHC.Show.Show Currycarbon.Types.CalibrationMethod
+instance GHC.Classes.Eq Currycarbon.Types.UncalC14
 instance GHC.Show.Show Currycarbon.Types.UncalC14
 instance GHC.Show.Show Currycarbon.Types.UncalPDF
 instance GHC.Show.Show Currycarbon.Types.CalCurve
 instance GHC.Show.Show Currycarbon.Types.CalCurveMatrix
 instance GHC.Show.Show Currycarbon.Types.CalPDF
+instance GHC.Classes.Eq Currycarbon.Types.HDR
 instance GHC.Show.Show Currycarbon.Types.HDR
 instance GHC.Show.Show Currycarbon.Types.CalC14
 
@@ -191,10 +219,40 @@ renderHDRs :: [HDR] -> String
 renderHDR :: HDR -> String
 writeCalCurveMatrix :: FilePath -> CalCurveMatrix -> IO ()
 renderCalCurveMatrix :: CalCurveMatrix -> String
+
+-- | Write <a>CalPDF</a>s to the file system. The output file is a long
+--   .csv file with the following structure:
+--   
+--   <pre>
+--   sample,calBCAD,density
+--   ...
+--   Sample1,-1391,2.8917924e-4
+--   Sample1,-1390,3.3285577e-4
+--   Sample1,-1389,3.5674628e-4
+--   Sample1,-1388,3.750703e-4
+--   ...
+--   Sample2,-3678,1.8128564e-3
+--   Sample2,-3677,1.9512239e-3
+--   Sample2,-3676,2.0227064e-3
+--   Sample2,-3675,2.095691e-3
+--   ...
+--   </pre>
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 renderBuilderCalPDF :: CalPDF -> Builder
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
 renderUncalC14 :: UncalC14 -> String
+
+-- | Read uncalibrated radiocarbon dates from a file. The file should
+--   feature one radiocarbon date per line in the form "&lt;sample
+--   name&gt;,&lt;mean age BP&gt;,&lt;one sigma standard deviation&gt;",
+--   where &lt;sample name&gt; is optional. A valid file could look like
+--   this:
+--   
+--   <pre>
+--   Sample1,5000,30
+--   6000,50
+--   Sample3,4000,25
+--   </pre>
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14 :: String -> Either String [UncalC14]
 parseUncalC14 :: Parser UncalC14
@@ -274,7 +332,8 @@ calibrateDates :: CalibrateDatesConf -> CalCurve -> [UncalC14] -> [Either Curryc
 --   </pre>
 refineCalDates :: [CalPDF] -> [CalC14]
 
--- | A data type to represent the options of the calibrateDates function
+-- | A data type to cover the configuration options of the calibrateDates
+--   function
 data CalibrateDatesConf
 CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 
@@ -291,7 +350,18 @@ CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 --   per-year density. The mechanism is inspired by the <a>implementation
 --   in the Bchron R package</a>
 [_calConfInterpolateCalCurve] :: CalibrateDatesConf -> Bool
+
+-- | A default configuration (<a>CalibrateDatesConf</a>) that should yield
+--   almost identical calibration results to the the <a>Bchron R
+--   package</a>
+--   
+--   <pre>
+--   &gt;&gt;&gt; defaultCalConf
+--   CalibrateDatesConf {_calConfMethod = Bchron {distribution = StudentTDist {ndf = 100.0}}, _calConfAllowOutside = False, _calConfInterpolateCalCurve = True}
+--   </pre>
 defaultCalConf :: CalibrateDatesConf
+instance GHC.Classes.Eq Currycarbon.Calibration.Calibration.CalibrateDatesConf
+instance GHC.Show.Show Currycarbon.Calibration.Calibration.CalibrateDatesConf
 
 
 -- | This module implements an algorithm for the calibration of
@@ -314,9 +384,22 @@ UncalC14 :: String -> Int -> Int -> UncalC14
 
 -- | C14 standard deviation (one sigma in years)
 [_uncalC14Sigma] :: UncalC14 -> Int
+
+-- | Read uncalibrated radiocarbon dates from a file. The file should
+--   feature one radiocarbon date per line in the form "&lt;sample
+--   name&gt;,&lt;mean age BP&gt;,&lt;one sigma standard deviation&gt;",
+--   where &lt;sample name&gt; is optional. A valid file could look like
+--   this:
+--   
+--   <pre>
+--   Sample1,5000,30
+--   6000,50
+--   Sample3,4000,25
+--   </pre>
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 
--- | A data type to represent the options of the calibrateDates function
+-- | A data type to cover the configuration options of the calibrateDates
+--   function
 data CalibrateDatesConf
 CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 
@@ -334,31 +417,71 @@ CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 --   in the Bchron R package</a>
 [_calConfInterpolateCalCurve] :: CalibrateDatesConf -> Bool
 
--- | Different calibration algorithms implemented in currycarbon
-data CalibrationMethod
-
--- | Matrix multiplication method
-MatrixMultiplication :: CalibrationMethod
-
--- | Algorithm similar to the clever implementation in the R package Bchron
---   by Andrew Parnell
-Bchron :: CalibrationDistribution -> CalibrationMethod
-[distribution] :: CalibrationMethod -> CalibrationDistribution
+-- | A default configuration (<a>CalibrateDatesConf</a>) that should yield
+--   almost identical calibration results to the the <a>Bchron R
+--   package</a>
+--   
+--   <pre>
+--   &gt;&gt;&gt; defaultCalConf
+--   CalibrateDatesConf {_calConfMethod = Bchron {distribution = StudentTDist {ndf = 100.0}}, _calConfAllowOutside = False, _calConfInterpolateCalCurve = True}
+--   </pre>
 defaultCalConf :: CalibrateDatesConf
 
+-- | Different calibration algorithms implemented in currycarbon. Currently
+--   two distinct implementations are available, although both of them are
+--   similar <a>Intercept calibration</a> algorithms. Maybe more algorithms
+--   will be added in the future
+data CalibrationMethod
+
+-- | A matrix multiplication method generally following <a>this blog post
+--   by Martin Hinz</a>. This method is slower and the underlying code more
+--   verbose than <a>Bchron</a>, but it has some advantages regarding
+--   didactics and the inspection of intermediate data products for
+--   debugging. Using this method is thus generally not advisable, except
+--   for specific applications, where a more technical insight into C14
+--   calibration is needed
+MatrixMultiplication :: CalibrationMethod
+
+-- | A fast and reliable calibration algorithm very similar to the
+--   implementation in the <a>R package Bchron by Andrew Parnell</a>. This
+--   algorithm can be run with a simple normal distribution
+--   (<a>NormalDist</a>) or Student's t-distribution (<a>StudentTDist</a>),
+--   which is recommended
+Bchron :: CalibrationDistribution -> CalibrationMethod
+[distribution] :: CalibrationMethod -> CalibrationDistribution
+
 -- | A data type to represent a year-wise probability density for
---   calibrated ages
+--   calibrated dates. Although technically not correct, we still call this
+--   a probability density function (PDF)
 data CalPDF
 CalPDF :: String -> Vector Int -> Vector Float -> CalPDF
 
--- | Identifier, e.g. a lab number
+-- | Sample identifier, e.g. a lab number
 [_calPDFid] :: CalPDF -> String
 
--- | Years calBP or calBC
+-- | Calibrated years calBP or calBC/AD (depending on the context)
 [_calPDFBPs] :: CalPDF -> Vector Int
 
--- | Probability densities
+-- | Probability densities for each year in <a>_calPDFBPs</a>
 [_calPDFDens] :: CalPDF -> Vector Float
+
+-- | Write <a>CalPDF</a>s to the file system. The output file is a long
+--   .csv file with the following structure:
+--   
+--   <pre>
+--   sample,calBCAD,density
+--   ...
+--   Sample1,-1391,2.8917924e-4
+--   Sample1,-1390,3.3285577e-4
+--   Sample1,-1389,3.5674628e-4
+--   Sample1,-1388,3.750703e-4
+--   ...
+--   Sample2,-3678,1.8128564e-3
+--   Sample2,-3677,1.9512239e-3
+--   Sample2,-3676,2.0227064e-3
+--   Sample2,-3675,2.095691e-3
+--   ...
+--   </pre>
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 
 -- | A data type to represent a calibration curve
