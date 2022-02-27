@@ -38,7 +38,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
     else do
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
-        calCurve <- maybe (return intcal20) readCalCurve calCurveFile
+        calCurve <- maybe (return intcal20) readCalCurveFromFile calCurveFile
         let calConf = defaultCalConf {
               _calConfMethod = method
             , _calConfAllowOutside = allowOutside
@@ -71,9 +71,9 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
                 let firstC14 = head dates
                     calCurveSegment = prepareCalCurveSegment (not noInterpolate) True $ getRelevantCalCurveSegment firstC14 calCurve
                 when (isJust calCurveSegmentFile) $ do
-                    writeCalCurveFile (fromJust calCurveSegmentFile) calCurveSegment
+                    writeCalCurve (fromJust calCurveSegmentFile) calCurveSegment
                 when (isJust calCurveMatrixFile) $ do
-                    writeCalCurveMatrixFile (fromJust calCurveMatrixFile) $ makeCalCurveMatrix (uncalToPDF firstC14) calCurveSegment
+                    writeCalCurveMatrix (fromJust calCurveMatrixFile) $ makeCalCurveMatrix (uncalToPDF firstC14) calCurveSegment
             -- finished
             reportCalibrationErrors $ lefts errorOrCalPDFs
         hPutStrLn stderr "Done"

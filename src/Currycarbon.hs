@@ -19,7 +19,7 @@ module Currycarbon (
     -- * Calibration curves
     CalCurve (..),
     intcal20,
-    readCalCurve,
+    readCalCurveFromFile,
 
     -- * Derived output
     -- $derivedOutput
@@ -46,7 +46,7 @@ These can be read from a .csv file with 'readUncalC14FromFile'.
 
 * Calibration curves are covered with the data type 'Calcurve'.
 Only one curve is embedded in the package ('incal20'), others
-can be read at runtime with 'readCalCurve'.
+can be read at runtime with 'readCalCurveFromFile'.
 
 * The configuration options are managed in 'CalibrateDatesConf',
 within which 'CalibrationMethod' is most important. For a solid

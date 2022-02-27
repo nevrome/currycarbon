@@ -35,14 +35,14 @@ renderCalDatePretty (uncalC14, calC14, calPDF) =
         ]
 
 -- CalibrationMethod
-readCalibrationMethodString :: String -> Either String CalibrationMethod
-readCalibrationMethodString s =
-    case P.runParser parseCalibrationMethodString () "" s of
+readCalibrationMethod :: String -> Either String CalibrationMethod
+readCalibrationMethod s =
+    case P.runParser parseCalibrationMethod () "" s of
         Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
         Right x -> Right x
 
-parseCalibrationMethodString :: P.Parser CalibrationMethod
-parseCalibrationMethodString = do
+parseCalibrationMethod :: P.Parser CalibrationMethod
+parseCalibrationMethod = do
     P.try bchron P.<|> matrixMultiplication
     where
         bchron = do
@@ -103,12 +103,12 @@ renderHDR (HDR stop start)
     | otherwise = error $ "This should never happen: " ++ show start ++ "-" ++ show stop
 
 -- CalCurveMatrix
-writeCalCurveMatrixFile :: FilePath -> CalCurveMatrix -> IO ()
-writeCalCurveMatrixFile path calCurveMatrix = 
-    writeFile path $ renderCalCurveMatrixFile calCurveMatrix
+writeCalCurveMatrix :: FilePath -> CalCurveMatrix -> IO ()
+writeCalCurveMatrix path calCurveMatrix = 
+    writeFile path $ renderCalCurveMatrix calCurveMatrix
 
-renderCalCurveMatrixFile :: CalCurveMatrix -> String
-renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
+renderCalCurveMatrix :: CalCurveMatrix -> String
+renderCalCurveMatrix (CalCurveMatrix bps cals curveDensities) =
     let header = "," ++ intercalate "," (map show $ VU.toList cals) ++ "\n"
         body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show $ VU.toList bpDens)) (VU.toList bps) (V.toList curveDensities)
     in header ++ intercalate "\n" body
@@ -116,10 +116,10 @@ renderCalCurveMatrixFile (CalCurveMatrix bps cals curveDensities) =
 -- CalPDF
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 writeCalPDFs path calPDFs =
-    BL.writeFile path $ "sample,calBCAD,density\n" <> toLazyByteString (mconcat $ map renderCalPDF calPDFs)
+    BL.writeFile path $ "sample,calBCAD,density\n" <> toLazyByteString (mconcat $ map renderBuilderCalPDF calPDFs)
 
-renderCalPDF :: CalPDF -> Builder
-renderCalPDF (CalPDF name bps dens) = 
+renderBuilderCalPDF :: CalPDF -> Builder
+renderBuilderCalPDF (CalPDF name bps dens) = 
     let nameBuilder = stringUtf8 name
         densList = VU.toList $ VU.zip bps dens
         builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
@@ -181,8 +181,8 @@ readUncalC14FromFile uncalFile = do
         uncalC14SepByNewline :: P.Parser [UncalC14]
         uncalC14SepByNewline = P.endBy parseUncalC14 (P.newline <* P.spaces) <* P.eof
 
-readUncalC14String :: String -> Either String [UncalC14]
-readUncalC14String s = 
+readUncalC14 :: String -> Either String [UncalC14]
+readUncalC14 s = 
     case P.runParser uncalC14SepBySemicolon () "" s of
         Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
         Right x -> Right x
@@ -208,8 +208,8 @@ parseUncalC14 = do
             return (UncalC14 "unknownSampleName" mean std)
 
 -- CalCurve
-writeCalCurveFile :: FilePath -> CalCurve -> IO ()
-writeCalCurveFile path calCurve = 
+writeCalCurve :: FilePath -> CalCurve -> IO ()
+writeCalCurve path calCurve = 
     writeFile path $ renderCalCurve calCurve
 
 renderCalCurve :: CalCurve -> String
@@ -218,24 +218,24 @@ renderCalCurve (CalCurve bps cals sigmas) =
         body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) (VU.toList $ VU.zip3 bps cals sigmas)
     in header ++ intercalate "\n" body
 
-readCalCurve :: FilePath -> IO CalCurve
-readCalCurve calCurveFile = do
+readCalCurveFromFile :: FilePath -> IO CalCurve
+readCalCurveFromFile calCurveFile = do
     calCurve <- readFile calCurveFile
-    return $ loadCalCurve calCurve
+    return $ readCalCurve calCurve
 
-loadCalCurve :: String -> CalCurve 
-loadCalCurve calCurveString = do
-    case P.runParser calCurveFileParser () "" calCurveString of
+readCalCurve :: String -> CalCurve 
+readCalCurve calCurveString = do
+    case P.runParser parseCalCurve () "" calCurveString of
         Left p  -> error $ "This should never happen." ++ show p
         Right x -> CalCurve (VU.fromList $ map (\(a,_,_) -> a) x) (VU.fromList $ map (\(_,b,_) -> b) x) (VU.fromList $ map (\(_,_,c) -> c) x)
 
-calCurveFileParser :: P.Parser [(Int, Int, Int)]
-calCurveFileParser = do
+parseCalCurve :: P.Parser [(Int, Int, Int)]
+parseCalCurve = do
     P.skipMany comments
-    P.sepEndBy calCurveLineParser (P.manyTill P.anyToken (P.try P.newline))
+    P.sepEndBy parseCalCurveLine (P.manyTill P.anyToken (P.try P.newline))
 
-calCurveLineParser :: P.Parser (Int, Int, Int) 
-calCurveLineParser = do
+parseCalCurveLine :: P.Parser (Int, Int, Int) 
+parseCalCurveLine = do
   calBP <- read <$> P.many1 P.digit
   _ <- P.oneOf ","
   bp <- read <$> P.many1 P.digit

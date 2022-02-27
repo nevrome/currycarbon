@@ -51,17 +51,17 @@ optParser :: OP.Parser Options
 optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> parseUncalC14String
-                                      <*> parseUncalC14FromFile
-                                      <*> parseCalCurveFromFile
-                                      <*> parseCalibrationMethod
-                                      <*> parseAllowOutside
-                                      <*> parseDontInterpolateCalCurve
-                                      <*> parseQuiet
-                                      <*> parseDensityFile
-                                      <*> parseHDRFile
-                                      <*> parseCalCurveSegmentFile
-                                      <*> parseCalCurveMatrixFile
+calibrateOptParser = CalibrateOptions <$> optParseUncalC14String
+                                      <*> optParseUncalC14FromFile
+                                      <*> optParseCalCurveFromFile
+                                      <*> optParseCalibrationMethod
+                                      <*> optParseAllowOutside
+                                      <*> optParseDontInterpolateCalCurve
+                                      <*> optParseQuiet
+                                      <*> optParseDensityFile
+                                      <*> optParseHDRFile
+                                      <*> optParseCalCurveSegmentFile
+                                      <*> optParseCalCurveMatrixFile
 
 -- ** Input parsing functions
 --
@@ -69,8 +69,8 @@ calibrateOptParser = CalibrateOptions <$> parseUncalC14String
 --
 -- These functions define and handle the CLI input arguments
 
-parseUncalC14String :: OP.Parser [UncalC14]
-parseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14String) (
+optParseUncalC14String :: OP.Parser [UncalC14]
+optParseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14) (
     OP.metavar "DATES" <>
     OP.help "A string with one or multiple uncalibrated dates of \
             \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>;...\" \
@@ -78,8 +78,8 @@ parseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncal
             \So for example \"S1,4000,50;3000,25;S3,1000,20\"."
     ))
 
-parseUncalC14FromFile :: OP.Parser [FilePath]
-parseUncalC14FromFile = OP.many (OP.strOption (
+optParseUncalC14FromFile :: OP.Parser [FilePath]
+optParseUncalC14FromFile = OP.many (OP.strOption (
     OP.long "inputFile" <>
     OP.short 'i' <>
     OP.help "A file with a list of uncalibrated dates. \
@@ -87,8 +87,8 @@ parseUncalC14FromFile = OP.many (OP.strOption (
             \DATES and --uncalFile can be combined and you can provide multiple instances of --uncalFile"
     ))
 
-parseCalCurveFromFile :: OP.Parser (Maybe FilePath)
-parseCalCurveFromFile = OP.option (Just <$> OP.str) (
+optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)
+optParseCalCurveFromFile = OP.option (Just <$> OP.str) (
     OP.long "calibrationCurveFile" <>
     OP.help "Path to an calibration curve file in .14c format. \
             \The calibration curve will be read and used for calibration. \
@@ -96,8 +96,8 @@ parseCalCurveFromFile = OP.option (Just <$> OP.str) (
     OP.value Nothing
     )
 
-parseCalibrationMethod :: OP.Parser CalibrationMethod
-parseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethodString) (
+optParseCalibrationMethod :: OP.Parser CalibrationMethod
+optParseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
     OP.long "method" <>
     OP.help "The calibration algorithm that should be used: \
             \\"<Method>,<Distribution>,<NumberOfDegreesOfFreedom>\". \
@@ -109,42 +109,42 @@ parseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethodString)
     OP.value (Bchron $ StudentTDist 100)
     )
 
-parseAllowOutside :: OP.Parser (Bool)
-parseAllowOutside = OP.switch (
+optParseAllowOutside :: OP.Parser (Bool)
+optParseAllowOutside = OP.switch (
     OP.long "allowOutside" <> 
     OP.help "Allow calibrations to run outside the range of the calibration curve"
     )
 
-parseDontInterpolateCalCurve :: OP.Parser (Bool)
-parseDontInterpolateCalCurve = OP.switch (
+optParseDontInterpolateCalCurve :: OP.Parser (Bool)
+optParseDontInterpolateCalCurve = OP.switch (
     OP.long "noInterpolation" <> 
     OP.help "Don't interpolate the calibration curve"
     )
 
-parseQuiet :: OP.Parser (Bool)
-parseQuiet = OP.switch (
+optParseQuiet :: OP.Parser (Bool)
+optParseQuiet = OP.switch (
     OP.long "quiet" <> 
     OP.short 'q' <>
     OP.help "Suppress the printing of calibration results to the command line"
     )
 
-parseDensityFile :: OP.Parser (Maybe FilePath)
-parseDensityFile = OP.option (Just <$> OP.str) (
+optParseDensityFile :: OP.Parser (Maybe FilePath)
+optParseDensityFile = OP.option (Just <$> OP.str) (
     OP.long "densityFile" <>
     OP.help "Path to an output file which stores output densities per sample and calender year" <>
     OP.value Nothing
     )
 
-parseHDRFile :: OP.Parser (Maybe FilePath)
-parseHDRFile = OP.option (Just <$> OP.str) (
+optParseHDRFile :: OP.Parser (Maybe FilePath)
+optParseHDRFile = OP.option (Just <$> OP.str) (
     OP.long "hdrFile" <>
     OP.help "Path to an output file which stores the high probability density regions for each \
             \sample" <>
     OP.value Nothing
     )
 
-parseCalCurveSegmentFile :: OP.Parser (Maybe FilePath)
-parseCalCurveSegmentFile = OP.option (Just <$> OP.str) (
+optParseCalCurveSegmentFile :: OP.Parser (Maybe FilePath)
+optParseCalCurveSegmentFile = OP.option (Just <$> OP.str) (
     OP.long "calCurveSegmentFile" <>
     OP.help "Path to an output file which stores the relevant, interpolated calibration curve \
             \segment for the first (!) input date in a long format. \
@@ -152,8 +152,8 @@ parseCalCurveSegmentFile = OP.option (Just <$> OP.str) (
     OP.value Nothing
     )
 
-parseCalCurveMatrixFile :: OP.Parser (Maybe FilePath)
-parseCalCurveMatrixFile = OP.option (Just <$> OP.str) (
+optParseCalCurveMatrixFile :: OP.Parser (Maybe FilePath)
+optParseCalCurveMatrixFile = OP.option (Just <$> OP.str) (
     OP.long "calCurveMatrixFile" <>
     OP.help "Path to an output file which stores the relevant, interpolated calibration curve \
             \segment for the first (!) input date in a wide matrix format" <>
