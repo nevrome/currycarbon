@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.22.0
+@version 0.23.0
 
 module Currycarbon.Types
 
@@ -30,13 +30,13 @@ StudentTDist :: Double -> CalibrationDistribution
 data UncalC14
 UncalC14 :: String -> Int -> Int -> UncalC14
 
--- | Identifier, e.g. a lab number
+-- | Sample identifier, e.g. a lab number
 [_uncalC14Id] :: UncalC14 -> String
 
--- | Years BP
+-- | C14 age in years BP
 [_uncalC14BP] :: UncalC14 -> Int
 
--- | Standard deviation (one sigma in years)
+-- | C14 standard deviation (one sigma in years)
 [_uncalC14Sigma] :: UncalC14 -> Int
 
 -- | A data type to represent a year-wise probability density for
@@ -179,8 +179,8 @@ instance GHC.Exception.Type.Exception Currycarbon.Utils.CurrycarbonException
 module Currycarbon.Parsers
 renderCalDatesPretty :: [(UncalC14, CalC14, CalPDF)] -> String
 renderCalDatePretty :: (UncalC14, CalC14, CalPDF) -> String
-readCalibrationMethodString :: String -> Either String CalibrationMethod
-parseCalibrationMethodString :: Parser CalibrationMethod
+readCalibrationMethod :: String -> Either String CalibrationMethod
+parseCalibrationMethod :: Parser CalibrationMethod
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 renderCalC14ForFile :: CalC14 -> String
 renderCalC14s :: [CalC14] -> String
@@ -189,21 +189,21 @@ renderHDRsForFile :: [HDR] -> [(String, String)]
 renderHDRForFile :: HDR -> (String, String)
 renderHDRs :: [HDR] -> String
 renderHDR :: HDR -> String
-writeCalCurveMatrixFile :: FilePath -> CalCurveMatrix -> IO ()
-renderCalCurveMatrixFile :: CalCurveMatrix -> String
+writeCalCurveMatrix :: FilePath -> CalCurveMatrix -> IO ()
+renderCalCurveMatrix :: CalCurveMatrix -> String
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
-renderCalPDF :: CalPDF -> Builder
+renderBuilderCalPDF :: CalPDF -> Builder
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
 renderUncalC14 :: UncalC14 -> String
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
-readUncalC14String :: String -> Either String [UncalC14]
+readUncalC14 :: String -> Either String [UncalC14]
 parseUncalC14 :: Parser UncalC14
-writeCalCurveFile :: FilePath -> CalCurve -> IO ()
+writeCalCurve :: FilePath -> CalCurve -> IO ()
 renderCalCurve :: CalCurve -> String
-readCalCurve :: FilePath -> IO CalCurve
-loadCalCurve :: String -> CalCurve
-calCurveFileParser :: Parser [(Int, Int, Int)]
-calCurveLineParser :: Parser (Int, Int, Int)
+readCalCurveFromFile :: FilePath -> IO CalCurve
+readCalCurve :: String -> CalCurve
+parseCalCurve :: Parser [(Int, Int, Int)]
+parseCalCurveLine :: Parser (Int, Int, Int)
 comments :: Parser String
 
 module Currycarbon.CalCurves.Intcal20
@@ -278,13 +278,18 @@ refineCalDates :: [CalPDF] -> [CalC14]
 data CalibrateDatesConf
 CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 
--- | Calibration algorithm that should be used
+-- | The calibration algorithm that should be used
 [_calConfMethod] :: CalibrateDatesConf -> CalibrationMethod
 
 -- | Allow calibration to run outside of the range of the calibration curve
 [_calConfAllowOutside] :: CalibrateDatesConf -> Bool
 
--- | Interpolate the calibration curve
+-- | Interpolate the calibration curve before calibration. This is a simple
+--   linear interpolation only to increase the output resolution for
+--   earlier time periods, where the typical calibration curves are less
+--   dense by default. With the interpolation, the output will be a
+--   per-year density. The mechanism is inspired by the <a>implementation
+--   in the Bchron R package</a>
 [_calConfInterpolateCalCurve] :: CalibrateDatesConf -> Bool
 defaultCalConf :: CalibrateDatesConf
 
@@ -301,13 +306,13 @@ calibrateDates :: CalibrateDatesConf -> CalCurve -> [UncalC14] -> [Either Curryc
 data UncalC14
 UncalC14 :: String -> Int -> Int -> UncalC14
 
--- | Identifier, e.g. a lab number
+-- | Sample identifier, e.g. a lab number
 [_uncalC14Id] :: UncalC14 -> String
 
--- | Years BP
+-- | C14 age in years BP
 [_uncalC14BP] :: UncalC14 -> Int
 
--- | Standard deviation (one sigma in years)
+-- | C14 standard deviation (one sigma in years)
 [_uncalC14Sigma] :: UncalC14 -> Int
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 
@@ -315,13 +320,18 @@ readUncalC14FromFile :: FilePath -> IO [UncalC14]
 data CalibrateDatesConf
 CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 
--- | Calibration algorithm that should be used
+-- | The calibration algorithm that should be used
 [_calConfMethod] :: CalibrateDatesConf -> CalibrationMethod
 
 -- | Allow calibration to run outside of the range of the calibration curve
 [_calConfAllowOutside] :: CalibrateDatesConf -> Bool
 
--- | Interpolate the calibration curve
+-- | Interpolate the calibration curve before calibration. This is a simple
+--   linear interpolation only to increase the output resolution for
+--   earlier time periods, where the typical calibration curves are less
+--   dense by default. With the interpolation, the output will be a
+--   per-year density. The mechanism is inspired by the <a>implementation
+--   in the Bchron R package</a>
 [_calConfInterpolateCalCurve] :: CalibrateDatesConf -> Bool
 
 -- | Different calibration algorithms implemented in currycarbon
@@ -367,7 +377,7 @@ CalCurve :: Vector Int -> Vector Int -> Vector Int -> CalCurve
 -- | The intcal20 calibration curve (Reimer et al. 2020,
 --   doi:10.1017/RDC.2020.41)
 intcal20 :: CalCurve
-readCalCurve :: FilePath -> IO CalCurve
+readCalCurveFromFile :: FilePath -> IO CalCurve
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date

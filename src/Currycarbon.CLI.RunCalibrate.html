@@ -95,7 +95,7 @@ forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">CalCurve
 </span><a href="Currycarbon.CalCurves.Intcal20.html#intcal20"><span class="hs-identifier hs-var">intcal20</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; IO CalCurve
-</span><a href="Currycarbon.Parsers.html#readCalCurve"><span class="hs-identifier hs-var">readCalCurve</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe FilePath
+</span><a href="Currycarbon.Parsers.html#readCalCurveFromFile"><span class="hs-identifier hs-var">readCalCurveFromFile</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe FilePath
 </span><a href="#local-6989586621679070213"><span class="hs-identifier hs-var">calCurveFile</span></a></span><span>
 </span><span id="line-42"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070193"><span class="annot"><span class="annottext">calConf :: CalibrateDatesConf
 </span><a href="#local-6989586621679070193"><span class="hs-identifier hs-var hs-var">calConf</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CalibrateDatesConf
@@ -294,7 +294,7 @@ forall a. Maybe a -&gt; Bool
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-74"></span><span>                    </span><span class="annot"><span class="annottext">FilePath -&gt; CalCurve -&gt; IO ()
-</span><a href="Currycarbon.Parsers.html#writeCalCurveFile"><span class="hs-identifier hs-var">writeCalCurveFile</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe FilePath -&gt; FilePath
+</span><a href="Currycarbon.Parsers.html#writeCalCurve"><span class="hs-identifier hs-var">writeCalCurve</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe FilePath -&gt; FilePath
 forall a. HasCallStack =&gt; Maybe a -&gt; a
 </span><span class="hs-identifier hs-var">fromJust</span></span><span> </span><span class="annot"><span class="annottext">Maybe FilePath
 </span><a href="#local-6989586621679070206"><span class="hs-identifier hs-var">calCurveSegmentFile</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">CalCurve
@@ -308,7 +308,7 @@ forall a. Maybe a -&gt; Bool
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-76"></span><span>                    </span><span class="annot"><span class="annottext">FilePath -&gt; CalCurveMatrix -&gt; IO ()
-</span><a href="Currycarbon.Parsers.html#writeCalCurveMatrixFile"><span class="hs-identifier hs-var">writeCalCurveMatrixFile</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe FilePath -&gt; FilePath
+</span><a href="Currycarbon.Parsers.html#writeCalCurveMatrix"><span class="hs-identifier hs-var">writeCalCurveMatrix</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe FilePath -&gt; FilePath
 forall a. HasCallStack =&gt; Maybe a -&gt; a
 </span><span class="hs-identifier hs-var">fromJust</span></span><span> </span><span class="annot"><span class="annottext">Maybe FilePath
 </span><a href="#local-6989586621679070205"><span class="hs-identifier hs-var">calCurveMatrixFile</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(CalCurveMatrix -&gt; IO ()) -&gt; CalCurveMatrix -&gt; IO ()

@@ -19,7 +19,7 @@
 </span><span id="line-19"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Calibration curves</span></span><span>
 </span><span id="line-20"></span><span>    </span><span class="annot"><a href="Currycarbon.Types.html#CalCurve"><span class="hs-identifier">CalCurve</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
 </span><span id="line-21"></span><span>    </span><span class="annot"><a href="Currycarbon.CalCurves.Intcal20.html#intcal20"><span class="hs-identifier">intcal20</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-22"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#readCalCurve"><span class="hs-identifier">readCalCurve</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#readCalCurveFromFile"><span class="hs-identifier">readCalCurveFromFile</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-23"></span><span>
 </span><span id="line-24"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Derived output</span></span><span>
 </span><span id="line-25"></span><span>    </span><span class="annot"><span class="hs-comment">-- $derivedOutput</span></span><span>
@@ -46,7 +46,7 @@ These can be read from a .csv file with 'readUncalC14FromFile'.
 
 * Calibration curves are covered with the data type 'Calcurve'.
 Only one curve is embedded in the package ('incal20'), others
-can be read at runtime with 'readCalCurve'.
+can be read at runtime with 'readCalCurveFromFile'.
 
 * The configuration options are managed in 'CalibrateDatesConf',
 within which 'CalibrationMethod' is most important. For a solid
@@ -54,7 +54,7 @@ default I suggest to use 'defaultCalConf'.
 
 'calibrateDates' returns a list of calibrated dates in the rough
 'CalPDF' format, which can be written to a file with 'writeCalPDFs'.
-See the Derived output section below for more pretty and output formats.
+See the Derived output section below for more pretty output formats.
 -}</span><span>
 </span><span id="line-59"></span><span>
 </span><span id="line-60"></span><span class="hs-comment">-- $derivedOutput</span></pre></body></html>
