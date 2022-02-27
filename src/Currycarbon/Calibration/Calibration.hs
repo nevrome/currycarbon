@@ -27,9 +27,14 @@ import qualified Data.Vector.Unboxed as VU
 
 -- | A data type to represent the options of the calibrateDates function
 data CalibrateDatesConf = CalibrateDatesConf {
-        _calConfMethod :: CalibrationMethod -- ^ Calibration algorithm that should be used
+        _calConfMethod :: CalibrationMethod -- ^ The calibration algorithm that should be used
       , _calConfAllowOutside :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
-      , _calConfInterpolateCalCurve :: Bool -- ^ Interpolate the calibration curve
+      , _calConfInterpolateCalCurve :: Bool -- ^ Interpolate the calibration curve before calibration.
+                                            -- This is a simple linear interpolation only to increase the output
+                                            -- resolution for earlier time periods, where the typical calibration
+                                            -- curves are less dense by default. With the interpolation, the output
+                                            -- will be a per-year density. The mechanism is inspired by the 
+                                            -- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)
     }
 
 defaultCalConf :: CalibrateDatesConf
@@ -40,10 +45,12 @@ defaultCalConf = CalibrateDatesConf {
     }
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: CalibrateDatesConf
-                  -> CalCurve -- ^ Calibration curve
+calibrateDates :: CalibrateDatesConf -- ^ Configuration options to consider
+                  -> CalCurve -- ^ A calibration curve
                   -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates  
-                  -> [Either CurrycarbonException CalPDF]
+                  -> [Either CurrycarbonException CalPDF] -- ^ The function returns a list for each input date, with
+                                                          -- either an exception if the calibration failed for some
+                                                          -- reason, or a 'CalPDF'
 calibrateDates _ _ [] = []
 calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDates =
     map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates

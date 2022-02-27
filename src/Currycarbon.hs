@@ -54,7 +54,7 @@ default I suggest to use 'defaultCalConf'.
 
 'calibrateDates' returns a list of calibrated dates in the rough
 'CalPDF' format, which can be written to a file with 'writeCalPDFs'.
-See the Derived output section below for more pretty and output formats.
+See the Derived output section below for more pretty output formats.
 -}
 
 -- $derivedOutput

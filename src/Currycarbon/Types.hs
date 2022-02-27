@@ -26,9 +26,9 @@ data CalibrationDistribution =
 
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14 = UncalC14 {   
-      _uncalC14Id :: String -- ^ Identifier, e.g. a lab number
-    , _uncalC14BP :: Int -- ^ Years BP
-    , _uncalC14Sigma :: Int -- ^ Standard deviation (one sigma in years)
+      _uncalC14Id :: String -- ^ Sample identifier, e.g. a lab number
+    , _uncalC14BP :: Int -- ^ C14 age in years BP
+    , _uncalC14Sigma :: Int -- ^ C14 standard deviation (one sigma in years)
     } deriving Show
 
 -- | A data type to represent a year-wise probability density for uncalibrated dates
