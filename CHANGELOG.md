@@ -1,3 +1,4 @@
+- V 0.23.1: Small changes to the instances of some general types
 - V 0.23.0: Renamed multiple functions to make the naming of operations for parsing, reading, from-file reading, rendering and writing consistent across data types
 - V 0.22.0: Changed the interface of the important calibrateDates function with a new config data type CalibrateDatesConf
 - V 0.21.3: Refactored the calibration curve interpolation
