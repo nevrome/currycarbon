@@ -31,42 +31,43 @@ dnorm mu sigma x =
 dt :: Double -> Float -> Float
 dt dof x = realToFrac $ density (studentT (realToFrac dof)) (realToFrac x) -- dof: number of degrees of freedom
 
-isOutsideRangeOfCalCurve :: CalCurve -> UncalC14 -> Bool
-isOutsideRangeOfCalCurve (CalCurve _ bps _) (UncalC14 _ age _) = 
-    age < VU.minimum bps || age > VU.maximum bps
+isOutsideRangeOfCalCurve :: CalCurveBP -> UncalC14 -> Bool
+isOutsideRangeOfCalCurve (CalCurveBP _ uncals _) (UncalC14 _ age _) = 
+    age < VU.minimum uncals || age > VU.maximum uncals
 
 -- | Take an uncalibrated date and a raw calibration curve and return
 -- the relevant segment of the calibration curve
-getRelevantCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
-getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurve cals bps sigmas) =
+getRelevantCalCurveSegment :: UncalC14 -> CalCurveBP -> CalCurveBP
+getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurveBP cals uncals sigmas) =
     let start = mean+6*std
         stop = mean-6*std
-        startIndex = fromMaybe 0 $ VU.findIndex (<= start) bps
-        stopIndex = (VU.length bps - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse bps)
+        startIndex = fromMaybe 0 $ VU.findIndex (<= start) uncals
+        stopIndex = (VU.length uncals - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse uncals)
         toIndex = stopIndex - startIndex
-    in CalCurve (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex bps) (VU.slice startIndex toIndex sigmas)
+    in CalCurveBP (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex uncals) (VU.slice startIndex toIndex sigmas)
 
 -- | Modify a calibration curve (segment) with multiple optional steps, 
 -- including interpolation and transforming dates to BC/AD format
-prepareCalCurveSegment :: Bool -> Bool -> CalCurve -> CalCurve
-prepareCalCurveSegment interpolate makeBCAD calCurve0 =
-    let calCurve1 = if interpolate then interpolateCalCurve calCurve0 else calCurve0
-        calCurve2 = if makeBCAD then makeBCADCalCurve calCurve1 else calCurve1
-    in calCurve2
+prepareCalCurveSegment :: Bool -> CalCurveBP -> CalCurveBCAD
+prepareCalCurveSegment interpolate calCurve =
+    makeBCADCalCurve $ if interpolate then interpolateCalCurve calCurve else calCurve
 
-makeBCADCalCurve :: CalCurve -> CalCurve
-makeBCADCalCurve (CalCurve cals bps sigmas) = CalCurve (VU.map (\b -> -b+1950) cals) (VU.map (\a -> -a+1950) bps) sigmas
+makeBCADCalCurve :: CalCurveBP -> CalCurveBCAD
+makeBCADCalCurve (CalCurveBP cals uncals sigmas) = CalCurveBCAD (vectorBPToBCAD cals) (vectorBPToBCAD uncals) sigmas
 
-interpolateCalCurve :: CalCurve -> CalCurve
-interpolateCalCurve (CalCurve cals bps sigmas) =
-    let obs = VU.zip3 cals bps sigmas
+vectorBPToBCAD :: VU.Vector YearBP -> VU.Vector YearBCAD
+vectorBPToBCAD = VU.map (\x -> -(fromIntegral x) + 1950)
+
+interpolateCalCurve :: CalCurveBP -> CalCurveBP
+interpolateCalCurve (CalCurveBP cals uncals sigmas) =
+    let obs = VU.zip3 cals uncals sigmas
         timeWindows = getTimeWindows obs
         obsFilled = VU.concatMap fillTimeWindows timeWindows
-    in uncurry3 CalCurve $ VU.unzip3 obsFilled
+    in uncurry3 CalCurveBP $ VU.unzip3 obsFilled
     where
-        getTimeWindows :: VU.Vector (Int,Int,Int) -> VU.Vector ((Int,Int,Int),(Int,Int,Int))
+        getTimeWindows :: VU.Vector (YearBP,YearBP,YearRange) -> VU.Vector ((YearBP,YearBP,YearRange),(YearBP,YearBP,YearRange))
         getTimeWindows xs = VU.zipWith (,) (VU.init xs) (VU.tail xs)
-        fillTimeWindows :: ((Int,Int,Int),(Int,Int,Int)) -> VU.Vector (Int,Int,Int)
+        fillTimeWindows :: ((YearBP,YearBP,YearRange),(YearBP,YearBP,YearRange)) -> VU.Vector (YearBP,YearBP,YearRange)
         fillTimeWindows ((calbp1,bp1,sigma1),(calbp2,bp2,sigma2)) =
             if calbp1 == calbp2 || calbp1+1 == calbp2 || calbp1-1 == calbp2 
             then VU.singleton (calbp1,bp1,sigma1)
@@ -75,7 +76,7 @@ interpolateCalCurve (CalCurve cals bps sigmas) =
                     newBPs = VU.map (snd . getInBetweenPointsInt (calbp1,bp1) (calbp2,bp2)) newCals
                     newSigmas = VU.map (snd . getInBetweenPointsInt (calbp1,sigma1) (calbp2,sigma2)) newCals
                 in VU.zip3 newCals newBPs newSigmas
-        getInBetweenPointsInt :: (Int, Int) -> (Int, Int) -> Int -> (Int, Int)
+        getInBetweenPointsInt :: (Word, Word) -> (Word, Word) -> Word -> (Word, Word)
         getInBetweenPointsInt (x1,y1) (x2,y2) xPred =
             let (_,yPred) = getInBetweenPoints (fromIntegral x1,fromIntegral y1) (fromIntegral x2,fromIntegral y2) $ fromIntegral xPred
             in (xPred, round yPred)

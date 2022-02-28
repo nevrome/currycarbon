@@ -14,24 +14,24 @@ import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
 import Data.Vector.Generic (convert)
 
-calibrateDateMatrixMult :: Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateMatrixMult :: Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ _uncalC14Id uncalC14
     else
         let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
-            calCurveSegment = prepareCalCurveSegment interpolate True rawCalCurveSegment
+            calCurveSegment = prepareCalCurveSegment interpolate rawCalCurveSegment
             uncalPDF = uncalToPDF uncalC14
             calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
             calPDF = projectUncalOverCalCurve uncalPDF calCurveMatrix
         in Right $ trimLowDensityEdgesCalPDF $ normalizeCalPDF calPDF
 
 -- | Construct a matrix representation of a calibration curve for a given date
-makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
-makeCalCurveMatrix (UncalPDF _ bps' _) (CalCurve cals bps sigmas) =
-    let bpsFloat = VU.map fromIntegral bps
+makeCalCurveMatrix :: UncalPDF -> CalCurveBCAD -> CalCurveMatrix
+makeCalCurveMatrix (UncalPDF _ bps' _) (CalCurveBCAD cals uncals sigmas) =
+    let bpsFloat = VU.map fromIntegral uncals
         sigmasFloat = VU.map fromIntegral sigmas
-        uncalbps = VU.map (\x -> -x+1950) bps'
+        uncalbps = vectorBPToBCAD bps'
         uncalbpsFloat = VU.map fromIntegral uncalbps
     in CalCurveMatrix uncalbps cals $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
     where

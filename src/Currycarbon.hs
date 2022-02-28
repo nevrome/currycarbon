@@ -17,7 +17,8 @@ module Currycarbon (
     writeCalPDFs,
 
     -- * Calibration curves
-    CalCurve (..),
+    CalCurveBP (..),
+    CalCurveBCAD (..),
     intcal20,
     readCalCurveFromFile,
 

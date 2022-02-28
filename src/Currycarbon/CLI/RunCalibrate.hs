@@ -69,7 +69,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
                 hPutStrLn stderr $ "The calCurveSegment file and the calCurveMatrix file only consider the first date, " ++
                                 renderUncalC14 (head dates)
                 let firstC14 = head dates
-                    calCurveSegment = prepareCalCurveSegment (not noInterpolate) True $ getRelevantCalCurveSegment firstC14 calCurve
+                    calCurveSegment = prepareCalCurveSegment (not noInterpolate) $ getRelevantCalCurveSegment firstC14 calCurve
                 when (isJust calCurveSegmentFile) $ do
                     writeCalCurve (fromJust calCurveSegmentFile) calCurveSegment
                 when (isJust calCurveMatrixFile) $ do

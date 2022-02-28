@@ -54,7 +54,7 @@ defaultCalConf = CalibrateDatesConf {
 
 -- | Calibrates a list of dates with the provided calibration curve
 calibrateDates :: CalibrateDatesConf -- ^ Configuration options to consider
-                  -> CalCurve -- ^ A calibration curve
+                  -> CalCurveBP -- ^ A calibration curve
                   -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates  
                   -> [Either CurrycarbonException CalPDF] -- ^ The function returns a list for each input date, with
                                                           -- either an exception if the calibration failed for some
@@ -71,7 +71,7 @@ calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside inter
 -- >>> :{
 --   let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
 --       densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
---   in refineCalDates [CalPDF {_calPDFid = "", _calPDFBPs = years, _calPDFDens = densities}]
+--   in refineCalDates [CalPDF {_calPDFid = "", _calPDFBCADs = years, _calPDFDens = densities}]
 -- :}
 -- [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 refineCalDates :: [CalPDF] -> [CalC14]

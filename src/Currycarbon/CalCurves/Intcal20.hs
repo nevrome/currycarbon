@@ -1,10 +1,10 @@
 module Currycarbon.CalCurves.Intcal20 where
 
 import Currycarbon.Parsers ( readCalCurve )
-import Currycarbon.Types ( CalCurve )
+import Currycarbon.Types ( CalCurveBP )
 
 -- | The intcal20 calibration curve (Reimer et al. 2020, doi:10.1017/RDC.2020.41)
-intcal20 :: CalCurve
+intcal20 :: CalCurveBP
 intcal20 = readCalCurve intcal20String
 
 -- | The complete intcal20 calibration curve in a large string
