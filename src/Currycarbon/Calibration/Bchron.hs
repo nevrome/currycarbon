@@ -18,13 +18,13 @@ import qualified Data.Vector.Unboxed as VU
 --   in simplifyResult calResult
 -- :}
 -- [(-1413,1.0703295e-5),(-1412,1.4653518e-5),(-1411,1.799142e-5)]
-calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ _uncalC14Id uncalC14
     else 
         let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
-            CalCurve cals mus tau1s = prepareCalCurveSegment interpolate True rawCalCurveSegment
+            CalCurveBCAD cals mus tau1s = prepareCalCurveSegment interpolate rawCalCurveSegment
             ageFloat = -(fromIntegral age)+1950
             ageSd2 = ageSd*ageSd
             ageSd2Float = fromIntegral ageSd2

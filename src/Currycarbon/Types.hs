@@ -4,6 +4,7 @@ module Currycarbon.Types where
 
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
+import Numeric.Natural (Natural)
 
 -- * Data types
 --
@@ -39,32 +40,47 @@ data CalibrationDistribution =
     }
   deriving (Show, Eq)
 
+-- | A type to represent years BP. All numbers are positive and describe the distance in years
+-- to 1950AD: 3000 = 3000BP = 1050BC
+type YearBP = Word
+-- | A type to represent years BC or AD. Negative values describe years BC, positive values
+-- years AD: -5000 = 5000BC and 1300 = 1300AD
+type YearBCAD = Int
+-- | A type to represent a range of years
+type YearRange = Word
+
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14 = UncalC14 {   
       _uncalC14Id :: String -- ^ Sample identifier, e.g. a lab number
-    , _uncalC14BP :: Int -- ^ C14 age in years BP
-    , _uncalC14Sigma :: Int -- ^ C14 standard deviation (one sigma in years)
+    , _uncalC14BP :: YearBP -- ^ C14 age in years BP
+    , _uncalC14Sigma :: YearRange -- ^ C14 standard deviation (one sigma in years)
     } deriving (Show, Eq)
 
 -- | A data type to represent a year-wise probability density for uncalibrated dates
 -- Although technically not correct, we still call this a probability density function (PDF)
 data UncalPDF = UncalPDF {
       _uncalPDFid :: String -- ^ Sample identifier, e.g. a lab number
-    , _uncalPDFBPs :: VU.Vector Int -- ^ Years BP or BC
+    , _uncalPDFBPs :: VU.Vector YearBP -- ^ Years BP
     , _uncalPDFDens :: VU.Vector Float -- ^ Probability densities
     } deriving Show
 
 -- | A data type to represent a calibration curve
-data CalCurve = CalCurve {
-      _calCurveCals :: VU.Vector Int -- ^ Years calBP or calBC
-    , _calCurveBPs :: VU.Vector Int -- ^ Years BP or BC
-    , _calCurveSigmas :: VU.Vector Int -- ^ Standard deviation (one sigma in years)
+data CalCurveBP = CalCurveBP {
+      _calCurveBPCals :: VU.Vector YearBP -- ^ Years calBP
+    , _calCurveBPUnCals :: VU.Vector YearBP -- ^ Years BP
+    , _calCurveBPSigmas :: VU.Vector YearRange -- ^ Standard deviation (one sigma in years)
+    } deriving Show
+
+data CalCurveBCAD = CalCurveBCAD {
+      _calCurveBCADCals :: VU.Vector YearBCAD -- ^ Years calBCAD
+    , _calCurveBCADUnCals :: VU.Vector YearBCAD -- ^ Years BCAD
+    , _calCurveBCADSigmas :: VU.Vector YearRange -- ^ Standard deviation (one sigma in years)
     } deriving Show
 
 -- | A data type to represent a calibration curve in a /wide/ matrix form
 data CalCurveMatrix = CalCurveMatrix {
-      _calCurveMatrixBPs :: VU.Vector Int -- ^ Row names of the calibration curve matrix: Years BP or BC
-    , _calCurveMatrixCalBPs :: VU.Vector Int -- ^ Column names of the calibration curve matrix: Years calBP or calBC
+      _calCurveMatrixBCADs :: VU.Vector YearBCAD -- ^ Row names of the calibration curve matrix: Years BCAD
+    , _calCurveMatrixCalBCADs :: VU.Vector YearBCAD -- ^ Column names of the calibration curve matrix: Years calBCAD
     , _calCurveMatrixDens :: V.Vector (VU.Vector Float) -- ^ Matrix (as a list of columns) with the probability densities
     } deriving Show
 
@@ -72,8 +88,8 @@ data CalCurveMatrix = CalCurveMatrix {
 -- Although technically not correct, we still call this a probability density function (PDF)
 data CalPDF = CalPDF {
       _calPDFid :: String -- ^ Sample identifier, e.g. a lab number
-    , _calPDFBPs :: VU.Vector Int -- ^ Calibrated years calBP or calBC/AD (depending on the context)
-    , _calPDFDens :: VU.Vector Float -- ^ Probability densities for each year in '_calPDFBPs'
+    , _calPDFBCADs :: VU.Vector YearBCAD -- ^ Years calBCAD
+    , _calPDFDens :: VU.Vector Float -- ^ Probability densities for each year in '_calPDFBCADs'
     } deriving Show
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
@@ -88,6 +104,6 @@ data CalC14 = CalC14 {
 -- cummulative probability (e.g. of an calibrated radiocarbon date density curve) 
 -- is above a certain threshold
 data HDR = HDR {
-      _hdrstart :: Int -- ^ Start of the high density region
-    , _hdrstop :: Int -- ^ End of the high density region
+      _hdrstart :: YearBCAD -- ^ Start of the high density region in years calBCAD
+    , _hdrstop :: YearBCAD -- ^ End of the high density region in years calBCAD
     } deriving (Show, Eq)

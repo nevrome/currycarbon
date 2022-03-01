@@ -235,33 +235,36 @@ parseUncalC14 = do
             return (UncalC14 "unknownSampleName" mean std)
 
 -- CalCurve
-writeCalCurve :: FilePath -> CalCurve -> IO ()
+writeCalCurve :: FilePath -> CalCurveBCAD -> IO ()
 writeCalCurve path calCurve = 
     writeFile path $ renderCalCurve calCurve
 
-renderCalCurve :: CalCurve -> String
-renderCalCurve (CalCurve bps cals sigmas) =
+renderCalCurve :: CalCurveBCAD -> String
+renderCalCurve (CalCurveBCAD cals uncals sigmas) =
     let header = "calBCAD,14CageBCAD,Sigma\n"
-        body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) (VU.toList $ VU.zip3 bps cals sigmas)
+        body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) (VU.toList $ VU.zip3 cals uncals sigmas)
     in header ++ intercalate "\n" body
 
-readCalCurveFromFile :: FilePath -> IO CalCurve
+readCalCurveFromFile :: FilePath -> IO CalCurveBP
 readCalCurveFromFile calCurveFile = do
     calCurve <- readFile calCurveFile
     return $ readCalCurve calCurve
 
-readCalCurve :: String -> CalCurve 
+readCalCurve :: String -> CalCurveBP
 readCalCurve calCurveString = do
     case P.runParser parseCalCurve () "" calCurveString of
         Left p  -> error $ "This should never happen." ++ show p
-        Right x -> CalCurve (VU.fromList $ map (\(a,_,_) -> a) x) (VU.fromList $ map (\(_,b,_) -> b) x) (VU.fromList $ map (\(_,_,c) -> c) x)
+        Right x -> CalCurveBP 
+            (VU.fromList $ map (\(a,_,_) -> a) x)
+            (VU.fromList $ map (\(_,b,_) -> b) x)
+            (VU.fromList $ map (\(_,_,c) -> c) x)
 
-parseCalCurve :: P.Parser [(Int, Int, Int)]
+parseCalCurve :: P.Parser [(YearBP, YearBP, YearRange)]
 parseCalCurve = do
     P.skipMany comments
     P.sepEndBy parseCalCurveLine (P.manyTill P.anyToken (P.try P.newline))
 
-parseCalCurveLine :: P.Parser (Int, Int, Int) 
+parseCalCurveLine :: P.Parser (YearBP, YearBP, YearRange) 
 parseCalCurveLine = do
   calBP <- read <$> P.many1 P.digit
   _ <- P.oneOf ","
