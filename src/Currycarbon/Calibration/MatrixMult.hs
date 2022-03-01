@@ -29,19 +29,19 @@ calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
 
 -- | Construct a matrix representation of a calibration curve for a given date
 makeCalCurveMatrix :: UncalPDF -> CalCurveBCAD -> CalCurveMatrix
-makeCalCurveMatrix (UncalPDF _ bps' _) (CalCurveBCAD cals uncals sigmas) =
-    let bpsFloat = VU.map fromIntegral uncals
+makeCalCurveMatrix (UncalPDF _ uncals' _) (CalCurveBCAD cals uncals sigmas) =
+    let curveUnCalBCADsFloat = VU.map fromIntegral uncals
         sigmasFloat = VU.map fromIntegral sigmas
-        uncalbps = vectorBPToBCAD bps'
-        uncalbpsFloat = VU.map fromIntegral uncalbps
-    in CalCurveMatrix uncalbps cals $ buildMatrix bpsFloat sigmasFloat uncalbpsFloat
+        uncalBCADs = vectorBPToBCAD uncals'
+        uncalBCADsFloat = VU.map fromIntegral uncalBCADs
+    in CalCurveMatrix uncalBCADs cals $ buildMatrix curveUnCalBCADsFloat sigmasFloat uncalBCADsFloat
     where
         buildMatrix :: VU.Vector Float -> VU.Vector Float -> VU.Vector Float -> V.Vector (VU.Vector Float)
-        buildMatrix bps_ sigmas_ uncalbps_ = V.map (\x -> VU.map (fillCell x) uncalbps_) $ V.zip (convert bps_) (convert sigmas_)
+        buildMatrix curveuncal_ sigmas_ uncal_ = V.map (\x -> VU.map (fillCell x) uncal_) $ V.zip (convert curveuncal_) (convert sigmas_)
         fillCell :: (Float, Float) -> Float -> Float
-        fillCell (bp, sigma) matrixPosBP = 
-            if abs (bp - matrixPosBP) < 6*sigma
-            then dnorm bp sigma matrixPosBP
+        fillCell (mean, sigma) matrixPosBP = 
+            if abs (mean - matrixPosBP) < 6*sigma
+            then dnorm mean sigma matrixPosBP
             else 0
 
 -- | Transform an uncalibrated date to an uncalibrated 

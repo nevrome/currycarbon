@@ -71,15 +71,15 @@ calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside inter
 -- >>> :{
 --   let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
 --       densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
---   in refineCalDates [CalPDF {_calPDFid = "", _calPDFBCADs = years, _calPDFDens = densities}]
+--   in refineCalDates [CalPDF {_calPDFid = "", _calPDFCals = years, _calPDFDens = densities}]
 -- :}
 -- [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 refineCalDates :: [CalPDF] -> [CalC14]
 refineCalDates = map refineCalDate
 
 refineCalDate :: CalPDF -> CalC14
-refineCalDate (CalPDF name bps dens) =
-    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip bps dens)
+refineCalDate (CalPDF name cals dens) =
+    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip cals dens)
         cumsumDensities = scanl1 (+) $ map snd sortedDensities
         isIn68 = map (< 0.683) cumsumDensities
         isIn95 = map (< 0.954) cumsumDensities

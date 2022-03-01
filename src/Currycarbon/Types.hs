@@ -52,7 +52,7 @@ type YearRange = Word
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14 = UncalC14 {   
       _uncalC14Id :: String -- ^ Sample identifier, e.g. a lab number
-    , _uncalC14BP :: YearBP -- ^ C14 age in years BP
+    , _uncalC14UnCal :: YearBP -- ^ C14 age in years BP
     , _uncalC14Sigma :: YearRange -- ^ C14 standard deviation (one sigma in years)
     } deriving (Show, Eq)
 
@@ -60,7 +60,7 @@ data UncalC14 = UncalC14 {
 -- Although technically not correct, we still call this a probability density function (PDF)
 data UncalPDF = UncalPDF {
       _uncalPDFid :: String -- ^ Sample identifier, e.g. a lab number
-    , _uncalPDFBPs :: VU.Vector YearBP -- ^ Years BP
+    , _uncalPDFUnCals :: VU.Vector YearBP -- ^ Years BP
     , _uncalPDFDens :: VU.Vector Float -- ^ Probability densities
     } deriving Show
 
@@ -80,8 +80,8 @@ data CalCurveBCAD = CalCurveBCAD {
 
 -- | A data type to represent a calibration curve in a /wide/ matrix form
 data CalCurveMatrix = CalCurveMatrix {
-      _calCurveMatrixBCADs :: VU.Vector YearBCAD -- ^ Row names of the calibration curve matrix: Years BCAD
-    , _calCurveMatrixCalBCADs :: VU.Vector YearBCAD -- ^ Column names of the calibration curve matrix: Years calBCAD
+      _calCurveMatrixUnCals :: VU.Vector YearBCAD -- ^ Row names of the calibration curve matrix: Years BCAD
+    , _calCurveMatrixCals :: VU.Vector YearBCAD -- ^ Column names of the calibration curve matrix: Years calBCAD
     , _calCurveMatrixDens :: V.Vector (VU.Vector Float) -- ^ Matrix (as a list of columns) with the probability densities
     } deriving Show
 
@@ -89,8 +89,8 @@ data CalCurveMatrix = CalCurveMatrix {
 -- Although technically not correct, we still call this a probability density function (PDF)
 data CalPDF = CalPDF {
       _calPDFid :: String -- ^ Sample identifier, e.g. a lab number
-    , _calPDFBCADs :: VU.Vector YearBCAD -- ^ Years calBCAD
-    , _calPDFDens :: VU.Vector Float -- ^ Probability densities for each year in '_calPDFBCADs'
+    , _calPDFCals :: VU.Vector YearBCAD -- ^ Years calBCAD
+    , _calPDFDens :: VU.Vector Float -- ^ Probability densities for each year in '_calPDFCals'
     } deriving Show
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date

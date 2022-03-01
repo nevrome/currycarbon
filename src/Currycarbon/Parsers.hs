@@ -141,9 +141,9 @@ writeCalCurveMatrix path calCurveMatrix =
     writeFile path $ renderCalCurveMatrix calCurveMatrix
 
 renderCalCurveMatrix :: CalCurveMatrix -> String
-renderCalCurveMatrix (CalCurveMatrix bps cals curveDensities) =
+renderCalCurveMatrix (CalCurveMatrix uncals cals curveDensities) =
     let header = "," ++ intercalate "," (map show $ VU.toList cals) ++ "\n"
-        body = zipWith (\bp bpDens -> show bp ++ "," ++ intercalate "," (map show $ VU.toList bpDens)) (VU.toList bps) (V.toList curveDensities)
+        body = zipWith (\uncal dens -> show uncal ++ "," ++ intercalate "," (map show $ VU.toList dens)) (VU.toList uncals) (V.toList curveDensities)
     in header ++ intercalate "\n" body
 
 -- CalPDF
@@ -169,20 +169,20 @@ writeCalPDFs path calPDFs =
     BL.writeFile path $ "sample,calBCAD,density\n" <> toLazyByteString (mconcat $ map renderBuilderCalPDF calPDFs)
 
 renderBuilderCalPDF :: CalPDF -> Builder
-renderBuilderCalPDF (CalPDF name bps dens) = 
+renderBuilderCalPDF (CalPDF name cals dens) = 
     let nameBuilder = stringUtf8 name
-        densList = VU.toList $ VU.zip bps dens
+        densList = VU.toList $ VU.zip cals dens
         builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
     in mconcat builderList
 
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
-renderCLIPlotCalPDF rows cols (CalPDF _ bps dens) =
+renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
      let binWidth = quot (VU.length dens) cols
         -- last bin will often be shorter, which renders the whole plot 
         -- slightly incorrect for the last column
          binDens = meanBinDens (fromIntegral rows) binWidth dens
          plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getSymbol x) binDens) $ reverse [0..rows]
-         xAxis = constructXAxis (VU.head bps) (VU.last bps) (length binDens) binWidth
+         xAxis = constructXAxis (VU.head cals) (VU.last cals) (length binDens) binWidth
      in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
         meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
