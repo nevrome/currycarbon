@@ -29,7 +29,7 @@
 </span><span id="line-29"></span><span>  </span><span class="hs-comment">-- Student's t-distribution ('StudentTDist'), which is recommended</span><span>
 </span><span id="line-30"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Bchron"><span class="annot"><a href="Currycarbon.Types.html#Bchron"><span class="hs-identifier hs-var">Bchron</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="distribution"><span class="annot"><span class="annottext">CalibrationMethod -&gt; CalibrationDistribution
 </span><a href="Currycarbon.Types.html#distribution"><span class="hs-identifier hs-var hs-var">distribution</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalibrationDistribution"><span class="hs-identifier hs-type">CalibrationDistribution</span></a></span><span> </span><span class="hs-special">}</span><span>
-</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069682"><span id="local-6989586621679069684"><span id="local-6989586621679069686"><span class="annot"><span class="annottext">Int -&gt; CalibrationMethod -&gt; ShowS
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069718"><span id="local-6989586621679069720"><span id="local-6989586621679069722"><span class="annot"><span class="annottext">Int -&gt; CalibrationMethod -&gt; ShowS
 [CalibrationMethod] -&gt; ShowS
 CalibrationMethod -&gt; String
 (Int -&gt; CalibrationMethod -&gt; ShowS)
@@ -44,7 +44,7 @@ show :: CalibrationMethod -&gt; String
 $cshow :: CalibrationMethod -&gt; String
 showsPrec :: Int -&gt; CalibrationMethod -&gt; ShowS
 $cshowsPrec :: Int -&gt; CalibrationMethod -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069677"><span id="local-6989586621679069679"><span class="annot"><span class="annottext">CalibrationMethod -&gt; CalibrationMethod -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069713"><span id="local-6989586621679069715"><span class="annot"><span class="annottext">CalibrationMethod -&gt; CalibrationMethod -&gt; Bool
 (CalibrationMethod -&gt; CalibrationMethod -&gt; Bool)
 -&gt; (CalibrationMethod -&gt; CalibrationMethod -&gt; Bool)
 -&gt; Eq CalibrationMethod
@@ -64,7 +64,7 @@ $c== :: CalibrationMethod -&gt; CalibrationMethod -&gt; Bool
 </span><span id="line-39"></span><span>      </span><span id="ndf"><span class="annot"><span class="annottext">CalibrationDistribution -&gt; Double
 </span><a href="Currycarbon.Types.html#ndf"><span class="hs-identifier hs-var hs-var">ndf</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-comment">-- ^ number of degrees of freedom </span><span>
 </span><span id="line-40"></span><span>    </span><span class="hs-special">}</span><span>
-</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069667"><span id="local-6989586621679069669"><span id="local-6989586621679069671"><span class="annot"><span class="annottext">Int -&gt; CalibrationDistribution -&gt; ShowS
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069703"><span id="local-6989586621679069705"><span id="local-6989586621679069707"><span class="annot"><span class="annottext">Int -&gt; CalibrationDistribution -&gt; ShowS
 [CalibrationDistribution] -&gt; ShowS
 CalibrationDistribution -&gt; String
 (Int -&gt; CalibrationDistribution -&gt; ShowS)
@@ -79,7 +79,7 @@ show :: CalibrationDistribution -&gt; String
 $cshow :: CalibrationDistribution -&gt; String
 showsPrec :: Int -&gt; CalibrationDistribution -&gt; ShowS
 $cshowsPrec :: Int -&gt; CalibrationDistribution -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069663"><span id="local-6989586621679069665"><span class="annot"><span class="annottext">CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069699"><span id="local-6989586621679069701"><span class="annot"><span class="annottext">CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool
 (CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool)
 -&gt; (CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool)
 -&gt; Eq CalibrationDistribution
@@ -110,7 +110,7 @@ $c== :: CalibrationDistribution -&gt; CalibrationDistribution -&gt; Bool
 </span><span id="line-58"></span><span>    </span><span class="hs-comment">-- | C14 standard deviation (one sigma in years)</span><span>
 </span><span id="line-59"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalC14Sigma"><span class="annot"><span class="annottext">UncalC14 -&gt; YearBP
 </span><a href="Currycarbon.Types.html#_uncalC14Sigma"><span class="hs-identifier hs-var hs-var">_uncalC14Sigma</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#YearRange"><span class="hs-identifier hs-type">YearRange</span></a></span><span>
-</span><span id="line-60"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069651"><span id="local-6989586621679069653"><span id="local-6989586621679069655"><span class="annot"><span class="annottext">Int -&gt; UncalC14 -&gt; ShowS
+</span><span id="line-60"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069687"><span id="local-6989586621679069689"><span id="local-6989586621679069691"><span class="annot"><span class="annottext">Int -&gt; UncalC14 -&gt; ShowS
 [UncalC14] -&gt; ShowS
 UncalC14 -&gt; String
 (Int -&gt; UncalC14 -&gt; ShowS)
@@ -123,7 +123,7 @@ show :: UncalC14 -&gt; String
 $cshow :: UncalC14 -&gt; String
 showsPrec :: Int -&gt; UncalC14 -&gt; ShowS
 $cshowsPrec :: Int -&gt; UncalC14 -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069647"><span id="local-6989586621679069649"><span class="annot"><span class="annottext">UncalC14 -&gt; UncalC14 -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069683"><span id="local-6989586621679069685"><span class="annot"><span class="annottext">UncalC14 -&gt; UncalC14 -&gt; Bool
 (UncalC14 -&gt; UncalC14 -&gt; Bool)
 -&gt; (UncalC14 -&gt; UncalC14 -&gt; Bool) -&gt; Eq UncalC14
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -145,7 +145,7 @@ $c== :: UncalC14 -&gt; UncalC14 -&gt; Bool
 </span><span id="line-69"></span><span>    </span><span class="hs-comment">-- | Probability densities</span><span>
 </span><span id="line-70"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_uncalPDFDens"><span class="annot"><span class="annottext">UncalPDF -&gt; Vector Float
 </span><a href="Currycarbon.Types.html#_uncalPDFDens"><span class="hs-identifier hs-var hs-var">_uncalPDFDens</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
-</span><span id="line-71"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069637"><span id="local-6989586621679069639"><span id="local-6989586621679069641"><span class="annot"><span class="annottext">Int -&gt; UncalPDF -&gt; ShowS
+</span><span id="line-71"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069673"><span id="local-6989586621679069675"><span id="local-6989586621679069677"><span class="annot"><span class="annottext">Int -&gt; UncalPDF -&gt; ShowS
 [UncalPDF] -&gt; ShowS
 UncalPDF -&gt; String
 (Int -&gt; UncalPDF -&gt; ShowS)
@@ -171,7 +171,7 @@ $cshowsPrec :: Int -&gt; UncalPDF -&gt; ShowS
 </span><span id="line-79"></span><span>    </span><span class="hs-comment">-- | Standard deviation (one sigma in years)</span><span>
 </span><span id="line-80"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveBPSigmas"><span class="annot"><span class="annottext">CalCurveBP -&gt; Vector YearBP
 </span><a href="Currycarbon.Types.html#_calCurveBPSigmas"><span class="hs-identifier hs-var hs-var">_calCurveBPSigmas</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><a href="Currycarbon.Types.html#YearRange"><span class="hs-identifier hs-type">YearRange</span></a></span><span>
-</span><span id="line-81"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069627"><span id="local-6989586621679069629"><span id="local-6989586621679069631"><span class="annot"><span class="annottext">Int -&gt; CalCurveBP -&gt; ShowS
+</span><span id="line-81"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069663"><span id="local-6989586621679069665"><span id="local-6989586621679069667"><span class="annot"><span class="annottext">Int -&gt; CalCurveBP -&gt; ShowS
 [CalCurveBP] -&gt; ShowS
 CalCurveBP -&gt; String
 (Int -&gt; CalCurveBP -&gt; ShowS)
@@ -199,7 +199,7 @@ $cshowsPrec :: Int -&gt; CalCurveBP -&gt; ShowS
 </span><span id="line-89"></span><span>    </span><span class="hs-comment">-- | Standard deviation (one sigma in years)</span><span>
 </span><span id="line-90"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveBCADSigmas"><span class="annot"><span class="annottext">CalCurveBCAD -&gt; Vector YearBP
 </span><a href="Currycarbon.Types.html#_calCurveBCADSigmas"><span class="hs-identifier hs-var hs-var">_calCurveBCADSigmas</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><a href="Currycarbon.Types.html#YearRange"><span class="hs-identifier hs-type">YearRange</span></a></span><span>
-</span><span id="line-91"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069617"><span id="local-6989586621679069619"><span id="local-6989586621679069621"><span class="annot"><span class="annottext">Int -&gt; CalCurveBCAD -&gt; ShowS
+</span><span id="line-91"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069653"><span id="local-6989586621679069655"><span id="local-6989586621679069657"><span class="annot"><span class="annottext">Int -&gt; CalCurveBCAD -&gt; ShowS
 [CalCurveBCAD] -&gt; ShowS
 CalCurveBCAD -&gt; String
 (Int -&gt; CalCurveBCAD -&gt; ShowS)
@@ -227,7 +227,7 @@ $cshowsPrec :: Int -&gt; CalCurveBCAD -&gt; ShowS
 </span><span id="line-99"></span><span>    </span><span class="hs-comment">-- | Matrix (as a list of columns) with the probability densities</span><span>
 </span><span id="line-100"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calCurveMatrixDens"><span class="annot"><span class="annottext">CalCurveMatrix -&gt; Vector (Vector Float)
 </span><a href="Currycarbon.Types.html#_calCurveMatrixDens"><span class="hs-identifier hs-var hs-var">_calCurveMatrixDens</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span>
-</span><span id="line-101"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069607"><span id="local-6989586621679069609"><span id="local-6989586621679069611"><span class="annot"><span class="annottext">Int -&gt; CalCurveMatrix -&gt; ShowS
+</span><span id="line-101"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069643"><span id="local-6989586621679069645"><span id="local-6989586621679069647"><span class="annot"><span class="annottext">Int -&gt; CalCurveMatrix -&gt; ShowS
 [CalCurveMatrix] -&gt; ShowS
 CalCurveMatrix -&gt; String
 (Int -&gt; CalCurveMatrix -&gt; ShowS)
@@ -256,7 +256,7 @@ $cshowsPrec :: Int -&gt; CalCurveMatrix -&gt; ShowS
 </span><span id="line-110"></span><span>    </span><span class="hs-comment">-- | Probability densities for each year in '_calPDFCals'</span><span>
 </span><span id="line-111"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calPDFDens"><span class="annot"><span class="annottext">CalPDF -&gt; Vector Float
 </span><a href="Currycarbon.Types.html#_calPDFDens"><span class="hs-identifier hs-var hs-var">_calPDFDens</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
-</span><span id="line-112"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069597"><span id="local-6989586621679069599"><span id="local-6989586621679069601"><span class="annot"><span class="annottext">Int -&gt; CalPDF -&gt; ShowS
+</span><span id="line-112"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069633"><span id="local-6989586621679069635"><span id="local-6989586621679069637"><span class="annot"><span class="annottext">Int -&gt; CalPDF -&gt; ShowS
 [CalPDF] -&gt; ShowS
 CalPDF -&gt; String
 (Int -&gt; CalPDF -&gt; ShowS)
@@ -282,7 +282,7 @@ $cshowsPrec :: Int -&gt; CalPDF -&gt; ShowS
 </span><span id="line-120"></span><span>    </span><span class="hs-comment">-- | Two-sigma high density regions</span><span>
 </span><span id="line-121"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_calC14HDRTwoSigma"><span class="annot"><span class="annottext">CalC14 -&gt; [HDR]
 </span><a href="Currycarbon.Types.html#_calC14HDRTwoSigma"><span class="hs-identifier hs-var hs-var">_calC14HDRTwoSigma</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-type">HDR</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-122"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069587"><span id="local-6989586621679069589"><span id="local-6989586621679069591"><span class="annot"><span class="annottext">Int -&gt; CalC14 -&gt; ShowS
+</span><span id="line-122"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679069623"><span id="local-6989586621679069625"><span id="local-6989586621679069627"><span class="annot"><span class="annottext">Int -&gt; CalC14 -&gt; ShowS
 [CalC14] -&gt; ShowS
 CalC14 -&gt; String
 (Int -&gt; CalC14 -&gt; ShowS)
@@ -308,7 +308,7 @@ $cshowsPrec :: Int -&gt; CalC14 -&gt; ShowS
 </span><span id="line-131"></span><span>    </span><span class="hs-comment">-- | End of the high density region in years calBCAD</span><span>
 </span><span id="line-132"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="_hdrstop"><span class="annot"><span class="annottext">HDR -&gt; Int
 </span><a href="Currycarbon.Types.html#_hdrstop"><span class="hs-identifier hs-var hs-var">_hdrstop</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#YearBCAD"><span class="hs-identifier hs-type">YearBCAD</span></a></span><span>
-</span><span id="line-133"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069578"><span id="local-6989586621679069580"><span id="local-6989586621679069582"><span class="annot"><span class="annottext">Int -&gt; HDR -&gt; ShowS
+</span><span id="line-133"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679069614"><span id="local-6989586621679069616"><span id="local-6989586621679069618"><span class="annot"><span class="annottext">Int -&gt; HDR -&gt; ShowS
 [HDR] -&gt; ShowS
 HDR -&gt; String
 (Int -&gt; HDR -&gt; ShowS)
@@ -321,7 +321,7 @@ show :: HDR -&gt; String
 $cshow :: HDR -&gt; String
 showsPrec :: Int -&gt; HDR -&gt; ShowS
 $cshowsPrec :: Int -&gt; HDR -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069574"><span id="local-6989586621679069576"><span class="annot"><span class="annottext">HDR -&gt; HDR -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679069610"><span id="local-6989586621679069612"><span class="annot"><span class="annottext">HDR -&gt; HDR -&gt; Bool
 (HDR -&gt; HDR -&gt; Bool) -&gt; (HDR -&gt; HDR -&gt; Bool) -&gt; Eq HDR
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 /= :: HDR -&gt; HDR -&gt; Bool
