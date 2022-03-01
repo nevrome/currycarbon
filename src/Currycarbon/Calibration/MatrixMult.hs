@@ -14,6 +14,7 @@ import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
 import Data.Vector.Generic (convert)
 
+-- | Intercept calibration implemented with matrix multiplication (see 'MatrixMultiplication')
 calibrateDateMatrixMult :: Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14

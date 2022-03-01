@@ -92,14 +92,16 @@ can be read and used with 'readCalCurveFromFile'.
 {- $derivedOutput
 
 The main calibration function 'calibrateDates' returns a list of
-'CalPDF's. This is very useful output for derived, computational
-applications, but not exactly human readable. 'refineCalDates' takes
-these probability distributions and turns them into the derived data
-type 'CalC14'. This type features high density regions, so the age
-ranges a sample most likely dates to.
+'CalPDF's. This is very useful output for further computational
+analysis, but it is not optimised for human reading and understanding.
+'refineCalDates' therefore takes these probability distributions and
+turns them into the derived data type 'CalC14', which features high
+density regions ('HDR's). HDRs are the age ranges a sample most likely
+dates to according to the post calibration probability distribution.
 
 These can also be written to a file with 'writeCalC14s'.
 
 'renderCalDatesPretty' finally combines 'UncalC14', 'CalPDF' and 
-'CalC14' to produce nice command line output. 
+'CalC14' to produce nice command line output summarising the calibration
+result for a given sample.
 -}

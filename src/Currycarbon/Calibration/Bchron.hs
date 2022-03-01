@@ -10,7 +10,7 @@ import Currycarbon.Utils
 
 import qualified Data.Vector.Unboxed as VU
 
--- | Intercept calibration as implemented in the Bchron R package
+-- | Intercept calibration as implemented in the Bchron R package (see 'Bchron')
 --
 -- >>> :{
 --   let calResult = calibrateDateBchron NormalDist False True intcal20 (UncalC14 "" 3000 30)
