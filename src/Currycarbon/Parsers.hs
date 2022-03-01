@@ -278,6 +278,9 @@ renderCalCurve (CalCurveBCAD cals uncals sigmas) =
         body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) (VU.toList $ VU.zip3 cals uncals sigmas)
     in header ++ intercalate "\n" body
 
+-- | Read a calibration curve file. The file must adhere to the current version of the 
+-- .c14 file format (e.g. [here](http://intcal.org/curves/intcal20.14c)). Look
+-- [here](http://intcal.org/blurb.html) for other calibration curves
 readCalCurveFromFile :: FilePath -> IO CalCurveBP
 readCalCurveFromFile calCurveFile = do
     calCurve <- readFile calCurveFile

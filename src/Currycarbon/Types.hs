@@ -64,13 +64,14 @@ data UncalPDF = UncalPDF {
     , _uncalPDFDens :: VU.Vector Float -- ^ Probability densities
     } deriving Show
 
--- | A data type to represent a calibration curve
+-- | A data type to represent a calibration curve with 'YearBP'
 data CalCurveBP = CalCurveBP {
       _calCurveBPCals :: VU.Vector YearBP -- ^ Years calBP
     , _calCurveBPUnCals :: VU.Vector YearBP -- ^ Years BP
     , _calCurveBPSigmas :: VU.Vector YearRange -- ^ Standard deviation (one sigma in years)
     } deriving Show
 
+-- | A second data type to represent a calibration curve, here now with 'YearBCAD'
 data CalCurveBCAD = CalCurveBCAD {
       _calCurveBCADCals :: VU.Vector YearBCAD -- ^ Years calBCAD
     , _calCurveBCADUnCals :: VU.Vector YearBCAD -- ^ Years BCAD

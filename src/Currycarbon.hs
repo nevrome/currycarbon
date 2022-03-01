@@ -8,11 +8,14 @@ module Currycarbon (
     -- * Calibration
     -- $calibration
     calibrateDates,
+    -- ** Configuration
     CalibrateDatesConf (..),
     defaultCalConf,
     CalibrationMethod (..),
+    -- ** Input
     UncalC14 (..),
     readUncalC14FromFile,
+    -- ** Output
     CalPDF (..),
     writeCalPDFs,
 
