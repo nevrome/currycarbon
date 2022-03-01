@@ -86,7 +86,7 @@ UncalPDF :: String -> Vector YearBP -> Vector Float -> UncalPDF
 -- | Probability densities
 [_uncalPDFDens] :: UncalPDF -> Vector Float
 
--- | A data type to represent a calibration curve
+-- | A data type to represent a calibration curve with <a>YearBP</a>
 data CalCurveBP
 CalCurveBP :: Vector YearBP -> Vector YearBP -> Vector YearRange -> CalCurveBP
 
@@ -98,6 +98,9 @@ CalCurveBP :: Vector YearBP -> Vector YearBP -> Vector YearRange -> CalCurveBP
 
 -- | Standard deviation (one sigma in years)
 [_calCurveBPSigmas] :: CalCurveBP -> Vector YearRange
+
+-- | A second data type to represent a calibration curve, here now with
+--   <a>YearBCAD</a>
 data CalCurveBCAD
 CalCurveBCAD :: Vector YearBCAD -> Vector YearBCAD -> Vector YearRange -> CalCurveBCAD
 
@@ -229,10 +232,45 @@ instance GHC.Show.Show Currycarbon.Utils.CurrycarbonException
 instance GHC.Exception.Type.Exception Currycarbon.Utils.CurrycarbonException
 
 module Currycarbon.Parsers
-renderCalDatesPretty :: [(UncalC14, CalC14, CalPDF)] -> String
-renderCalDatePretty :: (UncalC14, CalC14, CalPDF) -> String
+
+-- | Combine <a>UncalC14</a>, <a>CalPDF</a> and <a>CalC14</a> to render
+--   pretty command line output like this:
+--   
+--   <pre>
+--   Sample: 1 ~&gt; [5000±30BP]
+--   1-sigma: 3894-3880BC, 3797-3709BC
+--   2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
+--                                       ***                      
+--                                      *'''**   *****            
+--                     ***             *''''''<tt>***</tt>'''''*           
+--               ******'''*            ''''''''''''''''      **   
+--              *''''''''''**        **''''''''''''''''*   **''*  
+--           ***'''''''''''''<tt>********</tt>'''''''''''''''''''<tt>***</tt>'''''**
+--    -3960 &lt;~~~~~~~~~|~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~|~~~~~~~~~~&gt; -3640
+--   </pre>
+renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
+renderCalDatePretty :: (UncalC14, CalPDF, CalC14) -> String
 readCalibrationMethod :: String -> Either String CalibrationMethod
 parseCalibrationMethod :: Parser CalibrationMethod
+
+-- | Write <a>CalC14</a>s to the file system. The output file is a long
+--   .csv file with the following structure:
+--   
+--   <pre>
+--   sample,hdrSigma,hdrStartBCAD,hdrStopBCAD
+--   Sample1,1,-3797,-3709
+--   Sample1,1,-3894,-3880
+--   Sample1,2,-3680,-3655
+--   Sample1,2,-3810,-3700
+--   Sample1,2,-3941,-3864
+--   Sample2,1,-1142,-1130
+--   Sample2,1,-1173,-1161
+--   Sample2,1,-1293,-1194
+--   Sample2,1,-1368,-1356
+--   Sample2,2,-1061,-1059
+--   Sample2,2,-1323,-1112
+--   Sample2,2,-1393,-1334
+--   </pre>
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 renderCalC14ForFile :: CalC14 -> String
 renderCalC14s :: [CalC14] -> String
@@ -282,6 +320,10 @@ readUncalC14 :: String -> Either String [UncalC14]
 parseUncalC14 :: Parser UncalC14
 writeCalCurve :: FilePath -> CalCurveBCAD -> IO ()
 renderCalCurve :: CalCurveBCAD -> String
+
+-- | Read a calibration curve file. The file must adhere to the current
+--   version of the .c14 file format (e.g. <a>here</a>). Look <a>here</a>
+--   for other calibration curves
 readCalCurveFromFile :: FilePath -> IO CalCurveBP
 readCalCurve :: String -> CalCurveBP
 parseCalCurve :: Parser [(YearBP, YearBP, YearRange)]
@@ -290,8 +332,8 @@ comments :: Parser String
 
 module Currycarbon.CalCurves.Intcal20
 
--- | The intcal20 calibration curve (Reimer et al. 2020,
---   doi:10.1017/RDC.2020.41)
+-- | The intcal20 calibration curve (Reimer et al. 2020, doi:
+--   <a>10.1017/RDC.2020.41</a>)
 intcal20 :: CalCurveBP
 
 -- | The complete intcal20 calibration curve in a large string
@@ -375,9 +417,8 @@ CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 --   in the Bchron R package</a>
 [_calConfInterpolateCalCurve] :: CalibrateDatesConf -> Bool
 
--- | A default configuration (<a>CalibrateDatesConf</a>) that should yield
---   almost identical calibration results to the the <a>Bchron R
---   package</a>
+-- | A default configuration that should yield almost identical calibration
+--   results to the <a>Bchron R package</a>
 --   
 --   <pre>
 --   &gt;&gt;&gt; defaultCalConf
@@ -395,32 +436,6 @@ module Currycarbon
 
 -- | Calibrates a list of dates with the provided calibration curve
 calibrateDates :: CalibrateDatesConf -> CalCurveBP -> [UncalC14] -> [Either CurrycarbonException CalPDF]
-
--- | A data type to represent an uncalibrated radiocarbon date
-data UncalC14
-UncalC14 :: String -> YearBP -> YearRange -> UncalC14
-
--- | Sample identifier, e.g. a lab number
-[_uncalC14Id] :: UncalC14 -> String
-
--- | C14 age in years BP
-[_uncalC14BP] :: UncalC14 -> YearBP
-
--- | C14 standard deviation (one sigma in years)
-[_uncalC14Sigma] :: UncalC14 -> YearRange
-
--- | Read uncalibrated radiocarbon dates from a file. The file should
---   feature one radiocarbon date per line in the form "&lt;sample
---   name&gt;,&lt;mean age BP&gt;,&lt;one sigma standard deviation&gt;",
---   where &lt;sample name&gt; is optional. A valid file could look like
---   this:
---   
---   <pre>
---   Sample1,5000,30
---   6000,50
---   Sample3,4000,25
---   </pre>
-readUncalC14FromFile :: FilePath -> IO [UncalC14]
 
 -- | A data type to cover the configuration options of the calibrateDates
 --   function
@@ -441,9 +456,8 @@ CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 --   in the Bchron R package</a>
 [_calConfInterpolateCalCurve] :: CalibrateDatesConf -> Bool
 
--- | A default configuration (<a>CalibrateDatesConf</a>) that should yield
---   almost identical calibration results to the the <a>Bchron R
---   package</a>
+-- | A default configuration that should yield almost identical calibration
+--   results to the <a>Bchron R package</a>
 --   
 --   <pre>
 --   &gt;&gt;&gt; defaultCalConf
@@ -473,6 +487,32 @@ MatrixMultiplication :: CalibrationMethod
 --   which is recommended
 Bchron :: CalibrationDistribution -> CalibrationMethod
 [distribution] :: CalibrationMethod -> CalibrationDistribution
+
+-- | A data type to represent an uncalibrated radiocarbon date
+data UncalC14
+UncalC14 :: String -> YearBP -> YearRange -> UncalC14
+
+-- | Sample identifier, e.g. a lab number
+[_uncalC14Id] :: UncalC14 -> String
+
+-- | C14 age in years BP
+[_uncalC14BP] :: UncalC14 -> YearBP
+
+-- | C14 standard deviation (one sigma in years)
+[_uncalC14Sigma] :: UncalC14 -> YearRange
+
+-- | Read uncalibrated radiocarbon dates from a file. The file should
+--   feature one radiocarbon date per line in the form "&lt;sample
+--   name&gt;,&lt;mean age BP&gt;,&lt;one sigma standard deviation&gt;",
+--   where &lt;sample name&gt; is optional. A valid file could look like
+--   this:
+--   
+--   <pre>
+--   Sample1,5000,30
+--   6000,50
+--   Sample3,4000,25
+--   </pre>
+readUncalC14FromFile :: FilePath -> IO [UncalC14]
 
 -- | A data type to represent a year-wise probability density for
 --   calibrated dates. Although technically not correct, we still call this
@@ -519,7 +559,7 @@ type YearBCAD = Int
 -- | A type to represent a range of years
 type YearRange = Word
 
--- | A data type to represent a calibration curve
+-- | A data type to represent a calibration curve with <a>YearBP</a>
 data CalCurveBP
 CalCurveBP :: Vector YearBP -> Vector YearBP -> Vector YearRange -> CalCurveBP
 
@@ -531,6 +571,9 @@ CalCurveBP :: Vector YearBP -> Vector YearBP -> Vector YearRange -> CalCurveBP
 
 -- | Standard deviation (one sigma in years)
 [_calCurveBPSigmas] :: CalCurveBP -> Vector YearRange
+
+-- | A second data type to represent a calibration curve, here now with
+--   <a>YearBCAD</a>
 data CalCurveBCAD
 CalCurveBCAD :: Vector YearBCAD -> Vector YearBCAD -> Vector YearRange -> CalCurveBCAD
 
@@ -543,9 +586,13 @@ CalCurveBCAD :: Vector YearBCAD -> Vector YearBCAD -> Vector YearRange -> CalCur
 -- | Standard deviation (one sigma in years)
 [_calCurveBCADSigmas] :: CalCurveBCAD -> Vector YearRange
 
--- | The intcal20 calibration curve (Reimer et al. 2020,
---   doi:10.1017/RDC.2020.41)
+-- | The intcal20 calibration curve (Reimer et al. 2020, doi:
+--   <a>10.1017/RDC.2020.41</a>)
 intcal20 :: CalCurveBP
+
+-- | Read a calibration curve file. The file must adhere to the current
+--   version of the .c14 file format (e.g. <a>here</a>). Look <a>here</a>
+--   for other calibration curves
 readCalCurveFromFile :: FilePath -> IO CalCurveBP
 
 -- | Transforms the raw, calibrated probability density table to a
@@ -574,8 +621,43 @@ CalC14 :: String -> [HDR] -> [HDR] -> CalC14
 
 -- | Two-sigma high density regions
 [_calC14HDRTwoSigma] :: CalC14 -> [HDR]
-renderCalDatesPretty :: [(UncalC14, CalC14, CalPDF)] -> String
+
+-- | Write <a>CalC14</a>s to the file system. The output file is a long
+--   .csv file with the following structure:
+--   
+--   <pre>
+--   sample,hdrSigma,hdrStartBCAD,hdrStopBCAD
+--   Sample1,1,-3797,-3709
+--   Sample1,1,-3894,-3880
+--   Sample1,2,-3680,-3655
+--   Sample1,2,-3810,-3700
+--   Sample1,2,-3941,-3864
+--   Sample2,1,-1142,-1130
+--   Sample2,1,-1173,-1161
+--   Sample2,1,-1293,-1194
+--   Sample2,1,-1368,-1356
+--   Sample2,2,-1061,-1059
+--   Sample2,2,-1323,-1112
+--   Sample2,2,-1393,-1334
+--   </pre>
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
+
+-- | Combine <a>UncalC14</a>, <a>CalPDF</a> and <a>CalC14</a> to render
+--   pretty command line output like this:
+--   
+--   <pre>
+--   Sample: 1 ~&gt; [5000±30BP]
+--   1-sigma: 3894-3880BC, 3797-3709BC
+--   2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
+--                                       ***                      
+--                                      *'''**   *****            
+--                     ***             *''''''<tt>***</tt>'''''*           
+--               ******'''*            ''''''''''''''''      **   
+--              *''''''''''**        **''''''''''''''''*   **''*  
+--           ***'''''''''''''<tt>********</tt>'''''''''''''''''''<tt>***</tt>'''''**
+--    -3960 &lt;~~~~~~~~~|~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~|~~~~~~~~~~&gt; -3640
+--   </pre>
+renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
 
 module Currycarbon.CLI.RunCalibrate
 
