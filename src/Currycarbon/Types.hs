@@ -50,54 +50,75 @@ type YearBCAD = Int
 type YearRange = Word
 
 -- | A data type to represent an uncalibrated radiocarbon date
-data UncalC14 = UncalC14 {   
-      _uncalC14Id :: String -- ^ Sample identifier, e.g. a lab number
-    , _uncalC14UnCal :: YearBP -- ^ C14 age in years BP
-    , _uncalC14Sigma :: YearRange -- ^ C14 standard deviation (one sigma in years)
+data UncalC14 = UncalC14 { 
+    -- | Sample identifier, e.g. a lab number  
+      _uncalC14Id :: String
+    -- | C14 age in years BP
+    , _uncalC14UnCal :: YearBP
+    -- | C14 standard deviation (one sigma in years)
+    , _uncalC14Sigma :: YearRange
     } deriving (Show, Eq)
 
 -- | A data type to represent a year-wise probability density for uncalibrated dates
 -- Although technically not correct, we still call this a probability density function (PDF)
 data UncalPDF = UncalPDF {
-      _uncalPDFid :: String -- ^ Sample identifier, e.g. a lab number
-    , _uncalPDFUnCals :: VU.Vector YearBP -- ^ Years BP
-    , _uncalPDFDens :: VU.Vector Float -- ^ Probability densities
+    -- | Sample identifier, e.g. a lab number
+      _uncalPDFid :: String
+    -- | Years BP
+    , _uncalPDFUnCals :: VU.Vector YearBP
+    -- | Probability densities
+    , _uncalPDFDens :: VU.Vector Float
     } deriving Show
 
 -- | A data type to represent a calibration curve with 'YearBP'
 data CalCurveBP = CalCurveBP {
-      _calCurveBPCals :: VU.Vector YearBP -- ^ Years calBP
-    , _calCurveBPUnCals :: VU.Vector YearBP -- ^ Years BP
-    , _calCurveBPSigmas :: VU.Vector YearRange -- ^ Standard deviation (one sigma in years)
+    -- | Years calBP
+      _calCurveBPCals :: VU.Vector YearBP
+    -- | Years BP
+    , _calCurveBPUnCals :: VU.Vector YearBP
+    -- | Standard deviation (one sigma in years)
+    , _calCurveBPSigmas :: VU.Vector YearRange
     } deriving Show
 
 -- | A second data type to represent a calibration curve, here now with 'YearBCAD'
 data CalCurveBCAD = CalCurveBCAD {
-      _calCurveBCADCals :: VU.Vector YearBCAD -- ^ Years calBCAD
-    , _calCurveBCADUnCals :: VU.Vector YearBCAD -- ^ Years BCAD
-    , _calCurveBCADSigmas :: VU.Vector YearRange -- ^ Standard deviation (one sigma in years)
+    -- | Years calBCAD
+      _calCurveBCADCals :: VU.Vector YearBCAD
+    -- | Years BCAD
+    , _calCurveBCADUnCals :: VU.Vector YearBCAD
+    -- | Standard deviation (one sigma in years)
+    , _calCurveBCADSigmas :: VU.Vector YearRange
     } deriving Show
 
 -- | A data type to represent a calibration curve in a /wide/ matrix form
 data CalCurveMatrix = CalCurveMatrix {
-      _calCurveMatrixUnCals :: VU.Vector YearBCAD -- ^ Row names of the calibration curve matrix: Years BCAD
-    , _calCurveMatrixCals :: VU.Vector YearBCAD -- ^ Column names of the calibration curve matrix: Years calBCAD
-    , _calCurveMatrixDens :: V.Vector (VU.Vector Float) -- ^ Matrix (as a list of columns) with the probability densities
+    -- | Row names of the calibration curve matrix: Years BCAD
+      _calCurveMatrixUnCals :: VU.Vector YearBCAD
+    -- | Column names of the calibration curve matrix: Years calBCAD
+    , _calCurveMatrixCals :: VU.Vector YearBCAD
+    -- | Matrix (as a list of columns) with the probability densities
+    , _calCurveMatrixDens :: V.Vector (VU.Vector Float)
     } deriving Show
 
 -- | A data type to represent a year-wise probability density for calibrated dates.
 -- Although technically not correct, we still call this a probability density function (PDF)
 data CalPDF = CalPDF {
-      _calPDFid :: String -- ^ Sample identifier, e.g. a lab number
-    , _calPDFCals :: VU.Vector YearBCAD -- ^ Years calBCAD
-    , _calPDFDens :: VU.Vector Float -- ^ Probability densities for each year in '_calPDFCals'
+    -- | Sample identifier, e.g. a lab number
+      _calPDFid :: String
+    -- | Years calBCAD
+    , _calPDFCals :: VU.Vector YearBCAD
+    -- | Probability densities for each year in '_calPDFCals'
+    , _calPDFDens :: VU.Vector Float
     } deriving Show
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {
-      _calC14id :: String -- ^ Identifier, e.g. a lab number
-    , _calC14HDROneSigma :: [HDR] -- ^ One-sigma high density regions
-    , _calC14HDRTwoSigma :: [HDR] -- ^ Two-sigma high density regions
+    -- | Identifier, e.g. a lab number
+      _calC14id :: String
+    -- | One-sigma high density regions
+    , _calC14HDROneSigma :: [HDR]
+    -- | Two-sigma high density regions
+    , _calC14HDRTwoSigma :: [HDR]
     } deriving Show
 
 -- | A data type to represent a high density region of a probability distribution.
@@ -105,6 +126,8 @@ data CalC14 = CalC14 {
 -- cummulative probability (e.g. of an calibrated radiocarbon date density curve) 
 -- is above a certain threshold
 data HDR = HDR {
-      _hdrstart :: YearBCAD -- ^ Start of the high density region in years calBCAD
-    , _hdrstop :: YearBCAD -- ^ End of the high density region in years calBCAD
+    -- | Start of the high density region in years calBCAD
+      _hdrstart :: YearBCAD
+    -- | End of the high density region in years calBCAD
+    , _hdrstop :: YearBCAD
     } deriving (Show, Eq)
