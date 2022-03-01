@@ -1,3 +1,4 @@
+- V 0.24.1: Fixed a serious bug in renderCalCurveMatrix
 - V 0.24.0: Introduced more precise data types to distinguish years BP and years BC/AD
 - V 0.23.1: Small changes to the instances of some general types
 - V 0.23.0: Renamed multiple functions to make the naming of operations for parsing, reading, from-file reading, rendering and writing consistent across data types

@@ -43,17 +43,16 @@ bchron <- tibble::tibble(
 
 bchron |> 
   dplyr::full_join(curry_bchron_studentT100, by = "calBCAD") |>
-  dplyr::full_join(curry_bchron_normal, by = "calBCAD") |>
-  dplyr::full_join(curry_matrixmult_default, by = "calBCAD") |>
+  #dplyr::full_join(curry_bchron_normal, by = "calBCAD") |>
+  #dplyr::full_join(curry_matrixmult_default, by = "calBCAD") |>
   tidyr::pivot_longer(
     tidyselect::starts_with("dens"),
     names_to = "method"
   ) |>
   ggplot() +
-  geom_jitter(
+  geom_line(
     aes(x = calBCAD, y = value, colour = method), 
-    size = 1, alpha = 0.5,
-    height = 0.00005
+    size = 1, alpha = 0.5
   )
 
 #### large test (for memory leaks) ####
@@ -79,6 +78,7 @@ cal_matrix |> ggplot() +
   geom_raster(
     aes(x = cal, y = uncal, fill = val)
   ) +
-  scale_y_reverse()
+  scale_y_reverse() +
+  coord_fixed()
 
   
