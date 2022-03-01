@@ -2,39 +2,63 @@ library(ggplot2)
 
 testdate <- c(5000,190)
 
-system(paste0(
-  "currycarbon \"",
-  testdate[1], ",", testdate[2],
-  "\" --densityFile /tmp/currycarbon.txt"))
-#--method MatrixMultiplication --noInterpolation"))
+run_currycarbon <- function(additional_commands = "") {
+  system(
+    paste0(
+      "currycarbon \"",
+      testdate[1], ",", testdate[2],
+      "\" ",
+      additional_commands
+    )
+  )
+}
 
-test <- readr::read_csv("/tmp/currycarbon.txt")
+run_currycarbon_calPDF <- function(additional_commands = "") {
+  run_currycarbon(paste(
+    "--densityFile /tmp/currycarbonOutput.txt",
+    additional_commands
+  ))
+  readr::read_csv(
+    "/tmp/currycarbonOutput.txt",
+    col_types = readr::cols()
+  )
+}
+
+#### comparison with the Bchron R package ####
+
+curry_bchron_studentT100 <- run_currycarbon_calPDF()
+curry_matrixmult_default <- run_currycarbon_calPDF("--method MatrixMultiplication")
+curry_bchron_normal <- run_currycarbon_calPDF("--method \"Bchron,Normal\"")
+# --noInterpolation"))
+
 
 bchronRaw <- Bchron::BchronCalibrate(
   testdate[1], testdate[2],
   calCurves = 'intcal20'
 )
-
 bchron <- tibble::tibble(
   calBCAD = -bchronRaw$Date1$ageGrid + 1950,
   density_bchron = bchronRaw$Date1$densities
 )
 
-bchron |> dplyr::full_join(
-  test, by = "calBCAD"
-) |>
+bchron |> 
+  dplyr::full_join(curry_bchron_studentT100, by = "calBCAD") |>
+  dplyr::full_join(curry_bchron_normal, by = "calBCAD") |>
+  dplyr::full_join(curry_matrixmult_default, by = "calBCAD") |>
   tidyr::pivot_longer(
     tidyselect::starts_with("dens"),
     names_to = "method"
   ) |>
   ggplot() +
-  geom_point(aes(x = calBCAD, y = value, colour = method), 
-            size = 1, alpha = 0.5)
+  geom_jitter(
+    aes(x = calBCAD, y = value, colour = method), 
+    size = 1, alpha = 0.5,
+    height = 0.00005
+  )
 
-### large test (for memory leaks)
+#### large test (for memory leaks) ####
 
 calpal <- c14bazAAR::get_calpal()
 calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr::write_csv("/tmp/currycarbon_large_input_test.csv", col_names = F)
 
 #currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q --densityFile /dev/null
-
