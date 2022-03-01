@@ -340,6 +340,9 @@ intcal20 :: CalCurveBP
 intcal20String :: String
 
 module Currycarbon.Calibration.MatrixMult
+
+-- | Intercept calibration implemented with matrix multiplication (see
+--   <a>MatrixMultiplication</a>)
 calibrateDateMatrixMult :: Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 
 -- | Construct a matrix representation of a calibration curve for a given
@@ -352,7 +355,8 @@ uncalToPDF :: UncalC14 -> UncalPDF
 
 module Currycarbon.Calibration.Bchron
 
--- | Intercept calibration as implemented in the Bchron R package
+-- | Intercept calibration as implemented in the Bchron R package (see
+--   <a>Bchron</a>)
 --   
 --   <pre>
 --   &gt;&gt;&gt; :{

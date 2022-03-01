@@ -14,8 +14,9 @@
 </span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Vector</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">V</span></span><span>
 </span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Vector.Generic</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">convert</span></span><span class="hs-special">)</span><span>
 </span><span id="line-16"></span><span>
-</span><span id="line-17"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#calibrateDateMatrixMult"><span class="hs-identifier hs-type">calibrateDateMatrixMult</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveBP"><span class="hs-identifier hs-type">CalCurveBP</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-type">UncalC14</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="Currycarbon.Utils.html#CurrycarbonException"><span class="hs-identifier hs-type">CurrycarbonException</span></a></span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-type">CalPDF</span></a></span><span>
-</span><span id="line-18"></span><span id="calibrateDateMatrixMult"><span class="annot"><span class="annottext">calibrateDateMatrixMult :: Bool
+</span><span id="line-17"></span><span class="hs-comment">-- | Intercept calibration implemented with matrix multiplication (see 'MatrixMultiplication')</span><span>
+</span><span id="line-18"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#calibrateDateMatrixMult"><span class="hs-identifier hs-type">calibrateDateMatrixMult</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveBP"><span class="hs-identifier hs-type">CalCurveBP</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-type">UncalC14</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="Currycarbon.Utils.html#CurrycarbonException"><span class="hs-identifier hs-type">CurrycarbonException</span></a></span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-type">CalPDF</span></a></span><span>
+</span><span id="line-19"></span><span id="calibrateDateMatrixMult"><span class="annot"><span class="annottext">calibrateDateMatrixMult :: Bool
 -&gt; Bool
 -&gt; CalCurveBP
 -&gt; UncalC14
@@ -25,14 +26,14 @@
 </span><a href="#local-6989586621679070357"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span> </span><span id="local-6989586621679070356"><span class="annot"><span class="annottext">CalCurveBP
 </span><a href="#local-6989586621679070356"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679070355"><span class="annot"><span class="annottext">UncalC14
 </span><a href="#local-6989586621679070355"><span class="hs-identifier hs-var">uncalC14</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-19"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span id="line-20"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
 </span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679070358"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">CalCurveBP -&gt; UncalC14 -&gt; Bool
 </span><a href="Currycarbon.Calibration.Utils.html#isOutsideRangeOfCalCurve"><span class="hs-identifier hs-var">isOutsideRangeOfCalCurve</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
 </span><a href="#local-6989586621679070356"><span class="hs-identifier hs-var">calCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
 </span><a href="#local-6989586621679070355"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
-</span><span id="line-20"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">CurrycarbonException -&gt; Either CurrycarbonException CalPDF
+</span><span id="line-21"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">CurrycarbonException -&gt; Either CurrycarbonException CalPDF
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(CurrycarbonException -&gt; Either CurrycarbonException CalPDF)
 -&gt; CurrycarbonException -&gt; Either CurrycarbonException CalPDF
@@ -43,32 +44,32 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">UncalC14 -&gt; String
 </span><a href="Currycarbon.Types.html#_uncalC14Id"><span class="hs-identifier hs-var hs-var">_uncalC14Id</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
 </span><a href="#local-6989586621679070355"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
-</span><span id="line-21"></span><span>    </span><span class="hs-keyword">else</span><span>
-</span><span id="line-22"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070349"><span class="annot"><span class="annottext">rawCalCurveSegment :: CalCurveBP
+</span><span id="line-22"></span><span>    </span><span class="hs-keyword">else</span><span>
+</span><span id="line-23"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070349"><span class="annot"><span class="annottext">rawCalCurveSegment :: CalCurveBP
 </span><a href="#local-6989586621679070349"><span class="hs-identifier hs-var hs-var">rawCalCurveSegment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalC14 -&gt; CalCurveBP -&gt; CalCurveBP
 </span><a href="Currycarbon.Calibration.Utils.html#getRelevantCalCurveSegment"><span class="hs-identifier hs-var">getRelevantCalCurveSegment</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
 </span><a href="#local-6989586621679070355"><span class="hs-identifier hs-var">uncalC14</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
 </span><a href="#local-6989586621679070356"><span class="hs-identifier hs-var">calCurve</span></a></span><span>
-</span><span id="line-23"></span><span>            </span><span id="local-6989586621679070347"><span class="annot"><span class="annottext">calCurveSegment :: CalCurveBCAD
+</span><span id="line-24"></span><span>            </span><span id="local-6989586621679070347"><span class="annot"><span class="annottext">calCurveSegment :: CalCurveBCAD
 </span><a href="#local-6989586621679070347"><span class="hs-identifier hs-var hs-var">calCurveSegment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; CalCurveBP -&gt; CalCurveBCAD
 </span><a href="Currycarbon.Calibration.Utils.html#prepareCalCurveSegment"><span class="hs-identifier hs-var">prepareCalCurveSegment</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679070357"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
 </span><a href="#local-6989586621679070349"><span class="hs-identifier hs-var">rawCalCurveSegment</span></a></span><span>
-</span><span id="line-24"></span><span>            </span><span id="local-6989586621679070345"><span class="annot"><span class="annottext">uncalPDF :: UncalPDF
+</span><span id="line-25"></span><span>            </span><span id="local-6989586621679070345"><span class="annot"><span class="annottext">uncalPDF :: UncalPDF
 </span><a href="#local-6989586621679070345"><span class="hs-identifier hs-var hs-var">uncalPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalC14 -&gt; UncalPDF
 </span><a href="Currycarbon.Calibration.MatrixMult.html#uncalToPDF"><span class="hs-identifier hs-var">uncalToPDF</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
 </span><a href="#local-6989586621679070355"><span class="hs-identifier hs-var">uncalC14</span></a></span><span>
-</span><span id="line-25"></span><span>            </span><span id="local-6989586621679070344"><span class="annot"><span class="annottext">calCurveMatrix :: CalCurveMatrix
+</span><span id="line-26"></span><span>            </span><span id="local-6989586621679070344"><span class="annot"><span class="annottext">calCurveMatrix :: CalCurveMatrix
 </span><a href="#local-6989586621679070344"><span class="hs-identifier hs-var hs-var">calCurveMatrix</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalPDF -&gt; CalCurveBCAD -&gt; CalCurveMatrix
 </span><a href="Currycarbon.Calibration.MatrixMult.html#makeCalCurveMatrix"><span class="hs-identifier hs-var">makeCalCurveMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">UncalPDF
 </span><a href="#local-6989586621679070345"><span class="hs-identifier hs-var">uncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBCAD
 </span><a href="#local-6989586621679070347"><span class="hs-identifier hs-var">calCurveSegment</span></a></span><span>
-</span><span id="line-26"></span><span>            </span><span id="local-6989586621679070343"><span class="annot"><span class="annottext">calPDF :: CalPDF
+</span><span id="line-27"></span><span>            </span><span id="local-6989586621679070343"><span class="annot"><span class="annottext">calPDF :: CalPDF
 </span><a href="#local-6989586621679070343"><span class="hs-identifier hs-var hs-var">calPDF</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UncalPDF -&gt; CalCurveMatrix -&gt; CalPDF
 </span><a href="Currycarbon.Calibration.MatrixMult.html#projectUncalOverCalCurve"><span class="hs-identifier hs-var">projectUncalOverCalCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalPDF
 </span><a href="#local-6989586621679070345"><span class="hs-identifier hs-var">uncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveMatrix
 </span><a href="#local-6989586621679070344"><span class="hs-identifier hs-var">calCurveMatrix</span></a></span><span>
-</span><span id="line-27"></span><span>        </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">CalPDF -&gt; Either CurrycarbonException CalPDF
+</span><span id="line-28"></span><span>        </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">CalPDF -&gt; Either CurrycarbonException CalPDF
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(CalPDF -&gt; Either CurrycarbonException CalPDF)
 -&gt; CalPDF -&gt; Either CurrycarbonException CalPDF
@@ -79,10 +80,10 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">CalPDF -&gt; CalPDF
 </span><a href="Currycarbon.Calibration.Utils.html#normalizeCalPDF"><span class="hs-identifier hs-var">normalizeCalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">CalPDF
 </span><a href="#local-6989586621679070343"><span class="hs-identifier hs-var">calPDF</span></a></span><span>
-</span><span id="line-28"></span><span>
-</span><span id="line-29"></span><span class="hs-comment">-- | Construct a matrix representation of a calibration curve for a given date</span><span>
-</span><span id="line-30"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#makeCalCurveMatrix"><span class="hs-identifier hs-type">makeCalCurveMatrix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveBCAD"><span class="hs-identifier hs-type">CalCurveBCAD</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-type">CalCurveMatrix</span></a></span><span>
-</span><span id="line-31"></span><span id="makeCalCurveMatrix"><span class="annot"><span class="annottext">makeCalCurveMatrix :: UncalPDF -&gt; CalCurveBCAD -&gt; CalCurveMatrix
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-comment">-- | Construct a matrix representation of a calibration curve for a given date</span><span>
+</span><span id="line-31"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#makeCalCurveMatrix"><span class="hs-identifier hs-type">makeCalCurveMatrix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveBCAD"><span class="hs-identifier hs-type">CalCurveBCAD</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-type">CalCurveMatrix</span></a></span><span>
+</span><span id="line-32"></span><span id="makeCalCurveMatrix"><span class="annot"><span class="annottext">makeCalCurveMatrix :: UncalPDF -&gt; CalCurveBCAD -&gt; CalCurveMatrix
 </span><a href="Currycarbon.Calibration.MatrixMult.html#makeCalCurveMatrix"><span class="hs-identifier hs-var hs-var">makeCalCurveMatrix</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679070338"><span class="annot"><span class="annottext">Vector YearBP
 </span><a href="#local-6989586621679070338"><span class="hs-identifier hs-var">bps'</span></a></span></span><span> </span><span class="annot"><span class="annottext">Vector Float
@@ -90,32 +91,32 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="#local-6989586621679070336"><span class="hs-identifier hs-var">cals</span></a></span></span><span> </span><span id="local-6989586621679070335"><span class="annot"><span class="annottext">Vector YearBCAD
 </span><a href="#local-6989586621679070335"><span class="hs-identifier hs-var">uncals</span></a></span></span><span> </span><span id="local-6989586621679070334"><span class="annot"><span class="annottext">Vector YearBP
 </span><a href="#local-6989586621679070334"><span class="hs-identifier hs-var">sigmas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-32"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070333"><span class="annot"><span class="annottext">bpsFloat :: Vector Float
+</span><span id="line-33"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070333"><span class="annot"><span class="annottext">bpsFloat :: Vector Float
 </span><a href="#local-6989586621679070333"><span class="hs-identifier hs-var hs-var">bpsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(YearBCAD -&gt; Float) -&gt; Vector YearBCAD -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="annot"><span class="annottext">YearBCAD -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Vector YearBCAD
 </span><a href="#local-6989586621679070335"><span class="hs-identifier hs-var">uncals</span></a></span><span>
-</span><span id="line-33"></span><span>        </span><span id="local-6989586621679070331"><span class="annot"><span class="annottext">sigmasFloat :: Vector Float
+</span><span id="line-34"></span><span>        </span><span id="local-6989586621679070331"><span class="annot"><span class="annottext">sigmasFloat :: Vector Float
 </span><a href="#local-6989586621679070331"><span class="hs-identifier hs-var hs-var">sigmasFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(YearBP -&gt; Float) -&gt; Vector YearBP -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="annot"><span class="annottext">YearBP -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Vector YearBP
 </span><a href="#local-6989586621679070334"><span class="hs-identifier hs-var">sigmas</span></a></span><span>
-</span><span id="line-34"></span><span>        </span><span id="local-6989586621679070330"><span class="annot"><span class="annottext">uncalbps :: Vector YearBCAD
+</span><span id="line-35"></span><span>        </span><span id="local-6989586621679070330"><span class="annot"><span class="annottext">uncalbps :: Vector YearBCAD
 </span><a href="#local-6989586621679070330"><span class="hs-identifier hs-var hs-var">uncalbps</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector YearBP -&gt; Vector YearBCAD
 </span><a href="Currycarbon.Calibration.Utils.html#vectorBPToBCAD"><span class="hs-identifier hs-var">vectorBPToBCAD</span></a></span><span> </span><span class="annot"><span class="annottext">Vector YearBP
 </span><a href="#local-6989586621679070338"><span class="hs-identifier hs-var">bps'</span></a></span><span>
-</span><span id="line-35"></span><span>        </span><span id="local-6989586621679070328"><span class="annot"><span class="annottext">uncalbpsFloat :: Vector Float
+</span><span id="line-36"></span><span>        </span><span id="local-6989586621679070328"><span class="annot"><span class="annottext">uncalbpsFloat :: Vector Float
 </span><a href="#local-6989586621679070328"><span class="hs-identifier hs-var hs-var">uncalbpsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(YearBCAD -&gt; Float) -&gt; Vector YearBCAD -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="annot"><span class="annottext">YearBCAD -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Vector YearBCAD
 </span><a href="#local-6989586621679070330"><span class="hs-identifier hs-var">uncalbps</span></a></span><span>
-</span><span id="line-36"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Vector YearBCAD
+</span><span id="line-37"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Vector YearBCAD
 -&gt; Vector YearBCAD -&gt; Vector (Vector Float) -&gt; CalCurveMatrix
 </span><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-var">CalCurveMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">Vector YearBCAD
 </span><a href="#local-6989586621679070330"><span class="hs-identifier hs-var">uncalbps</span></a></span><span> </span><span class="annot"><span class="annottext">Vector YearBCAD
@@ -128,9 +129,9 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="#local-6989586621679070333"><span class="hs-identifier hs-var">bpsFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
 </span><a href="#local-6989586621679070331"><span class="hs-identifier hs-var">sigmasFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
 </span><a href="#local-6989586621679070328"><span class="hs-identifier hs-var">uncalbpsFloat</span></a></span><span>
-</span><span id="line-37"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-38"></span><span>        </span><span class="annot"><a href="#local-6989586621679070326"><span class="hs-identifier hs-type">buildMatrix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span>
-</span><span id="line-39"></span><span>        </span><span id="local-6989586621679070326"><span class="annot"><span class="annottext">buildMatrix :: Vector Float
+</span><span id="line-38"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-39"></span><span>        </span><span class="annot"><a href="#local-6989586621679070326"><span class="hs-identifier hs-type">buildMatrix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>        </span><span id="local-6989586621679070326"><span class="annot"><span class="annottext">buildMatrix :: Vector Float
 -&gt; Vector Float -&gt; Vector Float -&gt; Vector (Vector Float)
 </span><a href="#local-6989586621679070326"><span class="hs-identifier hs-var hs-var">buildMatrix</span></a></span></span><span> </span><span id="local-6989586621679070325"><span class="annot"><span class="annottext">Vector Float
 </span><a href="#local-6989586621679070325"><span class="hs-identifier hs-var">bps_</span></a></span></span><span> </span><span id="local-6989586621679070324"><span class="annot"><span class="annottext">Vector Float
@@ -160,13 +161,13 @@ forall (v :: * -&gt; *) a (w :: * -&gt; *).
 v a -&gt; w a
 </span><span class="hs-identifier hs-var">convert</span></span><span> </span><span class="annot"><span class="annottext">Vector Float
 </span><a href="#local-6989586621679070324"><span class="hs-identifier hs-var">sigmas_</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-40"></span><span>        </span><span class="annot"><a href="#local-6989586621679070320"><span class="hs-identifier hs-type">fillCell</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
-</span><span id="line-41"></span><span>        </span><span id="local-6989586621679070320"><span class="annot"><span class="annottext">fillCell :: (Float, Float) -&gt; Float -&gt; Float
+</span><span id="line-41"></span><span>        </span><span class="annot"><a href="#local-6989586621679070320"><span class="hs-identifier hs-type">fillCell</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
+</span><span id="line-42"></span><span>        </span><span id="local-6989586621679070320"><span class="annot"><span class="annottext">fillCell :: (Float, Float) -&gt; Float -&gt; Float
 </span><a href="#local-6989586621679070320"><span class="hs-identifier hs-var hs-var">fillCell</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679070318"><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070318"><span class="hs-identifier hs-var">bp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679070317"><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070317"><span class="hs-identifier hs-var">sigma</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679070316"><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070316"><span class="hs-identifier hs-var">matrixPosBP</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
-</span><span id="line-42"></span><span>            </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float
+</span><span id="line-43"></span><span>            </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float
 forall a. Num a =&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">abs</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070318"><span class="hs-identifier hs-var">bp</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
@@ -179,33 +180,33 @@ forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070317"><span class="hs-identifier hs-var">sigma</span></a></span><span>
-</span><span id="line-43"></span><span>            </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float -&gt; Float
+</span><span id="line-44"></span><span>            </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float -&gt; Float
 </span><a href="Currycarbon.Calibration.Utils.html#dnorm"><span class="hs-identifier hs-var">dnorm</span></a></span><span> </span><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070318"><span class="hs-identifier hs-var">bp</span></a></span><span> </span><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070317"><span class="hs-identifier hs-var">sigma</span></a></span><span> </span><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070316"><span class="hs-identifier hs-var">matrixPosBP</span></a></span><span>
-</span><span id="line-44"></span><span>            </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span id="line-45"></span><span>            </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0</span></span><span>
-</span><span id="line-45"></span><span>
-</span><span id="line-46"></span><span class="hs-comment">-- | Transform an uncalibrated date to an uncalibrated </span><span>
-</span><span id="line-47"></span><span class="hs-comment">-- probability density table</span><span>
-</span><span id="line-48"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#uncalToPDF"><span class="hs-identifier hs-type">uncalToPDF</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-type">UncalC14</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span>
-</span><span id="line-49"></span><span id="uncalToPDF"><span class="annot"><span class="annottext">uncalToPDF :: UncalC14 -&gt; UncalPDF
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="hs-comment">-- | Transform an uncalibrated date to an uncalibrated </span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- probability density table</span><span>
+</span><span id="line-49"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#uncalToPDF"><span class="hs-identifier hs-type">uncalToPDF</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-type">UncalC14</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span>
+</span><span id="line-50"></span><span id="uncalToPDF"><span class="annot"><span class="annottext">uncalToPDF :: UncalC14 -&gt; UncalPDF
 </span><a href="Currycarbon.Calibration.MatrixMult.html#uncalToPDF"><span class="hs-identifier hs-var hs-var">uncalToPDF</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#UncalC14"><span class="hs-identifier hs-type">UncalC14</span></a></span><span> </span><span id="local-6989586621679070310"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679070310"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679070309"><span class="annot"><span class="annottext">YearBP
 </span><a href="#local-6989586621679070309"><span class="hs-identifier hs-var">mean</span></a></span></span><span> </span><span id="local-6989586621679070308"><span class="annot"><span class="annottext">YearBP
 </span><a href="#local-6989586621679070308"><span class="hs-identifier hs-var">std</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-50"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070307"><span class="annot"><span class="annottext">meanFloat :: Float
+</span><span id="line-51"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679070307"><span class="annot"><span class="annottext">meanFloat :: Float
 </span><a href="#local-6989586621679070307"><span class="hs-identifier hs-var hs-var">meanFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">YearBP -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">YearBP
 </span><a href="#local-6989586621679070309"><span class="hs-identifier hs-var">mean</span></a></span><span>
-</span><span id="line-51"></span><span>        </span><span id="local-6989586621679070306"><span class="annot"><span class="annottext">stdFloat :: Float
+</span><span id="line-52"></span><span>        </span><span id="local-6989586621679070306"><span class="annot"><span class="annottext">stdFloat :: Float
 </span><a href="#local-6989586621679070306"><span class="hs-identifier hs-var hs-var">stdFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">YearBP -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">YearBP
 </span><a href="#local-6989586621679070308"><span class="hs-identifier hs-var">std</span></a></span><span>
-</span><span id="line-52"></span><span>        </span><span id="local-6989586621679070305"><span class="annot"><span class="annottext">years :: Vector YearBP
+</span><span id="line-53"></span><span>        </span><span id="local-6989586621679070305"><span class="annot"><span class="annottext">years :: Vector YearBP
 </span><a href="#local-6989586621679070305"><span class="hs-identifier hs-var hs-var">years</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector YearBP -&gt; Vector YearBP
 forall a. Unbox a =&gt; Vector a -&gt; Vector a
 </span><span class="hs-identifier hs-var">VU.reverse</span></span><span> </span><span class="annot"><span class="annottext">(Vector YearBP -&gt; Vector YearBP) -&gt; Vector YearBP -&gt; Vector YearBP
@@ -227,14 +228,14 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">YearBP
 </span><a href="#local-6989586621679070308"><span class="hs-identifier hs-var">std</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
-</span><span id="line-53"></span><span>        </span><span id="local-6989586621679070301"><span class="annot"><span class="annottext">yearsFloat :: Vector Float
+</span><span id="line-54"></span><span>        </span><span id="local-6989586621679070301"><span class="annot"><span class="annottext">yearsFloat :: Vector Float
 </span><a href="#local-6989586621679070301"><span class="hs-identifier hs-var hs-var">yearsFloat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(YearBP -&gt; Float) -&gt; Vector YearBP -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="annot"><span class="annottext">YearBP -&gt; Float
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Vector YearBP
 </span><a href="#local-6989586621679070305"><span class="hs-identifier hs-var">years</span></a></span><span>
-</span><span id="line-54"></span><span>        </span><span id="local-6989586621679070300"><span class="annot"><span class="annottext">probabilities :: Vector Float
+</span><span id="line-55"></span><span>        </span><span id="local-6989586621679070300"><span class="annot"><span class="annottext">probabilities :: Vector Float
 </span><a href="#local-6989586621679070300"><span class="hs-identifier hs-var hs-var">probabilities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; Vector Float -&gt; Vector Float
 forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier hs-var">VU.map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float -&gt; Float
@@ -242,14 +243,14 @@ forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><a href="#local-6989586621679070307"><span class="hs-identifier hs-var">meanFloat</span></a></span><span> </span><span class="annot"><span class="annottext">Float
 </span><a href="#local-6989586621679070306"><span class="hs-identifier hs-var">stdFloat</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector Float
 </span><a href="#local-6989586621679070301"><span class="hs-identifier hs-var">yearsFloat</span></a></span><span>
-</span><span id="line-55"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">String -&gt; Vector YearBP -&gt; Vector Float -&gt; UncalPDF
+</span><span id="line-56"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">String -&gt; Vector YearBP -&gt; Vector Float -&gt; UncalPDF
 </span><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-var">UncalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679070310"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Vector YearBP
 </span><a href="#local-6989586621679070305"><span class="hs-identifier hs-var">years</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
 </span><a href="#local-6989586621679070300"><span class="hs-identifier hs-var">probabilities</span></a></span><span>
-</span><span id="line-56"></span><span>
-</span><span id="line-57"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#projectUncalOverCalCurve"><span class="hs-identifier hs-type">projectUncalOverCalCurve</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-type">CalCurveMatrix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-type">CalPDF</span></a></span><span>
-</span><span id="line-58"></span><span id="projectUncalOverCalCurve"><span class="annot"><span class="annottext">projectUncalOverCalCurve :: UncalPDF -&gt; CalCurveMatrix -&gt; CalPDF
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="Currycarbon.Calibration.MatrixMult.html#projectUncalOverCalCurve"><span class="hs-identifier hs-type">projectUncalOverCalCurve</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalCurveMatrix"><span class="hs-identifier hs-type">CalCurveMatrix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-type">CalPDF</span></a></span><span>
+</span><span id="line-59"></span><span id="projectUncalOverCalCurve"><span class="annot"><span class="annottext">projectUncalOverCalCurve :: UncalPDF -&gt; CalCurveMatrix -&gt; CalPDF
 </span><a href="Currycarbon.Calibration.MatrixMult.html#projectUncalOverCalCurve"><span class="hs-identifier hs-var hs-var">projectUncalOverCalCurve</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#UncalPDF"><span class="hs-identifier hs-type">UncalPDF</span></a></span><span> </span><span id="local-6989586621679070299"><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679070299"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="annot"><span class="annottext">Vector YearBP
 </span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679070298"><span class="annot"><span class="annottext">Vector Float
@@ -257,7 +258,7 @@ forall a b. (Unbox a, Unbox b) =&gt; (a -&gt; b) -&gt; Vector a -&gt; Vector b
 </span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679070297"><span class="annot"><span class="annottext">Vector YearBCAD
 </span><a href="#local-6989586621679070297"><span class="hs-identifier hs-var">cals</span></a></span></span><span> </span><span id="local-6989586621679070296"><span class="annot"><span class="annottext">Vector (Vector Float)
 </span><a href="#local-6989586621679070296"><span class="hs-identifier hs-var">matrix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-59"></span><span>    </span><span class="annot"><span class="annottext">String -&gt; Vector YearBCAD -&gt; Vector Float -&gt; CalPDF
+</span><span id="line-60"></span><span>    </span><span class="annot"><span class="annottext">String -&gt; Vector YearBCAD -&gt; Vector Float -&gt; CalPDF
 </span><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-var">CalPDF</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><a href="#local-6989586621679070299"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Vector YearBCAD
 </span><a href="#local-6989586621679070297"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">(Vector Float -&gt; CalPDF) -&gt; Vector Float -&gt; CalPDF
@@ -266,9 +267,9 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="#local-6989586621679070294"><span class="hs-identifier hs-var">vectorMatrixMultSum</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
 </span><a href="#local-6989586621679070298"><span class="hs-identifier hs-var">dens</span></a></span><span> </span><span class="annot"><span class="annottext">Vector (Vector Float)
 </span><a href="#local-6989586621679070296"><span class="hs-identifier hs-var">matrix</span></a></span><span>
-</span><span id="line-60"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-61"></span><span>        </span><span class="annot"><a href="#local-6989586621679070294"><span class="hs-identifier hs-type">vectorMatrixMultSum</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
-</span><span id="line-62"></span><span>        </span><span id="local-6989586621679070294"><span class="annot"><span class="annottext">vectorMatrixMultSum :: Vector Float -&gt; Vector (Vector Float) -&gt; Vector Float
+</span><span id="line-61"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-62"></span><span>        </span><span class="annot"><a href="#local-6989586621679070294"><span class="hs-identifier hs-type">vectorMatrixMultSum</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">V.Vector</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">VU.Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
+</span><span id="line-63"></span><span>        </span><span id="local-6989586621679070294"><span class="annot"><span class="annottext">vectorMatrixMultSum :: Vector Float -&gt; Vector (Vector Float) -&gt; Vector Float
 </span><a href="#local-6989586621679070294"><span class="hs-identifier hs-var hs-var">vectorMatrixMultSum</span></a></span></span><span> </span><span id="local-6989586621679070293"><span class="annot"><span class="annottext">Vector Float
 </span><a href="#local-6989586621679070293"><span class="hs-identifier hs-var">vec</span></a></span></span><span> </span><span id="local-6989586621679070292"><span class="annot"><span class="annottext">Vector (Vector Float)
 </span><a href="#local-6989586621679070292"><span class="hs-identifier hs-var">mat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector Float -&gt; Vector Float
