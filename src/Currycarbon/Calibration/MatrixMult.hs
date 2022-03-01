@@ -34,10 +34,13 @@ makeCalCurveMatrix (UncalPDF _ uncals' _) (CalCurveBCAD cals uncals sigmas) =
         sigmasFloat = VU.map fromIntegral sigmas
         uncalBCADs = vectorBPToBCAD uncals'
         uncalBCADsFloat = VU.map fromIntegral uncalBCADs
-    in CalCurveMatrix uncalBCADs cals $ buildMatrix curveUnCalBCADsFloat sigmasFloat uncalBCADsFloat
+        matrix = buildMatrix curveUnCalBCADsFloat sigmasFloat uncalBCADsFloat
+    in CalCurveMatrix uncalBCADs cals matrix
     where
         buildMatrix :: VU.Vector Float -> VU.Vector Float -> VU.Vector Float -> V.Vector (VU.Vector Float)
-        buildMatrix curveuncal_ sigmas_ uncal_ = V.map (\x -> VU.map (fillCell x) uncal_) $ V.zip (convert curveuncal_) (convert sigmas_)
+        buildMatrix curveuncal_ sigmas_ uncal_ =
+          V.map (\x -> VU.map (fillCell x) uncal_) $ 
+            V.zip (convert curveuncal_) (convert sigmas_)
         fillCell :: (Float, Float) -> Float -> Float
         fillCell (mean, sigma) matrixPosBP = 
             if abs (mean - matrixPosBP) < 6*sigma
@@ -60,4 +63,5 @@ projectUncalOverCalCurve (UncalPDF name _ dens) (CalCurveMatrix _ cals matrix) =
     CalPDF name cals $ vectorMatrixMultSum dens matrix
     where
         vectorMatrixMultSum :: VU.Vector Float -> V.Vector (VU.Vector Float) -> VU.Vector Float
-        vectorMatrixMultSum vec mat = convert $ V.map (\x -> VU.sum $ VU.zipWith (*) x vec) mat
+        vectorMatrixMultSum vec mat =
+          convert $ V.map (\x -> VU.sum $ VU.zipWith (*) x vec) mat
