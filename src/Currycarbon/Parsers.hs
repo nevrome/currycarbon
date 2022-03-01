@@ -8,7 +8,7 @@ import Currycarbon.Utils
 import           Control.Exception              (throwIO)
 import qualified Data.ByteString.Lazy           as BL
 import           Data.ByteString.Builder
-import           Data.List                      (intercalate)
+import           Data.List                      (intercalate, transpose)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import qualified Data.Vector.Unboxed            as VU
@@ -143,8 +143,10 @@ writeCalCurveMatrix path calCurveMatrix =
 renderCalCurveMatrix :: CalCurveMatrix -> String
 renderCalCurveMatrix (CalCurveMatrix uncals cals curveDensities) =
     let header = "," ++ intercalate "," (map show $ VU.toList cals) ++ "\n"
-        body = zipWith (\uncal dens -> show uncal ++ "," ++ intercalate "," (map show $ VU.toList dens)) (VU.toList uncals) (V.toList curveDensities)
+        body = zipWith makeRow (VU.toList uncals) (transpose $ V.toList (V.map VU.toList curveDensities))
     in header ++ intercalate "\n" body
+    where 
+      makeRow uncal dens = show uncal ++ "," ++ intercalate "," (map show dens)
 
 -- CalPDF
 -- | Write 'CalPDF's to the file system. The output file is a long .csv file with the following structure:
