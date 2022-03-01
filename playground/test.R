@@ -64,7 +64,10 @@ calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr:
 
 #### other tests ####
 
-run_currycarbon("--calCurveMatrixFile /tmp/curryMatrix.csv")
+run_currycarbon(paste(
+  "--calCurveMatrixFile /tmp/curryMatrix.csv",
+  "--calCurveSegmentFile /tmp/currySegment.csv"
+))
 
 cal_matrix <- readr::read_csv("/tmp/curryMatrix.csv") |>
   tidyr::gather(vars, count, -...1) |>
@@ -74,9 +77,17 @@ cal_matrix <- readr::read_csv("/tmp/curryMatrix.csv") |>
     val = count
   )
 
-cal_matrix |> ggplot() +
+cal_segment <- readr::read_csv("/tmp/currySegment.csv")
+
+ggplot() +
   geom_raster(
-    aes(x = cal, y = uncal, fill = val)
+    data = cal_matrix,
+    mapping = aes(x = cal, y = uncal, fill = val)
+  ) +
+  geom_path(
+    data = cal_segment,
+    mapping = aes(x = calBCAD, y = uncalBCAD),
+    color = "red", size = 0.5
   ) +
   scale_y_reverse() +
   coord_fixed()

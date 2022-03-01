@@ -276,9 +276,11 @@ writeCalCurve path calCurve =
 
 renderCalCurve :: CalCurveBCAD -> String
 renderCalCurve (CalCurveBCAD cals uncals sigmas) =
-    let header = "calBCAD,14CageBCAD,Sigma\n"
-        body = map (\(x,y,z) -> show y ++ "," ++ show x ++ "," ++ show z) (VU.toList $ VU.zip3 cals uncals sigmas)
+    let header = "calBCAD,uncalBCAD,Sigma\n"
+        body = map makeRow $ VU.toList $ VU.zip3 cals uncals sigmas
     in header ++ intercalate "\n" body
+    where
+      makeRow (x,y,z) = show x ++ "," ++ show y ++ "," ++ show z
 
 -- | Read a calibration curve file. The file must adhere to the current version of the 
 -- .c14 file format (e.g. [here](http://intcal.org/curves/intcal20.14c)). Look
