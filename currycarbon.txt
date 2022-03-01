@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.23.1
+@version 0.24.0
 
 module Currycarbon.Types
 
@@ -47,57 +47,79 @@ StudentTDist :: Double -> CalibrationDistribution
 -- | number of degrees of freedom
 [ndf] :: CalibrationDistribution -> Double
 
+-- | A type to represent years BP. All numbers are positive and describe
+--   the distance in years to 1950AD: 3000 = 3000BP = 1050BC
+type YearBP = Word
+
+-- | A type to represent years BC or AD. Negative values describe years BC,
+--   positive values years AD: -5000 = 5000BC and 1300 = 1300AD
+type YearBCAD = Int
+
+-- | A type to represent a range of years
+type YearRange = Word
+
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14
-UncalC14 :: String -> Int -> Int -> UncalC14
+UncalC14 :: String -> YearBP -> YearRange -> UncalC14
 
 -- | Sample identifier, e.g. a lab number
 [_uncalC14Id] :: UncalC14 -> String
 
 -- | C14 age in years BP
-[_uncalC14BP] :: UncalC14 -> Int
+[_uncalC14BP] :: UncalC14 -> YearBP
 
 -- | C14 standard deviation (one sigma in years)
-[_uncalC14Sigma] :: UncalC14 -> Int
+[_uncalC14Sigma] :: UncalC14 -> YearRange
 
 -- | A data type to represent a year-wise probability density for
 --   uncalibrated dates Although technically not correct, we still call
 --   this a probability density function (PDF)
 data UncalPDF
-UncalPDF :: String -> Vector Int -> Vector Float -> UncalPDF
+UncalPDF :: String -> Vector YearBP -> Vector Float -> UncalPDF
 
 -- | Sample identifier, e.g. a lab number
 [_uncalPDFid] :: UncalPDF -> String
 
--- | Years BP or BC
-[_uncalPDFBPs] :: UncalPDF -> Vector Int
+-- | Years BP
+[_uncalPDFBPs] :: UncalPDF -> Vector YearBP
 
 -- | Probability densities
 [_uncalPDFDens] :: UncalPDF -> Vector Float
 
 -- | A data type to represent a calibration curve
-data CalCurve
-CalCurve :: Vector Int -> Vector Int -> Vector Int -> CalCurve
+data CalCurveBP
+CalCurveBP :: Vector YearBP -> Vector YearBP -> Vector YearRange -> CalCurveBP
 
--- | Years calBP or calBC
-[_calCurveCals] :: CalCurve -> Vector Int
+-- | Years calBP
+[_calCurveBPCals] :: CalCurveBP -> Vector YearBP
 
--- | Years BP or BC
-[_calCurveBPs] :: CalCurve -> Vector Int
+-- | Years BP
+[_calCurveBPUnCals] :: CalCurveBP -> Vector YearBP
 
 -- | Standard deviation (one sigma in years)
-[_calCurveSigmas] :: CalCurve -> Vector Int
+[_calCurveBPSigmas] :: CalCurveBP -> Vector YearRange
+data CalCurveBCAD
+CalCurveBCAD :: Vector YearBCAD -> Vector YearBCAD -> Vector YearRange -> CalCurveBCAD
+
+-- | Years calBCAD
+[_calCurveBCADCals] :: CalCurveBCAD -> Vector YearBCAD
+
+-- | Years BCAD
+[_calCurveBCADUnCals] :: CalCurveBCAD -> Vector YearBCAD
+
+-- | Standard deviation (one sigma in years)
+[_calCurveBCADSigmas] :: CalCurveBCAD -> Vector YearRange
 
 -- | A data type to represent a calibration curve in a <i>wide</i> matrix
 --   form
 data CalCurveMatrix
-CalCurveMatrix :: Vector Int -> Vector Int -> Vector (Vector Float) -> CalCurveMatrix
+CalCurveMatrix :: Vector YearBCAD -> Vector YearBCAD -> Vector (Vector Float) -> CalCurveMatrix
 
--- | Row names of the calibration curve matrix: Years BP or BC
-[_calCurveMatrixBPs] :: CalCurveMatrix -> Vector Int
+-- | Row names of the calibration curve matrix: Years BCAD
+[_calCurveMatrixBCADs] :: CalCurveMatrix -> Vector YearBCAD
 
--- | Column names of the calibration curve matrix: Years calBP or calBC
-[_calCurveMatrixCalBPs] :: CalCurveMatrix -> Vector Int
+-- | Column names of the calibration curve matrix: Years calBCAD
+[_calCurveMatrixCalBCADs] :: CalCurveMatrix -> Vector YearBCAD
 
 -- | Matrix (as a list of columns) with the probability densities
 [_calCurveMatrixDens] :: CalCurveMatrix -> Vector (Vector Float)
@@ -106,15 +128,15 @@ CalCurveMatrix :: Vector Int -> Vector Int -> Vector (Vector Float) -> CalCurveM
 --   calibrated dates. Although technically not correct, we still call this
 --   a probability density function (PDF)
 data CalPDF
-CalPDF :: String -> Vector Int -> Vector Float -> CalPDF
+CalPDF :: String -> Vector YearBCAD -> Vector Float -> CalPDF
 
 -- | Sample identifier, e.g. a lab number
 [_calPDFid] :: CalPDF -> String
 
--- | Calibrated years calBP or calBC/AD (depending on the context)
-[_calPDFBPs] :: CalPDF -> Vector Int
+-- | Years calBCAD
+[_calPDFBCADs] :: CalPDF -> Vector YearBCAD
 
--- | Probability densities for each year in <a>_calPDFBPs</a>
+-- | Probability densities for each year in <a>_calPDFBCADs</a>
 [_calPDFDens] :: CalPDF -> Vector Float
 
 -- | A data type to represent a human readable summary of a calibrated
@@ -137,13 +159,13 @@ CalC14 :: String -> [HDR] -> [HDR] -> CalC14
 --   calibrated radiocarbon date density curve) is above a certain
 --   threshold
 data HDR
-HDR :: Int -> Int -> HDR
+HDR :: YearBCAD -> YearBCAD -> HDR
 
--- | Start of the high density region
-[_hdrstart] :: HDR -> Int
+-- | Start of the high density region in years calBCAD
+[_hdrstart] :: HDR -> YearBCAD
 
--- | End of the high density region
-[_hdrstop] :: HDR -> Int
+-- | End of the high density region in years calBCAD
+[_hdrstop] :: HDR -> YearBCAD
 instance GHC.Classes.Eq Currycarbon.Types.CalibrationDistribution
 instance GHC.Show.Show Currycarbon.Types.CalibrationDistribution
 instance GHC.Classes.Eq Currycarbon.Types.CalibrationMethod
@@ -151,7 +173,8 @@ instance GHC.Show.Show Currycarbon.Types.CalibrationMethod
 instance GHC.Classes.Eq Currycarbon.Types.UncalC14
 instance GHC.Show.Show Currycarbon.Types.UncalC14
 instance GHC.Show.Show Currycarbon.Types.UncalPDF
-instance GHC.Show.Show Currycarbon.Types.CalCurve
+instance GHC.Show.Show Currycarbon.Types.CalCurveBP
+instance GHC.Show.Show Currycarbon.Types.CalCurveBCAD
 instance GHC.Show.Show Currycarbon.Types.CalCurveMatrix
 instance GHC.Show.Show Currycarbon.Types.CalPDF
 instance GHC.Classes.Eq Currycarbon.Types.HDR
@@ -175,17 +198,18 @@ dnorm :: Float -> Float -> Float -> Float
 --   0.15915494
 --   </pre>
 dt :: Double -> Float -> Float
-isOutsideRangeOfCalCurve :: CalCurve -> UncalC14 -> Bool
+isOutsideRangeOfCalCurve :: CalCurveBP -> UncalC14 -> Bool
 
 -- | Take an uncalibrated date and a raw calibration curve and return the
 --   relevant segment of the calibration curve
-getRelevantCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
+getRelevantCalCurveSegment :: UncalC14 -> CalCurveBP -> CalCurveBP
 
 -- | Modify a calibration curve (segment) with multiple optional steps,
 --   including interpolation and transforming dates to BC/AD format
-prepareCalCurveSegment :: Bool -> Bool -> CalCurve -> CalCurve
-makeBCADCalCurve :: CalCurve -> CalCurve
-interpolateCalCurve :: CalCurve -> CalCurve
+prepareCalCurveSegment :: Bool -> CalCurveBP -> CalCurveBCAD
+makeBCADCalCurve :: CalCurveBP -> CalCurveBCAD
+vectorBPToBCAD :: Vector YearBP -> Vector YearBCAD
+interpolateCalCurve :: CalCurveBP -> CalCurveBP
 normalizeCalPDF :: CalPDF -> CalPDF
 trimLowDensityEdgesCalPDF :: CalPDF -> CalPDF
 
@@ -256,29 +280,29 @@ renderUncalC14 :: UncalC14 -> String
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14 :: String -> Either String [UncalC14]
 parseUncalC14 :: Parser UncalC14
-writeCalCurve :: FilePath -> CalCurve -> IO ()
-renderCalCurve :: CalCurve -> String
-readCalCurveFromFile :: FilePath -> IO CalCurve
-readCalCurve :: String -> CalCurve
-parseCalCurve :: Parser [(Int, Int, Int)]
-parseCalCurveLine :: Parser (Int, Int, Int)
+writeCalCurve :: FilePath -> CalCurveBCAD -> IO ()
+renderCalCurve :: CalCurveBCAD -> String
+readCalCurveFromFile :: FilePath -> IO CalCurveBP
+readCalCurve :: String -> CalCurveBP
+parseCalCurve :: Parser [(YearBP, YearBP, YearRange)]
+parseCalCurveLine :: Parser (YearBP, YearBP, YearRange)
 comments :: Parser String
 
 module Currycarbon.CalCurves.Intcal20
 
 -- | The intcal20 calibration curve (Reimer et al. 2020,
 --   doi:10.1017/RDC.2020.41)
-intcal20 :: CalCurve
+intcal20 :: CalCurveBP
 
 -- | The complete intcal20 calibration curve in a large string
 intcal20String :: String
 
 module Currycarbon.Calibration.MatrixMult
-calibrateDateMatrixMult :: Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateMatrixMult :: Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 
 -- | Construct a matrix representation of a calibration curve for a given
 --   date
-makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
+makeCalCurveMatrix :: UncalPDF -> CalCurveBCAD -> CalCurveMatrix
 
 -- | Transform an uncalibrated date to an uncalibrated probability density
 --   table
@@ -296,28 +320,28 @@ module Currycarbon.Calibration.Bchron
 --   :}
 --   [(-1413,1.0703295e-5),(-1412,1.4653518e-5),(-1411,1.799142e-5)]
 --   </pre>
-calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurve -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 
 module Currycarbon.Calibration.Calibration
 
 -- | Take an uncalibrated date and a raw calibration curve and return the
 --   relevant segment of the calibration curve
-getRelevantCalCurveSegment :: UncalC14 -> CalCurve -> CalCurve
+getRelevantCalCurveSegment :: UncalC14 -> CalCurveBP -> CalCurveBP
 
 -- | Modify a calibration curve (segment) with multiple optional steps,
 --   including interpolation and transforming dates to BC/AD format
-prepareCalCurveSegment :: Bool -> Bool -> CalCurve -> CalCurve
+prepareCalCurveSegment :: Bool -> CalCurveBP -> CalCurveBCAD
 
 -- | Construct a matrix representation of a calibration curve for a given
 --   date
-makeCalCurveMatrix :: UncalPDF -> CalCurve -> CalCurveMatrix
+makeCalCurveMatrix :: UncalPDF -> CalCurveBCAD -> CalCurveMatrix
 
 -- | Transform an uncalibrated date to an uncalibrated probability density
 --   table
 uncalToPDF :: UncalC14 -> UncalPDF
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: CalibrateDatesConf -> CalCurve -> [UncalC14] -> [Either CurrycarbonException CalPDF]
+calibrateDates :: CalibrateDatesConf -> CalCurveBP -> [UncalC14] -> [Either CurrycarbonException CalPDF]
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date
@@ -326,7 +350,7 @@ calibrateDates :: CalibrateDatesConf -> CalCurve -> [UncalC14] -> [Either Curryc
 --   &gt;&gt;&gt; :{
 --     let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
 --         densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
---     in refineCalDates [CalPDF {_calPDFid = "", _calPDFBPs = years, _calPDFDens = densities}]
+--     in refineCalDates [CalPDF {_calPDFid = "", _calPDFBCADs = years, _calPDFDens = densities}]
 --   :}
 --   [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 --   </pre>
@@ -370,20 +394,20 @@ instance GHC.Show.Show Currycarbon.Calibration.Calibration.CalibrateDatesConf
 module Currycarbon
 
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: CalibrateDatesConf -> CalCurve -> [UncalC14] -> [Either CurrycarbonException CalPDF]
+calibrateDates :: CalibrateDatesConf -> CalCurveBP -> [UncalC14] -> [Either CurrycarbonException CalPDF]
 
 -- | A data type to represent an uncalibrated radiocarbon date
 data UncalC14
-UncalC14 :: String -> Int -> Int -> UncalC14
+UncalC14 :: String -> YearBP -> YearRange -> UncalC14
 
 -- | Sample identifier, e.g. a lab number
 [_uncalC14Id] :: UncalC14 -> String
 
 -- | C14 age in years BP
-[_uncalC14BP] :: UncalC14 -> Int
+[_uncalC14BP] :: UncalC14 -> YearBP
 
 -- | C14 standard deviation (one sigma in years)
-[_uncalC14Sigma] :: UncalC14 -> Int
+[_uncalC14Sigma] :: UncalC14 -> YearRange
 
 -- | Read uncalibrated radiocarbon dates from a file. The file should
 --   feature one radiocarbon date per line in the form "&lt;sample
@@ -454,15 +478,15 @@ Bchron :: CalibrationDistribution -> CalibrationMethod
 --   calibrated dates. Although technically not correct, we still call this
 --   a probability density function (PDF)
 data CalPDF
-CalPDF :: String -> Vector Int -> Vector Float -> CalPDF
+CalPDF :: String -> Vector YearBCAD -> Vector Float -> CalPDF
 
 -- | Sample identifier, e.g. a lab number
 [_calPDFid] :: CalPDF -> String
 
--- | Calibrated years calBP or calBC/AD (depending on the context)
-[_calPDFBPs] :: CalPDF -> Vector Int
+-- | Years calBCAD
+[_calPDFBCADs] :: CalPDF -> Vector YearBCAD
 
--- | Probability densities for each year in <a>_calPDFBPs</a>
+-- | Probability densities for each year in <a>_calPDFBCADs</a>
 [_calPDFDens] :: CalPDF -> Vector Float
 
 -- | Write <a>CalPDF</a>s to the file system. The output file is a long
@@ -484,23 +508,45 @@ CalPDF :: String -> Vector Int -> Vector Float -> CalPDF
 --   </pre>
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 
+-- | A type to represent years BP. All numbers are positive and describe
+--   the distance in years to 1950AD: 3000 = 3000BP = 1050BC
+type YearBP = Word
+
+-- | A type to represent years BC or AD. Negative values describe years BC,
+--   positive values years AD: -5000 = 5000BC and 1300 = 1300AD
+type YearBCAD = Int
+
+-- | A type to represent a range of years
+type YearRange = Word
+
 -- | A data type to represent a calibration curve
-data CalCurve
-CalCurve :: Vector Int -> Vector Int -> Vector Int -> CalCurve
+data CalCurveBP
+CalCurveBP :: Vector YearBP -> Vector YearBP -> Vector YearRange -> CalCurveBP
 
--- | Years calBP or calBC
-[_calCurveCals] :: CalCurve -> Vector Int
+-- | Years calBP
+[_calCurveBPCals] :: CalCurveBP -> Vector YearBP
 
--- | Years BP or BC
-[_calCurveBPs] :: CalCurve -> Vector Int
+-- | Years BP
+[_calCurveBPUnCals] :: CalCurveBP -> Vector YearBP
 
 -- | Standard deviation (one sigma in years)
-[_calCurveSigmas] :: CalCurve -> Vector Int
+[_calCurveBPSigmas] :: CalCurveBP -> Vector YearRange
+data CalCurveBCAD
+CalCurveBCAD :: Vector YearBCAD -> Vector YearBCAD -> Vector YearRange -> CalCurveBCAD
+
+-- | Years calBCAD
+[_calCurveBCADCals] :: CalCurveBCAD -> Vector YearBCAD
+
+-- | Years BCAD
+[_calCurveBCADUnCals] :: CalCurveBCAD -> Vector YearBCAD
+
+-- | Standard deviation (one sigma in years)
+[_calCurveBCADSigmas] :: CalCurveBCAD -> Vector YearRange
 
 -- | The intcal20 calibration curve (Reimer et al. 2020,
 --   doi:10.1017/RDC.2020.41)
-intcal20 :: CalCurve
-readCalCurveFromFile :: FilePath -> IO CalCurve
+intcal20 :: CalCurveBP
+readCalCurveFromFile :: FilePath -> IO CalCurveBP
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date
@@ -509,7 +555,7 @@ readCalCurveFromFile :: FilePath -> IO CalCurve
 --   &gt;&gt;&gt; :{
 --     let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
 --         densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
---     in refineCalDates [CalPDF {_calPDFid = "", _calPDFBPs = years, _calPDFDens = densities}]
+--     in refineCalDates [CalPDF {_calPDFid = "", _calPDFBCADs = years, _calPDFDens = densities}]
 --   :}
 --   [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 --   </pre>
