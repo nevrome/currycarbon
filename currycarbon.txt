@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.24.0
+@version 0.24.1
 
 module Currycarbon.Types
 
@@ -66,7 +66,7 @@ UncalC14 :: String -> YearBP -> YearRange -> UncalC14
 [_uncalC14Id] :: UncalC14 -> String
 
 -- | C14 age in years BP
-[_uncalC14BP] :: UncalC14 -> YearBP
+[_uncalC14UnCal] :: UncalC14 -> YearBP
 
 -- | C14 standard deviation (one sigma in years)
 [_uncalC14Sigma] :: UncalC14 -> YearRange
@@ -81,7 +81,7 @@ UncalPDF :: String -> Vector YearBP -> Vector Float -> UncalPDF
 [_uncalPDFid] :: UncalPDF -> String
 
 -- | Years BP
-[_uncalPDFBPs] :: UncalPDF -> Vector YearBP
+[_uncalPDFUnCals] :: UncalPDF -> Vector YearBP
 
 -- | Probability densities
 [_uncalPDFDens] :: UncalPDF -> Vector Float
@@ -119,10 +119,10 @@ data CalCurveMatrix
 CalCurveMatrix :: Vector YearBCAD -> Vector YearBCAD -> Vector (Vector Float) -> CalCurveMatrix
 
 -- | Row names of the calibration curve matrix: Years BCAD
-[_calCurveMatrixBCADs] :: CalCurveMatrix -> Vector YearBCAD
+[_calCurveMatrixUnCals] :: CalCurveMatrix -> Vector YearBCAD
 
 -- | Column names of the calibration curve matrix: Years calBCAD
-[_calCurveMatrixCalBCADs] :: CalCurveMatrix -> Vector YearBCAD
+[_calCurveMatrixCals] :: CalCurveMatrix -> Vector YearBCAD
 
 -- | Matrix (as a list of columns) with the probability densities
 [_calCurveMatrixDens] :: CalCurveMatrix -> Vector (Vector Float)
@@ -137,9 +137,9 @@ CalPDF :: String -> Vector YearBCAD -> Vector Float -> CalPDF
 [_calPDFid] :: CalPDF -> String
 
 -- | Years calBCAD
-[_calPDFBCADs] :: CalPDF -> Vector YearBCAD
+[_calPDFCals] :: CalPDF -> Vector YearBCAD
 
--- | Probability densities for each year in <a>_calPDFBCADs</a>
+-- | Probability densities for each year in <a>_calPDFCals</a>
 [_calPDFDens] :: CalPDF -> Vector Float
 
 -- | A data type to represent a human readable summary of a calibrated
@@ -396,7 +396,7 @@ calibrateDates :: CalibrateDatesConf -> CalCurveBP -> [UncalC14] -> [Either Curr
 --   &gt;&gt;&gt; :{
 --     let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
 --         densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
---     in refineCalDates [CalPDF {_calPDFid = "", _calPDFBCADs = years, _calPDFDens = densities}]
+--     in refineCalDates [CalPDF {_calPDFid = "", _calPDFCals = years, _calPDFDens = densities}]
 --   :}
 --   [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 --   </pre>
@@ -500,7 +500,7 @@ UncalC14 :: String -> YearBP -> YearRange -> UncalC14
 [_uncalC14Id] :: UncalC14 -> String
 
 -- | C14 age in years BP
-[_uncalC14BP] :: UncalC14 -> YearBP
+[_uncalC14UnCal] :: UncalC14 -> YearBP
 
 -- | C14 standard deviation (one sigma in years)
 [_uncalC14Sigma] :: UncalC14 -> YearRange
@@ -528,9 +528,9 @@ CalPDF :: String -> Vector YearBCAD -> Vector Float -> CalPDF
 [_calPDFid] :: CalPDF -> String
 
 -- | Years calBCAD
-[_calPDFBCADs] :: CalPDF -> Vector YearBCAD
+[_calPDFCals] :: CalPDF -> Vector YearBCAD
 
--- | Probability densities for each year in <a>_calPDFBCADs</a>
+-- | Probability densities for each year in <a>_calPDFCals</a>
 [_calPDFDens] :: CalPDF -> Vector Float
 
 -- | Write <a>CalPDF</a>s to the file system. The output file is a long
@@ -606,7 +606,7 @@ readCalCurveFromFile :: FilePath -> IO CalCurveBP
 --   &gt;&gt;&gt; :{
 --     let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
 --         densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
---     in refineCalDates [CalPDF {_calPDFid = "", _calPDFBCADs = years, _calPDFDens = densities}]
+--     in refineCalDates [CalPDF {_calPDFid = "", _calPDFCals = years, _calPDFDens = densities}]
 --   :}
 --   [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 --   </pre>
