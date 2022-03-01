@@ -21,13 +21,28 @@ import qualified Data.Vector                    as V
 -- This module contains a number of functions to manage data input and 
 -- output plumbing for different datatypes
 
--- render pretty output
-renderCalDatesPretty :: [(UncalC14, CalC14, CalPDF)] -> String
+-- | Combine 'UncalC14', 'CalPDF' and 'CalC14' to render pretty command line output
+-- like this:
+-- 
+-- @
+-- Sample: 1 ~\> [5000±30BP]
+-- 1-sigma: 3894-3880BC, 3797-3709BC
+-- 2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
+--                                     ***                      
+--                                    *'''**   *****            
+--                   ***             *'''''''***''''''*           
+--             ******'''*            ''''''''''''''''      **   
+--            *''''''''''**        **''''''''''''''''*   **''*  
+--         ***''''''''''''''********'''''''''''''''''''''***''''''**
+--  -3960 \<~~~~~~~~~|~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~|~~~~~~~~~~\> -3640
+-- @
+--
+renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
 renderCalDatesPretty xs =
     intercalate "\n" $ map renderCalDatePretty xs
 
-renderCalDatePretty :: (UncalC14, CalC14, CalPDF) -> String
-renderCalDatePretty (uncalC14, calC14, calPDF) =
+renderCalDatePretty :: (UncalC14, CalPDF, CalC14) -> String
+renderCalDatePretty (uncalC14, calPDF, calC14) =
     intercalate "\n" [
           renderUncalC14 uncalC14
         , renderCalC14 calC14
@@ -60,6 +75,24 @@ parseCalibrationMethod = do
             return MatrixMultiplication
 
 -- CalC14
+-- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:
+-- 
+-- @
+-- sample,hdrSigma,hdrStartBCAD,hdrStopBCAD
+-- Sample1,1,-3797,-3709
+-- Sample1,1,-3894,-3880
+-- Sample1,2,-3680,-3655
+-- Sample1,2,-3810,-3700
+-- Sample1,2,-3941,-3864
+-- Sample2,1,-1142,-1130
+-- Sample2,1,-1173,-1161
+-- Sample2,1,-1293,-1194
+-- Sample2,1,-1368,-1356
+-- Sample2,2,-1061,-1059
+-- Sample2,2,-1323,-1112
+-- Sample2,2,-1393,-1334
+-- @
+-- 
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 writeCalC14s path calC14s = writeFile path $ 
     "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n" 

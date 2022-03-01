@@ -40,8 +40,8 @@ data CalibrateDatesConf = CalibrateDatesConf {
       , _calConfInterpolateCalCurve :: Bool 
     } deriving (Show, Eq)
 
--- | A default configuration ('CalibrateDatesConf') that should yield almost 
--- identical calibration results to the the [Bchron R package](https://github.com/andrewcparnell/Bchron)
+-- | A default configuration that should yield almost identical calibration results 
+-- to the [Bchron R package](https://github.com/andrewcparnell/Bchron)
 --
 -- >>> defaultCalConf
 -- CalibrateDatesConf {_calConfMethod = Bchron {distribution = StudentTDist {ndf = 100.0}}, _calConfAllowOutside = False, _calConfInterpolateCalCurve = True}

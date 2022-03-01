@@ -8,21 +8,22 @@ module Currycarbon (
     -- * Calibration
     -- $calibration
     calibrateDates,
-    UncalC14 (..),
-    readUncalC14FromFile,
     CalibrateDatesConf (..),
     defaultCalConf,
     CalibrationMethod (..),
+    UncalC14 (..),
+    readUncalC14FromFile,
     CalPDF (..),
     writeCalPDFs,
 
     -- * Year data types
-    -- $yeardatatypes
+    -- $yearDataTypes
     YearBP,
     YearBCAD,
     YearRange,
 
     -- * Calibration curves
+    -- $calCurves
     CalCurveBP (..),
     CalCurveBCAD (..),
     intcal20,
@@ -32,9 +33,8 @@ module Currycarbon (
     -- $derivedOutput
     refineCalDates,
     CalC14 (..),
-    renderCalDatesPretty,
-    writeCalC14s
-
+    writeCalC14s,
+    renderCalDatesPretty
     ) where
 
 import Currycarbon.Calibration.Calibration
@@ -64,7 +64,7 @@ default I suggest to use 'defaultCalConf'.
 See the Derived output section below for more pretty output formats.
 -}
 
-{- $yeardatatypes
+{- $yearDataTypes
 
 A number of types were introcuded to distinguish clearly between
 ages in years BP, years BC/AD and year ranges (e.g. for standard
@@ -76,4 +76,27 @@ That is why the two types 'CalCurveBP' and 'CalCurveBCAD' are
 distinguished.
 -}
 
--- $derivedOutput
+{- $calCurves
+
+Currycarbon features two separate data types for calibration curves:
+'CalCurveBP' and 'CalCurveBCAD' to distinguish between versions with
+'YearBP' and 'YearBCAD'.
+
+The library only comes with one curve: 'intcal20'. At runtime curves
+can be read and used with 'readCalCurveFromFile'.
+-}
+
+{- $derivedOutput
+
+The main calibration function 'calibrateDates' returns a list of
+'CalPDF's. This is very useful output for derived, computational
+applications, but not exactly human readable. 'refineCalDates' takes
+these probability distributions and turns them into the derived data
+type 'CalC14'. This type features high density regions, so the age
+ranges a sample most likely dates to.
+
+These can also be written to a file with 'writeCalC14s'.
+
+'renderCalDatesPretty' finally combines 'UncalC14', 'CalPDF' and 
+'CalC14' to produce nice command line output. 
+-}

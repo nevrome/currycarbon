@@ -61,7 +61,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
                 let calC14s = refineCalDates calPDFs
                 unless quiet $ do
                     --putStrLn $ renderCalC14s calC14s
-                    putStrLn $ renderCalDatesPretty $ zip3 dates calC14s calPDFs
+                    putStrLn $ renderCalDatesPretty $ zip3 dates calPDFs calC14s
                 when (isJust hdrFile) $ do
                     writeCalC14s (fromJust hdrFile) calC14s
             -- write calcurve segment file
