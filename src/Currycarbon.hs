@@ -16,6 +16,12 @@ module Currycarbon (
     CalPDF (..),
     writeCalPDFs,
 
+    -- * Year data types
+    -- $yeardatatypes
+    YearBP,
+    YearBCAD,
+    YearRange,
+
     -- * Calibration curves
     CalCurveBP (..),
     CalCurveBCAD (..),
@@ -38,9 +44,9 @@ import Currycarbon.CalCurves.Intcal20
 
 {- $calibration
 
-The main function 'calibrateDates'  in this module calibrates radiocarbon 
-dates, given the uncalibrated input dates, a calibration curve and some 
-configuration options. 
+The main function in this module 'calibrateDates' calibrates 
+radiocarbon dates, given the uncalibrated input dates, a calibration 
+curve and some configuration options. 
 
 * For the input dates there is a dedicated data type 'UncalC14'.
 These can be read from a .csv file with 'readUncalC14FromFile'.
@@ -56,6 +62,18 @@ default I suggest to use 'defaultCalConf'.
 'calibrateDates' returns a list of calibrated dates in the rough
 'CalPDF' format, which can be written to a file with 'writeCalPDFs'.
 See the Derived output section below for more pretty output formats.
+-}
+
+{- $yeardatatypes
+
+A number of types were introcuded to distinguish clearly between
+ages in years BP, years BC/AD and year ranges (e.g. for standard
+deviations). Generally currycarbon handles input ('UncalC14',
+'UncalPDF') with 'YearBP', and output ('CalPDF', 'CalC14') with
+'YearBCAD'. The switch happens as part of the the calibration
+process, so that calibration curves have to be adjusted as well.
+That is why the two types 'CalCurveBP' and 'CalCurveBCAD' are
+distinguished.
 -}
 
 -- $derivedOutput

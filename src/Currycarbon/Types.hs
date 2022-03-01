@@ -4,6 +4,7 @@ module Currycarbon.Types where
 
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
+import Numeric.Natural (Natural)
 
 -- * Data types
 --
@@ -39,8 +40,13 @@ data CalibrationDistribution =
     }
   deriving (Show, Eq)
 
+-- | A type to represent years BP. All numbers are positive and describe the distance in years
+-- to 1950AD: 3000 = 3000BP = 1050BC
 type YearBP = Word
+-- | A type to represent years BC or AD. Negative values describe years BC, positive values
+-- years AD: -5000 = 5000BC and 1300 = 1300AD
 type YearBCAD = Int
+-- | A type to represent a range of years
 type YearRange = Word
 
 -- | A data type to represent an uncalibrated radiocarbon date
@@ -54,7 +60,7 @@ data UncalC14 = UncalC14 {
 -- Although technically not correct, we still call this a probability density function (PDF)
 data UncalPDF = UncalPDF {
       _uncalPDFid :: String -- ^ Sample identifier, e.g. a lab number
-    , _uncalPDFBPs :: VU.Vector YearBP -- ^ Years BP or BC
+    , _uncalPDFBPs :: VU.Vector YearBP -- ^ Years BP
     , _uncalPDFDens :: VU.Vector Float -- ^ Probability densities
     } deriving Show
 
@@ -73,8 +79,8 @@ data CalCurveBCAD = CalCurveBCAD {
 
 -- | A data type to represent a calibration curve in a /wide/ matrix form
 data CalCurveMatrix = CalCurveMatrix {
-      _calCurveMatrixBCADs :: VU.Vector YearBCAD -- ^ Row names of the calibration curve matrix: Years BP
-    , _calCurveMatrixCalBCADs :: VU.Vector YearBCAD -- ^ Column names of the calibration curve matrix: Years calBP
+      _calCurveMatrixBCADs :: VU.Vector YearBCAD -- ^ Row names of the calibration curve matrix: Years BCAD
+    , _calCurveMatrixCalBCADs :: VU.Vector YearBCAD -- ^ Column names of the calibration curve matrix: Years calBCAD
     , _calCurveMatrixDens :: V.Vector (VU.Vector Float) -- ^ Matrix (as a list of columns) with the probability densities
     } deriving Show
 
@@ -82,7 +88,7 @@ data CalCurveMatrix = CalCurveMatrix {
 -- Although technically not correct, we still call this a probability density function (PDF)
 data CalPDF = CalPDF {
       _calPDFid :: String -- ^ Sample identifier, e.g. a lab number
-    , _calPDFBCADs :: VU.Vector YearBCAD -- ^ Calibrated years calBP (depending on the context)
+    , _calPDFBCADs :: VU.Vector YearBCAD -- ^ Years calBCAD
     , _calPDFDens :: VU.Vector Float -- ^ Probability densities for each year in '_calPDFBCADs'
     } deriving Show
 
@@ -98,6 +104,6 @@ data CalC14 = CalC14 {
 -- cummulative probability (e.g. of an calibrated radiocarbon date density curve) 
 -- is above a certain threshold
 data HDR = HDR {
-      _hdrstart :: YearBCAD -- ^ Start of the high density region
-    , _hdrstop :: YearBCAD -- ^ End of the high density region
+      _hdrstart :: YearBCAD -- ^ Start of the high density region in years calBCAD
+    , _hdrstop :: YearBCAD -- ^ End of the high density region in years calBCAD
     } deriving (Show, Eq)
