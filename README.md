@@ -33,7 +33,7 @@ Usage: currycarbon [--version] [DATES] [-i|--inputFile ARG]
                    [--noInterpolation] [-q|--quiet] [--densityFile ARG] 
                    [--hdrFile ARG] [--calCurveSegmentFile ARG] 
                    [--calCurveMatrixFile ARG]
-  Simple intercept calibration for one or multiple radiocarbon dates
+  Intercept calibration of radiocarbon dates
 
 Available options:
   -h,--help                Show this help text
@@ -45,8 +45,8 @@ Available options:
                            "S1,4000,50;3000,25;S3,1000,20".
   -i,--inputFile ARG       A file with a list of uncalibrated dates. Formated
                            just as DATES, but with a new line for each input
-                           date. DATES and --uncalFile can be combined and you
-                           can provide multiple instances of --uncalFile
+                           date. DATES and --inputFile can be combined and you
+                           can provide multiple instances of --inputFile
   --calibrationCurveFile ARG
                            Path to an calibration curve file in .14c format. The
                            calibration curve will be read and used for
