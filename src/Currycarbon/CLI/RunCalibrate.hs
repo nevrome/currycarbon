@@ -34,7 +34,7 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
     entitiesFromFile <- mapM readUncalC14FromFile uncalFile
     let uncalDatesRenamed = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
     if null uncalDatesRenamed
-    then hPutStrLn stderr "Nothing to calibrate. See currycarbon calibrate -h"
+    then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h"
     else do
         -- basic calibration
         hPutStrLn stderr "Calibrating..."
