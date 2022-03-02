@@ -1,5 +1,5 @@
 name:                currycarbon
-version:             0.24.4
+version:             0.1.0.0
 synopsis:            A package for simple, fast radiocarbon calibration
 description:         Radiocarbon calibration with the intercept method optimised for fast calibration of many dates.
 homepage:            https://github.com/nevrome/currycarbon

@@ -1,3 +1,4 @@
+- V 0.1.0.0: Switch to PVP versioning (https://pvp.haskell.org/)
 - V 0.24.4: Removed big dependencies bytestring and statistics
 - V 0.24.3: Multiple changes in .cabal to make cabal check happy
 - V 0.24.2: Found and fixed another severe bug in renderCalCurve
