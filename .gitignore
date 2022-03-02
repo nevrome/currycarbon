@@ -5,3 +5,4 @@ playground/data/
 *.prof
 .Rproj.user
 .Rhistory
+dist-newstyle/
