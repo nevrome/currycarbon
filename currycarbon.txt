@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.24.2
+@version 0.24.3
 
 module Currycarbon.Types
 
