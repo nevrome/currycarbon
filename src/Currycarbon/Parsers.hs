@@ -6,8 +6,6 @@ import Currycarbon.Types
 import Currycarbon.Utils
 
 import           Control.Exception              (throwIO)
-import qualified Data.ByteString.Lazy           as BL
-import           Data.ByteString.Builder
 import           Data.List                      (intercalate, transpose)
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
@@ -168,14 +166,18 @@ renderCalCurveMatrix (CalCurveMatrix uncals cals curveDensities) =
 -- 
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 writeCalPDFs path calPDFs =
-    BL.writeFile path $ "sample,calBCAD,density\n" <> toLazyByteString (mconcat $ map renderBuilderCalPDF calPDFs)
+    writeFile path $
+        "sample,calBCAD,density\n"
+        ++ renderCalPDFs calPDFs
 
-renderBuilderCalPDF :: CalPDF -> Builder
-renderBuilderCalPDF (CalPDF name cals dens) = 
-    let nameBuilder = stringUtf8 name
-        densList = VU.toList $ VU.zip cals dens
-        builderList = map (\(year,prob) -> nameBuilder <> charUtf8 ',' <> intDec year <> charUtf8 ',' <> floatDec prob <> charUtf8 '\n') densList
-    in mconcat builderList
+renderCalPDFs :: [CalPDF] -> String
+renderCalPDFs = concatMap renderCalPDF
+
+renderCalPDF :: CalPDF -> String
+renderCalPDF (CalPDF name cals dens) =
+    concatMap makeRow $ VU.toList $ VU.zip cals dens
+    where
+      makeRow (x,y) = show name ++ "," ++ show x ++ "," ++ show y ++ "\n"
 
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
 renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
