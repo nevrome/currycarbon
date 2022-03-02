@@ -28,7 +28,7 @@ executable currycarbon
     build-depends:      currycarbon, base, optparse-applicative, filepath
     other-modules:      Paths_currycarbon
     default-language:   Haskell2010
-    ghc-options:        -O2 -threaded -with-rtsopts=-N
+    ghc-options:        -threaded -with-rtsopts=-N
 
 Test-Suite currycarbon-test
     type:               exitcode-stdio-1.0
