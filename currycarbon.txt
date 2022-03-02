@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.24.3
+@version 0.24.4
 
 module Currycarbon.Types
 
@@ -300,7 +300,8 @@ renderCalCurveMatrix :: CalCurveMatrix -> String
 --   ...
 --   </pre>
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
-renderBuilderCalPDF :: CalPDF -> Builder
+renderCalPDFs :: [CalPDF] -> String
+renderCalPDF :: CalPDF -> String
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
 renderUncalC14 :: UncalC14 -> String
 
