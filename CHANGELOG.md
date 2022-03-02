@@ -1,3 +1,4 @@
+- V 0.24.4: Removed big dependencies bytestring and statistics
 - V 0.24.3: Multiple changes in .cabal to make cabal check happy
 - V 0.24.2: Found and fixed another severe bug in renderCalCurve
 - V 0.24.1: Fixed a serious bug in renderCalCurveMatrix
