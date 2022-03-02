@@ -18,26 +18,57 @@ source-repository head
     location:           https://github.com/nevrome/currycarbon.git
 
 library
-    exposed-modules:    Currycarbon, Currycarbon.Parsers, Currycarbon.Types, Currycarbon.Utils,
-                        Currycarbon.CLI.RunCalibrate, Currycarbon.CalCurves.Intcal20, 
-                        Currycarbon.Calibration.Utils, Currycarbon.Calibration.MatrixMult, 
-                        Currycarbon.Calibration.Bchron, Currycarbon.Calibration.Calibration
-    hs-source-dirs:     src
-    build-depends:      base >= 4.14 && < 5, filepath, parsec, vector, math-functions
-    default-language:   Haskell2010
+    exposed-modules:
+      Currycarbon
+      Currycarbon.CalCurves.Intcal20
+      Currycarbon.Calibration.Utils
+      Currycarbon.Calibration.MatrixMult
+      Currycarbon.Calibration.Bchron
+      Currycarbon.Calibration.Calibration
+      Currycarbon.CLI.RunCalibrate
+      Currycarbon.Parsers
+      Currycarbon.Types
+      Currycarbon.Utils
+    hs-source-dirs:
+      src
+    build-depends:      
+        base >= 4.14 && < 5
+      , filepath >= 1.4 && < 1.5
+      , parsec >= 3.1 && < 3.2
+      , vector >= 0.12 && < 0.13
+      , math-functions >= 0.3 && < 0.4
+    default-language:
+      Haskell2010
 
 executable currycarbon
-    main-is:            Main-currycarbon.hs
-    hs-source-dirs:     src-executables
-    build-depends:      currycarbon, base, optparse-applicative, filepath
-    other-modules:      Paths_currycarbon
-    default-language:   Haskell2010
-    ghc-options:        -threaded -with-rtsopts=-N
+    main-is:
+      Main-currycarbon.hs
+    hs-source-dirs:
+      src-executables
+    build-depends:      
+        currycarbon
+      , base
+      , optparse-applicative
+      , filepath
+    other-modules:
+      Paths_currycarbon
+    default-language:
+      Haskell2010
+    ghc-options: 
+      -threaded -with-rtsopts=-N
 
 Test-Suite currycarbon-test
-    type:               exitcode-stdio-1.0
-    main-is:            Spec.hs
-    hs-source-dirs:     test
-    build-depends:      currycarbon, base, doctest
-    default-language:   Haskell2010
-    ghc-options:        -threaded -with-rtsopts=-N
+    type:
+      exitcode-stdio-1.0
+    main-is:
+      Spec.hs
+    hs-source-dirs:
+      test
+    build-depends:
+        currycarbon
+      , base
+      , doctest
+    default-language:
+      Haskell2010
+    ghc-options:
+      -threaded -with-rtsopts=-N
