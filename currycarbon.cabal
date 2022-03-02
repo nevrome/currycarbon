@@ -13,6 +13,10 @@ cabal-version:       >=1.10
 extra-source-files:  README.md,
                      CHANGELOG.md
 
+source-repository head
+    type:               git
+    location:           https://github.com/nevrome/currycarbon.git
+
 library
     exposed-modules:    Currycarbon, Currycarbon.Parsers, Currycarbon.Types, Currycarbon.Utils,
                         Currycarbon.CLI.RunCalibrate, Currycarbon.CalCurves.Intcal20, 
