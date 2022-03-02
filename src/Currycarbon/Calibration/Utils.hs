@@ -6,8 +6,7 @@ import Currycarbon.Types
 
 import qualified Data.Vector.Unboxed as VU
 import Data.Maybe (fromMaybe)
-import Statistics.Distribution (density)
-import Statistics.Distribution.StudentT (studentT)
+import Numeric.SpecFunctions (logBeta)
 
 -- | get the density of a normal distribution at a point x
 -- 
@@ -21,7 +20,8 @@ dnorm mu sigma x =
         c2 = c * c
         sigma2 = sigma * sigma
     in a*b
-    -- alternative implemenation with the statistics package: 
+    -- alternative implemenation with the statistics package:
+    -- import Statistics.Distribution (density)
     -- realToFrac $ density (normalDistr (realToFrac mu) (realToFrac sigma)) (realToFrac x)
 
 -- | get the density of student's-t distribution at a point x
@@ -29,7 +29,13 @@ dnorm mu sigma x =
 -- >>> dt 1.0 1.0
 -- 0.15915494
 dt :: Double -> Float -> Float
-dt dof x = realToFrac $ density (studentT (realToFrac dof)) (realToFrac x) -- dof: number of degrees of freedom
+dt dof x =
+    let xDouble = realToFrac x
+        logDensityUnscaled = log (dof / (dof + xDouble*xDouble)) * (0.5 * (1 + dof)) - logBeta 0.5 (0.5 * dof)
+    in realToFrac $ exp logDensityUnscaled / sqrt dof
+    -- alternative implemenation with the statistics package:
+    -- import Statistics.Distribution.StudentT (studentT)
+    -- realToFrac $ density (studentT (realToFrac dof)) (realToFrac x) -- dof: number of degrees of freedom
 
 isOutsideRangeOfCalCurve :: CalCurveBP -> UncalC14 -> Bool
 isOutsideRangeOfCalCurve (CalCurveBP _ uncals _) (UncalC14 _ age _) = 
