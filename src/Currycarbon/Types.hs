@@ -4,7 +4,6 @@ module Currycarbon.Types where
 
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
-import Numeric.Natural (Natural)
 
 -- * Data types
 --

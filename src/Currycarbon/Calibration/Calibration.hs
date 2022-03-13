@@ -12,6 +12,7 @@ module Currycarbon.Calibration.Calibration
       , uncalToPDF
       , calibrateDates
       , refineCalDates
+      , refineCalDate
       , CalibrateDatesConf (..)
       , defaultCalConf
     ) where
