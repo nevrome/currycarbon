@@ -96,6 +96,15 @@ writeCalC14s path calC14s = writeFile path $
     "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n" 
     ++ intercalate "\n" (map renderCalC14ForFile calC14s)
 
+writeCalC14 :: FilePath -> CalC14 -> IO ()
+writeCalC14 path calC14 = writeFile path $ 
+    "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n" 
+    ++ renderCalC14ForFile calC14
+
+appendCalC14 :: FilePath -> CalC14 -> IO ()
+appendCalC14 path calC14 =
+    appendFile path $ "\n" ++ renderCalC14ForFile calC14
+
 renderCalC14ForFile :: CalC14 -> String
 renderCalC14ForFile (CalC14 name hdrs68 hdrs95) =
     intercalate "\n" $ 
@@ -169,6 +178,16 @@ writeCalPDFs path calPDFs =
     writeFile path $
         "sample,calBCAD,density\n"
         ++ renderCalPDFs calPDFs
+
+writeCalPDF :: FilePath -> CalPDF -> IO ()
+writeCalPDF path calPDF =
+    writeFile path $
+        "sample,calBCAD,density\n"
+        ++ renderCalPDF calPDF
+
+appendCalPDF :: FilePath -> CalPDF -> IO ()
+appendCalPDF path calPDF =
+    appendFile path $ renderCalPDF calPDF
 
 renderCalPDFs :: [CalPDF] -> String
 renderCalPDFs = concatMap renderCalPDF

@@ -43,14 +43,14 @@ bchron <- tibble::tibble(
 
 bchron |> 
   dplyr::full_join(curry_bchron_studentT100, by = "calBCAD") |>
-  #dplyr::full_join(curry_bchron_normal, by = "calBCAD") |>
-  #dplyr::full_join(curry_matrixmult_default, by = "calBCAD") |>
+  dplyr::full_join(curry_bchron_normal, by = "calBCAD") |>
+  dplyr::full_join(curry_matrixmult_default, by = "calBCAD") |>
   tidyr::pivot_longer(
     tidyselect::starts_with("dens"),
     names_to = "method"
   ) |>
   ggplot() +
-  geom_line(
+  geom_point(
     aes(x = calBCAD, y = value, colour = method), 
     size = 1, alpha = 0.5
   )

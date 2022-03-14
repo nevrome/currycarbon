@@ -5,6 +5,7 @@ module Currycarbon.Calibration.Bchron (calibrateDateBchron) where
 
 import Currycarbon.CalCurves.Intcal20 -- only for the doctest
 import Currycarbon.Calibration.Utils
+import Currycarbon.Parsers
 import Currycarbon.Types
 import Currycarbon.Utils
 
@@ -21,7 +22,7 @@ import qualified Data.Vector.Unboxed as VU
 calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
-    then Left $ CurrycarbonCalibrationRangeException $ _uncalC14Id uncalC14
+    then Left $ CurrycarbonCalibrationRangeException $ renderUncalC14 uncalC14
     else 
         let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
             CalCurveBCAD cals mus tau1s = prepareCalCurveSegment interpolate rawCalCurveSegment

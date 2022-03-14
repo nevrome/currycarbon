@@ -3,7 +3,7 @@ module Currycarbon.Utils (
     renderCurrycarbonException
 ) where
 
-import           Control.Exception (Exception)
+import           Control.Exception      (Exception)
 
 -- | Different exceptions for currycarbon
 data CurrycarbonException =
@@ -16,6 +16,6 @@ instance Exception CurrycarbonException
 
 renderCurrycarbonException :: CurrycarbonException -> String 
 renderCurrycarbonException (CurrycarbonCLIParsingException s) = 
-    "/!\\ Issue when parsing the input:\n" ++ s
-renderCurrycarbonException (CurrycarbonCalibrationRangeException sampleName) =
-    "/!\\ Sample: " ++ sampleName ++ "\nOutside of calibration range. It will be ignored."
+    "<!> Error: Input can not be parsed\n" ++ s
+renderCurrycarbonException (CurrycarbonCalibrationRangeException s) =
+    s ++ " <!> Error: Date outside of calibration range"

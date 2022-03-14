@@ -7,6 +7,7 @@ module Currycarbon.Calibration.MatrixMult
     ) where
 
 import Currycarbon.Calibration.Utils
+import Currycarbon.Parsers
 import Currycarbon.Types
 import Currycarbon.Utils
 
@@ -18,7 +19,7 @@ import Data.Vector.Generic (convert)
 calibrateDateMatrixMult :: Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
-    then Left $ CurrycarbonCalibrationRangeException $ _uncalC14Id uncalC14
+    then Left $ CurrycarbonCalibrationRangeException $ renderUncalC14 uncalC14
     else
         let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
             calCurveSegment = prepareCalCurveSegment interpolate rawCalCurveSegment
