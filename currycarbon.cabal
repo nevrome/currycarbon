@@ -48,7 +48,7 @@ executable currycarbon
     build-depends:      
         currycarbon
       , base
-      , optparse-applicative >= 0.16.0 && < 0.17
+      , optparse-applicative >= 0.16 && < 0.17
       , filepath
     other-modules:
       Paths_currycarbon
