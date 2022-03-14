@@ -272,6 +272,8 @@ parseCalibrationMethod :: Parser CalibrationMethod
 --   Sample2,2,-1393,-1334
 --   </pre>
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
+writeCalC14 :: FilePath -> CalC14 -> IO ()
+appendCalC14 :: FilePath -> CalC14 -> IO ()
 renderCalC14ForFile :: CalC14 -> String
 renderCalC14s :: [CalC14] -> String
 renderCalC14 :: CalC14 -> String
@@ -300,6 +302,8 @@ renderCalCurveMatrix :: CalCurveMatrix -> String
 --   ...
 --   </pre>
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
+writeCalPDF :: FilePath -> CalPDF -> IO ()
+appendCalPDF :: FilePath -> CalPDF -> IO ()
 renderCalPDFs :: [CalPDF] -> String
 renderCalPDF :: CalPDF -> String
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
@@ -402,6 +406,7 @@ calibrateDates :: CalibrateDatesConf -> CalCurveBP -> [UncalC14] -> [Either Curr
 --   [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
 --   </pre>
 refineCalDates :: [CalPDF] -> [CalC14]
+refineCalDate :: CalPDF -> CalC14
 
 -- | A data type to cover the configuration options of the calibrateDates
 --   function
