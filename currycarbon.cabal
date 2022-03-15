@@ -67,7 +67,7 @@ Test-Suite currycarbon-test
     build-depends:
         currycarbon
       , base
-      , doctest
+      , doctest >= 0.17 && < 0.18
     default-language:
       Haskell2010
     ghc-options:
