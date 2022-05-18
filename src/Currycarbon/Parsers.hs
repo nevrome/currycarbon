@@ -106,7 +106,7 @@ appendCalC14 path calC14 =
     appendFile path $ "\n" ++ renderCalC14ForFile calC14
 
 renderCalC14ForFile :: CalC14 -> String
-renderCalC14ForFile (CalC14 name hdrs68 hdrs95) =
+renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
     intercalate "\n" $ 
         map renderRow $
         zip3 (repeat name) (repeat "1") (renderHDRsForFile hdrs68) ++
@@ -121,9 +121,17 @@ renderCalC14s xs =
     ++ intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 _ hdrs68 hdrs95) =
-       "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
+renderCalC14 (CalC14 _ median hdrs68 hdrs95) =
+       "Median age: " ++ maybe "unknown" renderYearBCAD median ++ "\n"
+    ++ "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
     ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
+
+-- BCAD
+renderYearBCAD :: YearBCAD -> String
+renderYearBCAD x
+    | x < 0  = show x ++ "BC"
+    | x >= 0 = show x ++ "AD"
+    | otherwise = error $ "This should never happen: " ++ show x
 
 -- HDR
 renderHDRsForFile :: [HDR] -> [(String, String)]

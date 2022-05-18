@@ -23,8 +23,9 @@ import Currycarbon.Calibration.MatrixMult
 import Currycarbon.Types
 import Currycarbon.Utils
 
-import Data.List (sort, sortBy, groupBy)
+import Data.List (sort, sortBy, groupBy, elemIndex)
 import qualified Data.Vector.Unboxed as VU
+import GHC.Base (undefined)
 
 -- | A data type to cover the configuration options of the calibrateDates function
 data CalibrateDatesConf = CalibrateDatesConf {
@@ -80,13 +81,25 @@ refineCalDates = map refineCalDate
 
 refineCalDate :: CalPDF -> CalC14
 refineCalDate (CalPDF name cals dens) =
-    let sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip cals dens)
-        cumsumDensities = scanl1 (+) $ map snd sortedDensities
-        isIn68 = map (< 0.683) cumsumDensities
-        isIn95 = map (< 0.954) cumsumDensities
+    let cumsumDensities = cumsumDens (VU.toList $ VU.zip cals dens)
+        distanceTo05 = map (\x -> abs $ (x - 0.5)) cumsumDensities
+        medianAge = cals `indexVU` elemIndex (minimum distanceTo05) distanceTo05
+        sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip cals dens)
+        cumsumSortedDensities = cumsumDens sortedDensities
+        isIn68 = map (< 0.683) cumsumSortedDensities
+        isIn95 = map (< 0.954) cumsumSortedDensities
         contextualizedDensities = reverse $ sort $ zipWith3 (\(y,d) in68 in95 -> (y,d,in68,in95)) sortedDensities isIn68 isIn95
-    in CalC14 name (densities2HDR68 contextualizedDensities) (densities2HDR95 contextualizedDensities)
+    in CalC14 {
+          _calC14id          = name
+        , _calC14MedianAge   = medianAge
+        , _calC14HDROneSigma = densities2HDR68 contextualizedDensities
+        , _calC14HDRTwoSigma = densities2HDR95 contextualizedDensities
+    }
     where
+        indexVU x Nothing = Nothing
+        indexVU x (Just i) = x VU.!? i
+        cumsumDens :: [(YearBCAD, Float)] -> [Float]
+        cumsumDens x = scanl1 (+) $ map snd x
         densities2HDR68 :: [(Int, Float, Bool, Bool)] -> [HDR]
         densities2HDR68 cDensities = 
             let highDensityGroups = groupBy (\(_,_,in681,_) (_,_,in682,_) -> in681 == in682) cDensities

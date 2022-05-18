@@ -114,6 +114,8 @@ data CalPDF = CalPDF {
 data CalC14 = CalC14 {
     -- | Identifier, e.g. a lab number
       _calC14id :: String
+    -- | Median age
+    , _calC14MedianAge :: Maybe YearBCAD
     -- | One-sigma high density regions
     , _calC14HDROneSigma :: [HDR]
     -- | Two-sigma high density regions
