@@ -96,7 +96,7 @@ refineCalDate (CalPDF name cals dens) =
         , _calC14HDRTwoSigma = densities2HDR95 contextualizedDensities
     }
     where
-        indexVU x Nothing = Nothing
+        indexVU _ Nothing = Nothing
         indexVU x (Just i) = x VU.!? i
         cumsumDens :: [(YearBCAD, Float)] -> [Float]
         cumsumDens x = scanl1 (+) $ map snd x

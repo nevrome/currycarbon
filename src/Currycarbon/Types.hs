@@ -116,11 +116,26 @@ data CalC14 = CalC14 {
       _calC14id :: String
     -- | Median age
     , _calC14MedianAge :: Maybe YearBCAD
+    -- Summary of the range of the calibrated date
+    -- , calC14RangeSummary = Maybe CalRangeSummary
     -- | One-sigma high density regions
     , _calC14HDROneSigma :: [HDR]
     -- | Two-sigma high density regions
     , _calC14HDRTwoSigma :: [HDR]
     } deriving Show
+
+data CalRangeSummary = CalRangeSummary {
+    -- | Median age
+      _calRangeMedian        :: YearBCAD
+    -- | Start of the one-sigma age range
+    , _calRangeStartOneSigma :: YearBCAD
+    -- | End of the one-sigma age range
+    , _calRangeStopOneSigma  :: YearBCAD
+    -- | Start of the two-sigma age range
+    , _calRangeStartTwoSigma :: YearBCAD
+    -- | End of the two-sigma age range
+    , _calRangeStopTwoSigma  :: YearBCAD
+}
 
 -- | A data type to represent a high density region of a probability distribution.
 -- A high density region is here defined as an age range, within which the respective 
