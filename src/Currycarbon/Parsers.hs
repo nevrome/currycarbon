@@ -121,15 +121,23 @@ renderCalC14s xs =
     ++ intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 _ median hdrs68 hdrs95) =
-       "Median age: " ++ maybe "unknown" renderYearBCAD median ++ "\n"
+renderCalC14 (CalC14 _ rangeSummary hdrs68 hdrs95) =
+       "Calibrated: " ++ renderCalRangeSummary rangeSummary ++ "\n"
     ++ "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
     ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
+
+renderCalRangeSummary :: CalRangeSummary -> String
+renderCalRangeSummary s =
+       renderYearBCAD (_calRangeStopTwoSigma s) ++ " >> "
+    ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " > "
+    ++ renderYearBCAD (_calRangeMedian s) ++ " < "
+    ++ renderYearBCAD (_calRangeStartOneSigma s) ++ " << "
+    ++ renderYearBCAD (_calRangeStartTwoSigma s)
 
 -- BCAD
 renderYearBCAD :: YearBCAD -> String
 renderYearBCAD x
-    | x < 0  = show x ++ "BC"
+    | x < 0  = show (-x) ++ "BC"
     | x >= 0 = show x ++ "AD"
     | otherwise = error $ "This should never happen: " ++ show x
 
