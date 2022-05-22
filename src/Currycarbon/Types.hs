@@ -124,14 +124,14 @@ data CalC14 = CalC14 {
     } deriving Show
 
 data CalRangeSummary = CalRangeSummary {
+    -- | Start of the two-sigma age range
+      _calRangeStartTwoSigma :: YearBCAD
     -- | Start of the one-sigma age range
-      _calRangeStartOneSigma :: YearBCAD
-    -- | End of the one-sigma age range
-    , _calRangeStopOneSigma  :: YearBCAD
+    , _calRangeStartOneSigma :: YearBCAD
     -- | Median age
     , _calRangeMedian        :: YearBCAD
-    -- | Start of the two-sigma age range
-    , _calRangeStartTwoSigma :: YearBCAD
+    -- | End of the one-sigma age range
+    , _calRangeStopOneSigma  :: YearBCAD
     -- | End of the two-sigma age range
     , _calRangeStopTwoSigma  :: YearBCAD
 } deriving Show

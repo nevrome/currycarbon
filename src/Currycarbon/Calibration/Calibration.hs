@@ -82,16 +82,16 @@ refineCalDate (CalPDF name cals dens) =
         cumsumSortedDensities = cumsumDens sortedDensities
         isIn68 = map (< 0.683) cumsumSortedDensities
         isIn95 = map (< 0.954) cumsumSortedDensities
-        contextualizedDensities = reverse $ sort $ zipWith3 (\(y,d) in68 in95 -> (y,d,in68,in95)) sortedDensities isIn68 isIn95
+        contextualizedDensities = sort $ zipWith3 (\(y,d) in68 in95 -> (y,d,in68,in95)) sortedDensities isIn68 isIn95
         hdrs68 = densities2HDR68 contextualizedDensities
         hdrs95 = densities2HDR95 contextualizedDensities
     in CalC14 {
           _calC14id           = name
         , _calC14RangeSummary = CalRangeSummary {
-              _calRangeStartOneSigma = _hdrstart $ head hdrs68
-            , _calRangeStopOneSigma  = _hdrstop  $ last hdrs68
+              _calRangeStartTwoSigma = _hdrstart $ head hdrs95
+            , _calRangeStartOneSigma = _hdrstart $ head hdrs68
             , _calRangeMedian        = fromJust $ cals `indexVU` elemIndex (minimum distanceTo05) distanceTo05
-            , _calRangeStartTwoSigma = _hdrstart $ head hdrs95
+            , _calRangeStopOneSigma  = _hdrstop  $ last hdrs68
             , _calRangeStopTwoSigma  = _hdrstop  $ last hdrs95
             }
         , _calC14HDROneSigma  = hdrs68

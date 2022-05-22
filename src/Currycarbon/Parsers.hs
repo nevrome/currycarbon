@@ -123,16 +123,16 @@ renderCalC14s xs =
 renderCalC14 :: CalC14 -> String
 renderCalC14 (CalC14 _ rangeSummary hdrs68 hdrs95) =
        "Calibrated: " ++ renderCalRangeSummary rangeSummary ++ "\n"
-    ++ "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
-    ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
+    ++ "1-sigma: " ++ renderHDRs hdrs68 ++ "\n"
+    ++ "2-sigma: " ++ renderHDRs hdrs95
 
 renderCalRangeSummary :: CalRangeSummary -> String
 renderCalRangeSummary s =
-       renderYearBCAD (_calRangeStopTwoSigma s) ++ " >> "
-    ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " > "
+       renderYearBCAD (_calRangeStartTwoSigma s) ++ " >> "
+    ++ renderYearBCAD (_calRangeStartOneSigma s) ++ " > "
     ++ renderYearBCAD (_calRangeMedian s) ++ " < "
-    ++ renderYearBCAD (_calRangeStartOneSigma s) ++ " << "
-    ++ renderYearBCAD (_calRangeStartTwoSigma s)
+    ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " << "
+    ++ renderYearBCAD (_calRangeStopTwoSigma s)
 
 -- BCAD
 renderYearBCAD :: YearBCAD -> String
@@ -146,13 +146,13 @@ renderHDRsForFile :: [HDR] -> [(String, String)]
 renderHDRsForFile = map renderHDRForFile
 
 renderHDRForFile :: HDR -> (String, String)
-renderHDRForFile (HDR start stop) = (show stop, show start)
+renderHDRForFile (HDR start stop) = (show start, show stop)
 
 renderHDRs :: [HDR] -> String
 renderHDRs xs = intercalate ", " (map renderHDR xs)
 
 renderHDR :: HDR -> String
-renderHDR (HDR stop start)
+renderHDR (HDR start stop)
     | start < 0 && stop <= 0  = show (-start) ++ "-" ++ show (-stop) ++ "BC"
     | start < 0 && stop > 0   = show (-start) ++ "BC-" ++ show stop ++ "AD"
     | start >= 0 && stop >= 0 = show start ++ "-" ++ show stop ++ "AD"
