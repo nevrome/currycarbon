@@ -44,7 +44,7 @@ renderCalDatePretty (uncalC14, calPDF, calC14) =
     intercalate "\n" [
           renderUncalC14 uncalC14
         , renderCalC14 calC14
-        , renderCLIPlotCalPDF 5 50 calPDF
+        , renderCLIPlotCalPDF 5 50 calPDF calC14
         ]
 
 -- CalibrationMethod
@@ -214,15 +214,19 @@ renderCalPDF (CalPDF name cals dens) =
     where
       makeRow (x,y) = show name ++ "," ++ show x ++ "," ++ show y ++ "\n"
 
-renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
-renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
-     let yearsPerCol = quot (VU.length cals) cols
+renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> CalC14 -> String
+renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
+     let startYear = VU.head cals
+         stopYear = VU.last cals
+         yearsPerCol = quot (VU.length cals) cols
         -- last bin will often be shorter, which renders the whole plot 
         -- slightly incorrect for the last column
          meanDensPerCol = calculateMeanDens rows yearsPerCol dens
+         effectiveCols = length meanDensPerCol
          plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getPlotSymbol x) meanDensPerCol) $ reverse [0..rows]
-         xAxis = constructXAxis (VU.head cals) (VU.last cals) (length meanDensPerCol) yearsPerCol
-     in intercalate "\n" plotRows ++ "\n" ++ xAxis
+         xAxis = constructXAxis startYear stopYear effectiveCols yearsPerCol
+         belowXAxis = constructBelowXAxis startYear effectiveCols yearsPerCol c14
+     in intercalate "\n" plotRows ++ "\n" ++ xAxis ++ "\n" ++ belowXAxis
      where
         calculateMeanDens :: Int -> Int -> VU.Vector Float -> [Int]
         calculateMeanDens rows yearsPerCol dens_ =
@@ -246,14 +250,13 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
             let startS = padString 6 (show $ roundTo10 startYear)
                 stopS = show (roundTo10 stopYear)
                 tickFreq = if abs (startYear - stopYear) < 1500 then 100 else 1000
-                axis = zipWith (getAxisSymbol yearsPerCol tickFreq) [0 .. (cols - 1)] [1 .. cols]
+                axis = zipWith (getAxisSymbol yearsPerCol tickFreq) [0..(cols - 1)] [1..cols]
             in  startS ++ " <" ++ axis ++ "> " ++ stopS
             where 
                 getAxisSymbol :: Int -> Int -> Int -> Int -> Char
-                getAxisSymbol axisL tickFreq a b = 
-                    if hasTick tickFreq (startYear + axisL * a + 1) (startYear + axisL * b) 
-                    then '|'
-                    else '~'
+                getAxisSymbol yearsPerCol tickFreq a b
+                    | hasTick tickFreq (startYear + yearsPerCol * a + 1) (startYear + yearsPerCol * b) = '|'
+                    | otherwise = '~'
                 hasTick :: Int -> Int -> Int -> Bool
                 hasTick tickFreq a b = any (\x -> rem (abs x) tickFreq == 0) [a..b]
         roundTo10 :: Int -> Int
@@ -261,6 +264,20 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
             let (dec,rest) = quotRem (abs x) 10
                 roundedDec = if rest >= 5 then dec + 1 else dec
             in roundedDec * 10 * signum x
+        constructBelowXAxis :: Int -> Int -> Int -> CalC14 -> String
+        constructBelowXAxis startYear cols yearsPerCol c14 =
+            let belowAxis = zipWith (getBelowAxisSymbol yearsPerCol (_calC14RangeSummary c14)) [0..(cols - 1)] [1..cols]
+            in replicate 8 ' ' ++ belowAxis
+            where
+                getBelowAxisSymbol :: Int -> CalRangeSummary -> Int -> Int -> Char
+                getBelowAxisSymbol yearsPerCol range a b
+                    | start <= _calRangeMedian range && stop > _calRangeMedian range = '^'
+                    | start <= _calRangeStartOneSigma range && stop > _calRangeStartOneSigma range = '>'
+                    | start <= _calRangeStopOneSigma range && stop > _calRangeStopOneSigma range = '<'
+                    | otherwise = ' '
+                    where
+                        start = startYear + yearsPerCol * a
+                        stop = startYear + yearsPerCol * b
 
 -- UncalC14
 renderUncalC14 :: UncalC14 -> String
