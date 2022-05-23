@@ -225,8 +225,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
          effectiveCols = length meanDensPerCol
          plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getPlotSymbol x) meanDensPerCol) $ reverse [0..rows]
          xAxis = constructXAxis startYear stopYear effectiveCols yearsPerCol
-         belowXAxis = constructBelowXAxis startYear effectiveCols yearsPerCol c14
-     in intercalate "\n" plotRows ++ "\n" ++ xAxis ++ "\n" ++ belowXAxis
+     in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
         calculateMeanDens :: Int -> Int -> VU.Vector Float -> [Int]
         calculateMeanDens rows yearsPerCol dens_ =
@@ -250,34 +249,31 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
             let startS = padString 6 (show $ roundTo10 startYear)
                 stopS = show (roundTo10 stopYear)
                 tickFreq = if abs (startYear - stopYear) < 1500 then 100 else 1000
-                axis = zipWith (getAxisSymbol yearsPerCol tickFreq) [0..(cols - 1)] [1..cols]
-            in  startS ++ " <" ++ axis ++ "> " ++ stopS
+                colStartYears = map (\a -> startYear + yearsPerCol * a) [0..(cols - 1)]
+                colStopYears  = map (\b -> startYear + yearsPerCol * b) [1..cols]
+                axis = zipWith (getAxisSymbol tickFreq) colStartYears colStopYears
+                belowAxis = zipWith (getBelowAxisSymbol (_calC14RangeSummary c14)) colStartYears colStopYears
+            in  startS ++ " <" ++ axis ++ "> " ++ stopS ++ "\n" ++ 
+                replicate 8 ' ' ++ belowAxis
             where 
-                getAxisSymbol :: Int -> Int -> Int -> Int -> Char
-                getAxisSymbol yearsPerCol tickFreq a b
-                    | hasTick tickFreq (startYear + yearsPerCol * a + 1) (startYear + yearsPerCol * b) = '|'
+                getAxisSymbol :: Int -> Int -> Int -> Char
+                getAxisSymbol tickFreq colStartYear colStopYear
+                    | hasTick tickFreq colStartYear colStopYear = '|'
                     | otherwise = '~'
                 hasTick :: Int -> Int -> Int -> Bool
                 hasTick tickFreq a b = any (\x -> rem (abs x) tickFreq == 0) [a..b]
+                getBelowAxisSymbol :: CalRangeSummary -> Int -> Int -> Char
+                getBelowAxisSymbol range colStartYear colStopYear
+                    | colStartYear <= _calRangeMedian range && colStopYear > _calRangeMedian range = '^'
+                    | colStartYear <= _calRangeStartOneSigma range && colStopYear > _calRangeStartOneSigma range = '>'
+                    | colStartYear <= _calRangeStopOneSigma range && colStopYear > _calRangeStopOneSigma range = '<'
+                    | otherwise = ' '
         roundTo10 :: Int -> Int
         roundTo10 x = 
             let (dec,rest) = quotRem (abs x) 10
                 roundedDec = if rest >= 5 then dec + 1 else dec
             in roundedDec * 10 * signum x
-        constructBelowXAxis :: Int -> Int -> Int -> CalC14 -> String
-        constructBelowXAxis startYear cols yearsPerCol c14 =
-            let belowAxis = zipWith (getBelowAxisSymbol yearsPerCol (_calC14RangeSummary c14)) [0..(cols - 1)] [1..cols]
-            in replicate 8 ' ' ++ belowAxis
-            where
-                getBelowAxisSymbol :: Int -> CalRangeSummary -> Int -> Int -> Char
-                getBelowAxisSymbol yearsPerCol range a b
-                    | start <= _calRangeMedian range && stop > _calRangeMedian range = '^'
-                    | start <= _calRangeStartOneSigma range && stop > _calRangeStartOneSigma range = '>'
-                    | start <= _calRangeStopOneSigma range && stop > _calRangeStopOneSigma range = '<'
-                    | otherwise = ' '
-                    where
-                        start = startYear + yearsPerCol * a
-                        stop = startYear + yearsPerCol * b
+                
 
 -- UncalC14
 renderUncalC14 :: UncalC14 -> String
