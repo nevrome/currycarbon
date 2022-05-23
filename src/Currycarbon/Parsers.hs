@@ -216,17 +216,18 @@ renderCalPDF (CalPDF name cals dens) =
 
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
 renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
-     let binWidth = quot (VU.length dens) cols
+     let yearsPerCol = quot (VU.length cals) cols
         -- last bin will often be shorter, which renders the whole plot 
         -- slightly incorrect for the last column
-         binDens = meanBinDens (fromIntegral rows) binWidth dens
-         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getSymbol x) binDens) $ reverse [0..rows]
-         xAxis = constructXAxis (VU.head cals) (VU.last cals) (length binDens) binWidth
+         meanDensPerCol = calculateMeanDens rows yearsPerCol dens
+         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getPlotSymbol x) meanDensPerCol) $ reverse [0..rows]
+         xAxis = constructXAxis (VU.head cals) (VU.last cals) (length meanDensPerCol) yearsPerCol
      in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
-        meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
-        meanBinDens scaling binWidth dens_ =
-            let meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery binWidth $ VU.toList dens_
+        calculateMeanDens :: Int -> Int -> VU.Vector Float -> [Int]
+        calculateMeanDens rows yearsPerCol dens_ =
+            let scaling = fromIntegral rows
+                meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList dens_
                 maxDens = maximum meanDens
             in map (\x -> round $ (x / maxDens) * scaling) meanDens
         splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
@@ -235,20 +236,25 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
             where (first,rest) = splitAt n list
         padString :: Int -> String -> String
         padString l x = replicate (l - length x) ' ' ++ x
-        getSymbol :: Int -> Int -> Char
-        getSymbol x y
+        getPlotSymbol :: Int -> Int -> Char
+        getPlotSymbol x y
             | x == y = '*'
             | x < y = '\''
             | otherwise = ' '
         constructXAxis :: Int -> Int -> Int -> Int -> String
-        constructXAxis start stop l binWidth =
-            let startS = padString 6 (show $ roundTo10 start)
-                stopS = show (roundTo10 stop)
-                tickFreq = if abs (start - stop) < 1500 then 100 else 1000
-                axis = zipWith (axisSymbol binWidth tickFreq) [0 .. (l - 1)] [1 .. l]
+        constructXAxis startYear stopYear cols yearsPerCol =
+            let startS = padString 6 (show $ roundTo10 startYear)
+                stopS = show (roundTo10 stopYear)
+                tickFreq = if abs (startYear - stopYear) < 1500 then 100 else 1000
+                axis = zipWith (getAxisSymbol yearsPerCol tickFreq) [0 .. (cols - 1)] [1 .. cols]
             in  startS ++ " <" ++ axis ++ "> " ++ stopS
             where 
-                axisSymbol axisL tickFreq a b = if hasTick tickFreq (start + axisL * a + 1) (start + axisL * b) then '|' else '~'
+                getAxisSymbol :: Int -> Int -> Int -> Int -> Char
+                getAxisSymbol axisL tickFreq a b = 
+                    if hasTick tickFreq (startYear + axisL * a + 1) (startYear + axisL * b) 
+                    then '|'
+                    else '~'
+                hasTick :: Int -> Int -> Int -> Bool
                 hasTick tickFreq a b = any (\x -> rem (abs x) tickFreq == 0) [a..b]
         roundTo10 :: Int -> Int
         roundTo10 x = 
