@@ -266,7 +266,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                     in roundedDec * 10 * signum x
                 getAxisSymbol :: Int -> Int -> Int -> Char
                 getAxisSymbol tickFreq colStartYear colStopYear
-                    | any (\x -> rem (abs x) tickFreq == 0) [colStartYear..(colStopYear - 1)] = '|'
+                    | any (\x -> rem x tickFreq == 0) [colStartYear..colStopYear] = '|'
                     | otherwise = '~'
                 getRangeSymbol :: CalRangeSummary -> Int -> Int -> Char
                 getRangeSymbol range colStartYear colStopYear
