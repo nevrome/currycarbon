@@ -44,7 +44,7 @@ renderCalDatePretty (uncalC14, calPDF, calC14) =
     intercalate "\n" [
           renderUncalC14 uncalC14
         , renderCalC14 calC14
-        , renderCLIPlotCalPDF 5 50 calPDF calC14
+        , renderCLIPlotCalPDF 6 50 calPDF calC14
         ]
 
 -- CalibrationMethod
@@ -219,8 +219,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
      let startYear = VU.head cals
          stopYear = VU.last cals
          yearsPerCol = quot (VU.length cals) cols
-        -- last bin will often be shorter, which renders the whole plot 
-        -- slightly incorrect for the last column
+        -- last bin will often be shorter, which renders the whole plot slightly incorrect for the last column
          meanDensPerCol = calculateMeanDens rows yearsPerCol dens
          effectiveCols = length meanDensPerCol
          plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getPlotSymbol x) meanDensPerCol) $ reverse [0..rows]
@@ -251,15 +250,20 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                 tickFreq = if abs (startYear - stopYear) < 1500 then 100 else 1000
                 colStartYears = map (\a -> startYear + yearsPerCol * a) [0..(cols - 1)]
                 colStopYears  = map (\b -> startYear + yearsPerCol * b) [1..cols]
-                axis        = zipWith (getAxisSymbol tickFreq)                colStartYears colStopYears
-                simpleRange = zipWith (getBelowAxisSymbol c14)                colStartYears colStopYears
-                hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14)) colStartYears colStopYears
-                hdrTwo      = zipWith (getHDRSymbol (_calC14HDRTwoSigma c14)) colStartYears colStopYears
+                axis        = zipWith (getAxisSymbol tickFreq)                   colStartYears colStopYears
+                simpleRange = zipWith (getRangeSymbol (_calC14RangeSummary c14)) colStartYears colStopYears
+                hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14))    colStartYears colStopYears
+                hdrTwo      = zipWith (getHDRSymbol (_calC14HDRTwoSigma c14))    colStartYears colStopYears
             in  startS ++ " <" ++ axis ++ "> " ++ stopS ++ "\n" ++ 
                 replicate 8 ' ' ++ simpleRange ++ "\n" ++
                 replicate 8 ' ' ++ hdrOne ++ "\n" ++
-                replicate 8 ' ' ++ hdrTwo ++ "\n"
-            where 
+                replicate 8 ' ' ++ hdrTwo
+            where
+                roundTo10 :: Int -> Int
+                roundTo10 x =
+                    let (dec,rest) = quotRem (abs x) 10
+                        roundedDec = if rest >= 5 then dec + 1 else dec
+                    in roundedDec * 10 * signum x
                 getAxisSymbol :: Int -> Int -> Int -> Char
                 getAxisSymbol tickFreq colStartYear colStopYear
                     | hasTick tickFreq colStartYear colStopYear = '|'
@@ -268,16 +272,14 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                         hasTick :: Int -> Int -> Int -> Bool
                         hasTick tickFreq colStartYear colStopYear =
                             any (\x -> rem (abs x) tickFreq == 0) [colStartYear..(colStopYear - 1)]
-                getBelowAxisSymbol :: CalC14 -> Int -> Int -> Char
-                getBelowAxisSymbol c14 colStartYear colStopYear
+                getRangeSymbol :: CalRangeSummary -> Int -> Int -> Char
+                getRangeSymbol range colStartYear colStopYear
                     | colStartYear <= _calRangeMedian range        && colStopYear > _calRangeMedian range        = '^'
                     | colStartYear <= _calRangeStartOneSigma range && colStopYear > _calRangeStartOneSigma range = '>'
                     | colStartYear <= _calRangeStopOneSigma range  && colStopYear > _calRangeStopOneSigma range  = '<'
                     | colStartYear <= _calRangeStartTwoSigma range && colStopYear > _calRangeStartTwoSigma range = '>'
                     | colStartYear <= _calRangeStopTwoSigma range  && colStopYear > _calRangeStopTwoSigma range  = '<'
                     | otherwise = ' '
-                    where
-                        range = _calC14RangeSummary c14
                 getHDRSymbol :: [HDR] -> Int -> Int -> Char
                 getHDRSymbol hdr colStartYear colStopYear
                     | any (doesOverlap colStartYear colStopYear) hdr = '-'
@@ -287,12 +289,6 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                         doesOverlap a b h =
                             let ha = _hdrstart h; hb = _hdrstop h
                             in (a >= ha && a <= hb) || (b >= ha && b <= hb) || (a <= ha && b >= hb)
-        roundTo10 :: Int -> Int
-        roundTo10 x = 
-            let (dec,rest) = quotRem (abs x) 10
-                roundedDec = if rest >= 5 then dec + 1 else dec
-            in roundedDec * 10 * signum x
-                
 
 -- UncalC14
 renderUncalC14 :: UncalC14 -> String
