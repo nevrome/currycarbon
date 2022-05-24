@@ -3,7 +3,7 @@
 module Currycarbon.Calibration.Bchron (calibrateDateBchron) where
 
 
-import Currycarbon.CalCurves.Intcal20 -- only for the doctest
+import Currycarbon.CalCurves.Intcal20 -- only for the doctest: stack build --pedantic --ghc-options -fno-warn-unused-imports
 import Currycarbon.Calibration.Utils
 import Currycarbon.Parsers
 import Currycarbon.Types

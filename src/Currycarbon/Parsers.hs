@@ -220,14 +220,14 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
          stopYear = VU.last cals
          yearsPerCol = quot (VU.length cals) cols
         -- last bin will often be shorter, which renders the whole plot slightly incorrect for the last column
-         meanDensPerCol = calculateMeanDens rows yearsPerCol dens
+         meanDensPerCol = calculateMeanDens yearsPerCol dens
          effectiveCols = length meanDensPerCol
          plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getPlotSymbol x) meanDensPerCol) $ reverse [0..rows]
          xAxis = constructXAxis startYear stopYear effectiveCols yearsPerCol
      in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
-        calculateMeanDens :: Int -> Int -> VU.Vector Float -> [Int]
-        calculateMeanDens rows yearsPerCol dens_ =
+        calculateMeanDens :: Int -> VU.Vector Float -> [Int]
+        calculateMeanDens yearsPerCol dens_ =
             let scaling = fromIntegral rows
                 meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList dens_
                 maxDens = maximum meanDens
@@ -244,12 +244,12 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
             | x < y = '\''
             | otherwise = ' '
         constructXAxis :: Int -> Int -> Int -> Int -> String
-        constructXAxis startYear stopYear cols yearsPerCol =
+        constructXAxis startYear stopYear effCols yearsPerCol =
             let startS = padString 6 (show $ roundTo10 startYear)
                 stopS = show (roundTo10 stopYear)
                 tickFreq = if abs (startYear - stopYear) < 1500 then 100 else 1000
-                colStartYears = map (\a -> startYear + yearsPerCol * a) [0..(cols - 1)]
-                colStopYears  = map (\b -> startYear + yearsPerCol * b) [1..cols]
+                colStartYears = map (\a -> startYear + yearsPerCol * a) [0..(effCols - 1)]
+                colStopYears  = map (\b -> startYear + yearsPerCol * b - 1) [1..effCols]
                 axis        = zipWith (getAxisSymbol tickFreq)                   colStartYears colStopYears
                 simpleRange = zipWith (getRangeSymbol (_calC14RangeSummary c14)) colStartYears colStopYears
                 hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14))    colStartYears colStopYears
@@ -266,19 +266,15 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                     in roundedDec * 10 * signum x
                 getAxisSymbol :: Int -> Int -> Int -> Char
                 getAxisSymbol tickFreq colStartYear colStopYear
-                    | hasTick tickFreq colStartYear colStopYear = '|'
+                    | any (\x -> rem (abs x) tickFreq == 0) [colStartYear..(colStopYear - 1)] = '|'
                     | otherwise = '~'
-                    where
-                        hasTick :: Int -> Int -> Int -> Bool
-                        hasTick tickFreq colStartYear colStopYear =
-                            any (\x -> rem (abs x) tickFreq == 0) [colStartYear..(colStopYear - 1)]
                 getRangeSymbol :: CalRangeSummary -> Int -> Int -> Char
                 getRangeSymbol range colStartYear colStopYear
-                    | colStartYear <= _calRangeMedian range        && colStopYear > _calRangeMedian range        = '^'
-                    | colStartYear <= _calRangeStartOneSigma range && colStopYear > _calRangeStartOneSigma range = '>'
-                    | colStartYear <= _calRangeStopOneSigma range  && colStopYear > _calRangeStopOneSigma range  = '<'
-                    | colStartYear <= _calRangeStartTwoSigma range && colStopYear > _calRangeStartTwoSigma range = '>'
-                    | colStartYear <= _calRangeStopTwoSigma range  && colStopYear > _calRangeStopTwoSigma range  = '<'
+                    | colStartYear <= _calRangeMedian range        && colStopYear >= _calRangeMedian range        = '^'
+                    | colStartYear <= _calRangeStartOneSigma range && colStopYear >= _calRangeStartOneSigma range = '>'
+                    | colStartYear <= _calRangeStopOneSigma range  && colStopYear >= _calRangeStopOneSigma range  = '<'
+                    | colStartYear <= _calRangeStartTwoSigma range && colStopYear >= _calRangeStartTwoSigma range = '>'
+                    | colStartYear <= _calRangeStopTwoSigma range  && colStopYear >= _calRangeStopTwoSigma range  = '<'
                     | otherwise = ' '
                 getHDRSymbol :: [HDR] -> Int -> Int -> Char
                 getHDRSymbol hdr colStartYear colStopYear
