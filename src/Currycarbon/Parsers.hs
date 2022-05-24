@@ -240,8 +240,8 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
         padString l x = replicate (l - length x) ' ' ++ x
         getPlotSymbol :: Int -> Int -> Char
         getPlotSymbol x y
-            | x == y = '*'
-            | x < y = '\''
+            | x == y = '▁'
+            | x < y = '▒'
             | otherwise = ' '
         constructXAxis :: Int -> Int -> Int -> Int -> String
         constructXAxis startYear stopYear effCols yearsPerCol =
@@ -254,7 +254,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                 simpleRange = zipWith (getRangeSymbol (_calC14RangeSummary c14)) colStartYears colStopYears
                 hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14))    colStartYears colStopYears
                 hdrTwo      = zipWith (getHDRSymbol (_calC14HDRTwoSigma c14))    colStartYears colStopYears
-            in  startS ++ " <" ++ axis ++ "> " ++ stopS ++ "\n" ++ 
+            in  startS ++ " ┄" ++ axis ++ "┄ " ++ stopS ++ "\n" ++
                 replicate 8 ' ' ++ simpleRange ++ "\n" ++
                 replicate 8 ' ' ++ hdrOne ++ "\n" ++
                 replicate 8 ' ' ++ hdrTwo
@@ -266,8 +266,8 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                     in roundedDec * 10 * signum x
                 getAxisSymbol :: Int -> Int -> Int -> Char
                 getAxisSymbol tickFreq colStartYear colStopYear
-                    | any (\x -> rem x tickFreq == 0) [colStartYear..colStopYear] = '|'
-                    | otherwise = '~'
+                    | any (\x -> rem x tickFreq == 0) [colStartYear..colStopYear] = '┬'
+                    | otherwise = '─'
                 getRangeSymbol :: CalRangeSummary -> Int -> Int -> Char
                 getRangeSymbol range colStartYear colStopYear
                     | colStartYear <= _calRangeMedian range        && colStopYear >= _calRangeMedian range        = '^'
@@ -278,7 +278,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                     | otherwise = ' '
                 getHDRSymbol :: [HDR] -> Int -> Int -> Char
                 getHDRSymbol hdr colStartYear colStopYear
-                    | any (doesOverlap colStartYear colStopYear) hdr = '-'
+                    | any (doesOverlap colStartYear colStopYear) hdr = '─'
                     | otherwise = ' '
                     where
                         doesOverlap :: Int -> Int -> HDR -> Bool
