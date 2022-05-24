@@ -1,3 +1,4 @@
+- V 0.1.2.0: Added simple summary data (CalRangeSummary with calibrated median age + begin and end of 1- and 2-sigma ranges) to CalC14 and the cli output and plot. The latter got refactored in the process. HDRs are now "ordered", so _hdrstart actually stores the older and _hdrstop the younger date. 
 - V 0.1.1.0: Complete rewrite of the cli output handling to avoid a memory leak
 - V 0.1.0.0: Switch to PVP versioning (https://pvp.haskell.org/)
 - V 0.24.4: Removed big dependencies bytestring and statistics
