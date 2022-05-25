@@ -114,8 +114,7 @@ data CalPDF = CalPDF {
 data CalC14 = CalC14 {
     -- | Identifier, e.g. a lab number
       _calC14id :: String
-    -- | Median age
-    -- Summary of the range of the calibrated date
+    -- | Summary of the range of the calibrated date
     , _calC14RangeSummary :: CalRangeSummary
     -- | One-sigma high density regions
     , _calC14HDROneSigma :: [HDR]
@@ -123,6 +122,8 @@ data CalC14 = CalC14 {
     , _calC14HDRTwoSigma :: [HDR]
     } deriving Show
 
+-- | A data type to store a simple range summary of the calibrated date, including 
+-- the median age
 data CalRangeSummary = CalRangeSummary {
     -- | Start of the two-sigma age range
       _calRangeStartTwoSigma :: YearBCAD
