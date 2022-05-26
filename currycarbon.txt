@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.1.1.0
+@version 0.1.2.0
 
 module Currycarbon.Types
 
@@ -145,16 +145,39 @@ CalPDF :: String -> Vector YearBCAD -> Vector Float -> CalPDF
 -- | A data type to represent a human readable summary of a calibrated
 --   radiocarbon date
 data CalC14
-CalC14 :: String -> [HDR] -> [HDR] -> CalC14
+CalC14 :: String -> CalRangeSummary -> [HDR] -> [HDR] -> CalC14
 
 -- | Identifier, e.g. a lab number
 [_calC14id] :: CalC14 -> String
+
+-- | Summary of the range of the calibrated date
+[_calC14RangeSummary] :: CalC14 -> CalRangeSummary
 
 -- | One-sigma high density regions
 [_calC14HDROneSigma] :: CalC14 -> [HDR]
 
 -- | Two-sigma high density regions
 [_calC14HDRTwoSigma] :: CalC14 -> [HDR]
+
+-- | A data type to store a simple range summary of the calibrated date,
+--   including the median age
+data CalRangeSummary
+CalRangeSummary :: YearBCAD -> YearBCAD -> YearBCAD -> YearBCAD -> YearBCAD -> CalRangeSummary
+
+-- | Start of the two-sigma age range
+[_calRangeStartTwoSigma] :: CalRangeSummary -> YearBCAD
+
+-- | Start of the one-sigma age range
+[_calRangeStartOneSigma] :: CalRangeSummary -> YearBCAD
+
+-- | Median age
+[_calRangeMedian] :: CalRangeSummary -> YearBCAD
+
+-- | End of the one-sigma age range
+[_calRangeStopOneSigma] :: CalRangeSummary -> YearBCAD
+
+-- | End of the two-sigma age range
+[_calRangeStopTwoSigma] :: CalRangeSummary -> YearBCAD
 
 -- | A data type to represent a high density region of a probability
 --   distribution. A high density region is here defined as an age range,
@@ -180,6 +203,7 @@ instance GHC.Show.Show Currycarbon.Types.CalCurveBP
 instance GHC.Show.Show Currycarbon.Types.CalCurveBCAD
 instance GHC.Show.Show Currycarbon.Types.CalCurveMatrix
 instance GHC.Show.Show Currycarbon.Types.CalPDF
+instance GHC.Show.Show Currycarbon.Types.CalRangeSummary
 instance GHC.Classes.Eq Currycarbon.Types.HDR
 instance GHC.Show.Show Currycarbon.Types.HDR
 instance GHC.Show.Show Currycarbon.Types.CalC14
@@ -238,15 +262,20 @@ module Currycarbon.Parsers
 --   
 --   <pre>
 --   Sample: 1 ~&gt; [5000±30BP]
+--   Calibrated: 3941BC &gt;&gt; 3894BC &gt; 3773BC &lt; 3709BC &lt;&lt; 3655BC
 --   1-sigma: 3894-3880BC, 3797-3709BC
 --   2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
---                                       ***                      
---                                      *'''**   *****            
---                     ***             *''''''<tt>***</tt>'''''*           
---               ******'''*            ''''''''''''''''      **   
---              *''''''''''**        **''''''''''''''''*   **''*  
---           ***'''''''''''''<tt>********</tt>'''''''''''''''''''<tt>***</tt>'''''**
---    -3960 &lt;~~~~~~~~~|~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~|~~~~~~~~~~&gt; -3640
+--                                       ▁▁▁                      
+--                                      ▁▒▒▒▁▁    ▁▁▁▁            
+--                      ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
+--                    ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
+--               ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
+--             ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
+--           ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
+--    -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
+--             &gt;       &gt;                   ^          &lt;        &lt;  
+--                     ───             ────────────────           
+--             ──────────────        ───────────────────   ───── 
 --   </pre>
 renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
 renderCalDatePretty :: (UncalC14, CalPDF, CalC14) -> String
@@ -277,6 +306,8 @@ appendCalC14 :: FilePath -> CalC14 -> IO ()
 renderCalC14ForFile :: CalC14 -> String
 renderCalC14s :: [CalC14] -> String
 renderCalC14 :: CalC14 -> String
+renderCalRangeSummary :: CalRangeSummary -> String
+renderYearBCAD :: YearBCAD -> String
 renderHDRsForFile :: [HDR] -> [(String, String)]
 renderHDRForFile :: HDR -> (String, String)
 renderHDRs :: [HDR] -> String
@@ -306,7 +337,7 @@ writeCalPDF :: FilePath -> CalPDF -> IO ()
 appendCalPDF :: FilePath -> CalPDF -> IO ()
 renderCalPDFs :: [CalPDF] -> String
 renderCalPDF :: CalPDF -> String
-renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
+renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> CalC14 -> String
 renderUncalC14 :: UncalC14 -> String
 
 -- | Read uncalibrated radiocarbon dates from a file. The file should
@@ -396,15 +427,6 @@ calibrateDates :: CalibrateDatesConf -> CalCurveBP -> [UncalC14] -> [Either Curr
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date
---   
---   <pre>
---   &gt;&gt;&gt; :{
---     let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
---         densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
---     in refineCalDates [CalPDF {_calPDFid = "", _calPDFCals = years, _calPDFDens = densities}]
---   :}
---   [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
---   </pre>
 refineCalDates :: [CalPDF] -> [CalC14]
 refineCalDate :: CalPDF -> CalC14
 
@@ -607,24 +629,18 @@ readCalCurveFromFile :: FilePath -> IO CalCurveBP
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date
---   
---   <pre>
---   &gt;&gt;&gt; :{
---     let years = VU.fromList [-3000,-2900,-2800,-2700,-2600]
---         densities = VU.fromList [0.1,0.2,0.3,0.2,0.1]
---     in refineCalDates [CalPDF {_calPDFid = "", _calPDFCals = years, _calPDFDens = densities}]
---   :}
---   [CalC14 {_calC14id = "", _calC14HDROneSigma = [HDR {_hdrstart = -2800, _hdrstop = -2900}], _calC14HDRTwoSigma = [HDR {_hdrstart = -2600, _hdrstop = -3000}]}]
---   </pre>
 refineCalDates :: [CalPDF] -> [CalC14]
 
 -- | A data type to represent a human readable summary of a calibrated
 --   radiocarbon date
 data CalC14
-CalC14 :: String -> [HDR] -> [HDR] -> CalC14
+CalC14 :: String -> CalRangeSummary -> [HDR] -> [HDR] -> CalC14
 
 -- | Identifier, e.g. a lab number
 [_calC14id] :: CalC14 -> String
+
+-- | Summary of the range of the calibrated date
+[_calC14RangeSummary] :: CalC14 -> CalRangeSummary
 
 -- | One-sigma high density regions
 [_calC14HDROneSigma] :: CalC14 -> [HDR]
@@ -657,15 +673,20 @@ writeCalC14s :: FilePath -> [CalC14] -> IO ()
 --   
 --   <pre>
 --   Sample: 1 ~&gt; [5000±30BP]
+--   Calibrated: 3941BC &gt;&gt; 3894BC &gt; 3773BC &lt; 3709BC &lt;&lt; 3655BC
 --   1-sigma: 3894-3880BC, 3797-3709BC
 --   2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
---                                       ***                      
---                                      *'''**   *****            
---                     ***             *''''''<tt>***</tt>'''''*           
---               ******'''*            ''''''''''''''''      **   
---              *''''''''''**        **''''''''''''''''*   **''*  
---           ***'''''''''''''<tt>********</tt>'''''''''''''''''''<tt>***</tt>'''''**
---    -3960 &lt;~~~~~~~~~|~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~|~~~~~~~~~~&gt; -3640
+--                                       ▁▁▁                      
+--                                      ▁▒▒▒▁▁    ▁▁▁▁            
+--                      ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
+--                    ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
+--               ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
+--             ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
+--           ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
+--    -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
+--             &gt;       &gt;                   ^          &lt;        &lt;  
+--                     ───             ────────────────           
+--             ──────────────        ───────────────────   ───── 
 --   </pre>
 renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
 
