@@ -25,7 +25,29 @@ wget https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon
 # make it executable
 chmod +x currycarbon-Linux
 # test it
-./currycarbon-Linux "Sample1,4000,30"
+./currycarbon-Linux "Sample1,4990,30"
+```
+
+```
+Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
+Curve: IntCal20
+Calibrating...
+Sample: Sample1 ~> [4990±30BP]
+Calibrated: 3936BC >> 3794BC > 3757BC < 3662BC << 3654BC
+1-sigma: 3794-3707BC, 3666-3662BC
+2-sigma: 3936-3874BC, 3804-3697BC, 3684-3654BC
+                                     ▁▁▁    ▁▁▁▁            
+                                   ▁▁▒▒▒▁▁▁▁▒▒▒▒▁           
+                                   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒       ▁   
+                  ▁▁              ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁     ▁▒   
+                ▁▁▒▒▁             ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ▁▒▒▁  
+           ▁▁▁▁▁▒▒▒▒▒▁          ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▒▒▒▒▁ 
+        ▁▁▁▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁
+ -3950 ┄─────────┬───────────────┬────────────────┬─────────┄ -3640
+           >                      >     ^               < < 
+                                  ────────────────      ─   
+           ───────────           ──────────────────  ────── 
+Done.
 ```
 
 ```

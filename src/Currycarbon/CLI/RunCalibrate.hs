@@ -12,7 +12,7 @@ import           Currycarbon.Utils
 import           Control.Monad      (when, unless)
 import           Data.Either        (rights, lefts, isRight)
 import           Data.Foldable      (forM_)
-import           Data.Maybe         (fromJust, isJust)
+import           Data.Maybe         (fromJust, isJust, fromMaybe)
 import           System.IO          (hPutStrLn, stderr)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
@@ -39,14 +39,17 @@ runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOut
     if null uncalDatesRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"
     else do
-        -- calibration
-        hPutStrLn stderr "Calibrating..."
+        -- prep data
+        hPutStrLn stderr $ "Method: " ++ show method
+        hPutStrLn stderr $ "Curve: " ++ fromMaybe "IntCal20" calCurveFile
         calCurve <- maybe (return intcal20) readCalCurveFromFile calCurveFile
         let calConf = defaultCalConf {
               _calConfMethod = method
             , _calConfAllowOutside = allowOutside
             , _calConfInterpolateCalCurve = not noInterpolate
             }
+        -- run calibration
+        hPutStrLn stderr "Calibrating..."
         let errorOrCalPDFs = calibrateDates calConf calCurve uncalDatesRenamed
         handleDates True calCurve $ zip uncalDatesRenamed errorOrCalPDFs
         where

@@ -24,15 +24,20 @@ import qualified Data.Vector                    as V
 -- 
 -- @
 -- Sample: 1 ~\> [5000±30BP]
+-- Calibrated: 3941BC >> 3894BC > 3773BC < 3709BC << 3655BC
 -- 1-sigma: 3894-3880BC, 3797-3709BC
 -- 2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
---                                     ***                      
---                                    *'''**   *****            
---                   ***             *'''''''***''''''*           
---             ******'''*            ''''''''''''''''      **   
---            *''''''''''**        **''''''''''''''''*   **''*  
---         ***''''''''''''''********'''''''''''''''''''''***''''''**
---  -3960 \<~~~~~~~~~|~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~|~~~~~~~~~~\> -3640
+--                                     ▁▁▁                      
+--                                    ▁▒▒▒▁▁    ▁▁▁▁            
+--                    ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
+--                  ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
+--             ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
+--           ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
+--         ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
+--  -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
+--           \>       \>                   \^          \<        \<  
+--                   ───             ────────────────           
+--           ──────────────        ───────────────────   ───── 
 -- @
 --
 renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
@@ -44,7 +49,7 @@ renderCalDatePretty (uncalC14, calPDF, calC14) =
     intercalate "\n" [
           renderUncalC14 uncalC14
         , renderCalC14 calC14
-        , renderCLIPlotCalPDF 5 50 calPDF
+        , renderCLIPlotCalPDF 6 50 calPDF calC14
         ]
 
 -- CalibrationMethod
@@ -106,7 +111,7 @@ appendCalC14 path calC14 =
     appendFile path $ "\n" ++ renderCalC14ForFile calC14
 
 renderCalC14ForFile :: CalC14 -> String
-renderCalC14ForFile (CalC14 name hdrs68 hdrs95) =
+renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
     intercalate "\n" $ 
         map renderRow $
         zip3 (repeat name) (repeat "1") (renderHDRsForFile hdrs68) ++
@@ -121,22 +126,38 @@ renderCalC14s xs =
     ++ intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 _ hdrs68 hdrs95) =
-       "1-sigma: " ++ renderHDRs (reverse hdrs68) ++ "\n"
-    ++ "2-sigma: " ++ renderHDRs (reverse hdrs95)
+renderCalC14 (CalC14 _ rangeSummary hdrs68 hdrs95) =
+       "Calibrated: " ++ renderCalRangeSummary rangeSummary ++ "\n"
+    ++ "1-sigma: " ++ renderHDRs hdrs68 ++ "\n"
+    ++ "2-sigma: " ++ renderHDRs hdrs95
+
+renderCalRangeSummary :: CalRangeSummary -> String
+renderCalRangeSummary s =
+       renderYearBCAD (_calRangeStartTwoSigma s) ++ " >> "
+    ++ renderYearBCAD (_calRangeStartOneSigma s) ++ " > "
+    ++ renderYearBCAD (_calRangeMedian s) ++ " < "
+    ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " << "
+    ++ renderYearBCAD (_calRangeStopTwoSigma s)
+
+-- BCAD
+renderYearBCAD :: YearBCAD -> String
+renderYearBCAD x
+    | x < 0  = show (-x) ++ "BC"
+    | x >= 0 = show x ++ "AD"
+    | otherwise = error $ "This should never happen: " ++ show x
 
 -- HDR
 renderHDRsForFile :: [HDR] -> [(String, String)]
 renderHDRsForFile = map renderHDRForFile
 
 renderHDRForFile :: HDR -> (String, String)
-renderHDRForFile (HDR start stop) = (show stop, show start)
+renderHDRForFile (HDR start stop) = (show start, show stop)
 
 renderHDRs :: [HDR] -> String
 renderHDRs xs = intercalate ", " (map renderHDR xs)
 
 renderHDR :: HDR -> String
-renderHDR (HDR stop start)
+renderHDR (HDR start stop)
     | start < 0 && stop <= 0  = show (-start) ++ "-" ++ show (-stop) ++ "BC"
     | start < 0 && stop > 0   = show (-start) ++ "BC-" ++ show stop ++ "AD"
     | start >= 0 && stop >= 0 = show start ++ "-" ++ show stop ++ "AD"
@@ -198,19 +219,22 @@ renderCalPDF (CalPDF name cals dens) =
     where
       makeRow (x,y) = show name ++ "," ++ show x ++ "," ++ show y ++ "\n"
 
-renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> String
-renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
-     let binWidth = quot (VU.length dens) cols
-        -- last bin will often be shorter, which renders the whole plot 
-        -- slightly incorrect for the last column
-         binDens = meanBinDens (fromIntegral rows) binWidth dens
-         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getSymbol x) binDens) $ reverse [0..rows]
-         xAxis = constructXAxis (VU.head cals) (VU.last cals) (length binDens) binWidth
+renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> CalC14 -> String
+renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
+     let startYear = VU.head cals
+         stopYear = VU.last cals
+         yearsPerCol = quot (VU.length cals) cols
+        -- last bin will often be shorter, which renders the whole plot slightly incorrect for the last column
+         meanDensPerCol = calculateMeanDens yearsPerCol dens
+         effectiveCols = length meanDensPerCol
+         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getPlotSymbol x) meanDensPerCol) $ reverse [0..rows]
+         xAxis = constructXAxis startYear stopYear effectiveCols yearsPerCol
      in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
-        meanBinDens :: Float -> Int -> VU.Vector Float -> [Int]
-        meanBinDens scaling binWidth dens_ =
-            let meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery binWidth $ VU.toList dens_
+        calculateMeanDens :: Int -> VU.Vector Float -> [Int]
+        calculateMeanDens yearsPerCol dens_ =
+            let scaling = fromIntegral rows
+                meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList dens_
                 maxDens = maximum meanDens
             in map (\x -> round $ (x / maxDens) * scaling) meanDens
         splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
@@ -219,26 +243,53 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) =
             where (first,rest) = splitAt n list
         padString :: Int -> String -> String
         padString l x = replicate (l - length x) ' ' ++ x
-        getSymbol :: Int -> Int -> Char
-        getSymbol x y
-            | x == y = '*'
-            | x < y = '\''
+        getPlotSymbol :: Int -> Int -> Char
+        getPlotSymbol x y
+            | x == y = '▁'
+            | x < y = '▒'
             | otherwise = ' '
         constructXAxis :: Int -> Int -> Int -> Int -> String
-        constructXAxis start stop l binWidth =
-            let startS = padString 6 (show $ roundTo10 start)
-                stopS = show (roundTo10 stop)
-                tickFreq = if abs (start - stop) < 1500 then 100 else 1000
-                axis = zipWith (axisSymbol binWidth tickFreq) [0 .. (l - 1)] [1 .. l]
-            in  startS ++ " <" ++ axis ++ "> " ++ stopS
-            where 
-                axisSymbol axisL tickFreq a b = if hasTick tickFreq (start + axisL * a + 1) (start + axisL * b) then '|' else '~'
-                hasTick tickFreq a b = any (\x -> rem (abs x) tickFreq == 0) [a..b]
-        roundTo10 :: Int -> Int
-        roundTo10 x = 
-            let (dec,rest) = quotRem (abs x) 10
-                roundedDec = if rest >= 5 then dec + 1 else dec
-            in roundedDec * 10 * signum x
+        constructXAxis startYear stopYear effCols yearsPerCol =
+            let startS = padString 6 (show $ roundTo10 startYear)
+                stopS = show (roundTo10 stopYear)
+                tickFreq = if abs (startYear - stopYear) < 1500 then 100 else 1000
+                colStartYears = map (\a -> startYear + yearsPerCol * a) [0..(effCols - 1)]
+                colStopYears  = map (\b -> startYear + yearsPerCol * b - 1) [1..effCols]
+                axis        = zipWith (getAxisSymbol tickFreq)                   colStartYears colStopYears
+                simpleRange = zipWith (getRangeSymbol (_calC14RangeSummary c14)) colStartYears colStopYears
+                hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14))    colStartYears colStopYears
+                hdrTwo      = zipWith (getHDRSymbol (_calC14HDRTwoSigma c14))    colStartYears colStopYears
+            in  startS ++ " ┄" ++ axis ++ "┄ " ++ stopS ++ "\n" ++
+                replicate 8 ' ' ++ simpleRange ++ "\n" ++
+                replicate 8 ' ' ++ hdrOne ++ "\n" ++
+                replicate 8 ' ' ++ hdrTwo
+            where
+                roundTo10 :: Int -> Int
+                roundTo10 x =
+                    let (dec,rest) = quotRem (abs x) 10
+                        roundedDec = if rest >= 5 then dec + 1 else dec
+                    in roundedDec * 10 * signum x
+                getAxisSymbol :: Int -> Int -> Int -> Char
+                getAxisSymbol tickFreq colStartYear colStopYear
+                    | any (\x -> rem x tickFreq == 0) [colStartYear..colStopYear] = '┬'
+                    | otherwise = '─'
+                getRangeSymbol :: CalRangeSummary -> Int -> Int -> Char
+                getRangeSymbol range colStartYear colStopYear
+                    | colStartYear <= _calRangeMedian range        && colStopYear >= _calRangeMedian range        = '^'
+                    | colStartYear <= _calRangeStartOneSigma range && colStopYear >= _calRangeStartOneSigma range = '>'
+                    | colStartYear <= _calRangeStopOneSigma range  && colStopYear >= _calRangeStopOneSigma range  = '<'
+                    | colStartYear <= _calRangeStartTwoSigma range && colStopYear >= _calRangeStartTwoSigma range = '>'
+                    | colStartYear <= _calRangeStopTwoSigma range  && colStopYear >= _calRangeStopTwoSigma range  = '<'
+                    | otherwise = ' '
+                getHDRSymbol :: [HDR] -> Int -> Int -> Char
+                getHDRSymbol hdr colStartYear colStopYear
+                    | any (doesOverlap colStartYear colStopYear) hdr = '─'
+                    | otherwise = ' '
+                    where
+                        doesOverlap :: Int -> Int -> HDR -> Bool
+                        doesOverlap a b h =
+                            let ha = _hdrstart h; hb = _hdrstop h
+                            in (a >= ha && a <= hb) || (b >= ha && b <= hb) || (a <= ha && b >= hb)
 
 -- UncalC14
 renderUncalC14 :: UncalC14 -> String

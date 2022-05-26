@@ -114,11 +114,28 @@ data CalPDF = CalPDF {
 data CalC14 = CalC14 {
     -- | Identifier, e.g. a lab number
       _calC14id :: String
+    -- | Summary of the range of the calibrated date
+    , _calC14RangeSummary :: CalRangeSummary
     -- | One-sigma high density regions
     , _calC14HDROneSigma :: [HDR]
     -- | Two-sigma high density regions
     , _calC14HDRTwoSigma :: [HDR]
     } deriving Show
+
+-- | A data type to store a simple range summary of the calibrated date, including 
+-- the median age
+data CalRangeSummary = CalRangeSummary {
+    -- | Start of the two-sigma age range
+      _calRangeStartTwoSigma :: YearBCAD
+    -- | Start of the one-sigma age range
+    , _calRangeStartOneSigma :: YearBCAD
+    -- | Median age
+    , _calRangeMedian        :: YearBCAD
+    -- | End of the one-sigma age range
+    , _calRangeStopOneSigma  :: YearBCAD
+    -- | End of the two-sigma age range
+    , _calRangeStopTwoSigma  :: YearBCAD
+} deriving Show
 
 -- | A data type to represent a high density region of a probability distribution.
 -- A high density region is here defined as an age range, within which the respective 
