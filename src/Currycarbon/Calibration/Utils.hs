@@ -8,6 +8,26 @@ import qualified Data.Vector.Unboxed as VU
 import Data.Maybe (fromMaybe)
 import Numeric.SpecFunctions (logBeta)
 
+-- | Sum probability densities
+-- (|+|) :: CalPDF -> CalPDF -> CalPDF
+--huhu@(CalPDF _ cals1 dens1) |+| (CalPDF _ cals2 dens2) = 
+--    let startRange = minimum [VU.head cals1, VU.head cals2]
+--        stopRange = minimum [VU.last cals1, VU.last cals2]
+--        pdfEmptyBackdrop = zip [startRange..stopRange] [(0.0 :: Float)..]
+--        pdf1 = VU.toList $ VU.zip cals1 dens1
+--        pdf2 = VU.toList $ VU.zip cals1 dens1
+--    in huhu
+--    where
+--        -- https://stackoverflow.com/questions/24424403/join-or-merge-function-in-haskell
+--        key = fst 
+--        fullOuterJoin xs [] = map (\x -> (Just x, Nothing)) xs
+--        fullOuterJoin [] ys = map (\y -> (Nothing, Just y)) ys
+--        fullOuterJoin xss@(x:xs) yss@(y:ys) 
+--            | key x == key y = (Just x, Just y): fullOuterJoin xs ys
+--            | key x < key y  = (Just x, Nothing): fullOuterJoin xs yss
+--            | otherwise      = (Nothing, Just y): fullOuterJoin xss ys
+
+
 -- | get the density of a normal distribution at a point x
 -- 
 -- >>> dnorm 1.0 1.0 1.0
