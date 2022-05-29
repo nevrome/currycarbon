@@ -8,7 +8,16 @@ import qualified Data.Vector.Unboxed as VU
 import Data.Maybe (fromMaybe)
 import Numeric.SpecFunctions (logBeta)
 
--- | Sum probability densities
+-- | Sum probabilty densities
+sumPDFs :: CalPDF -> CalPDF -> CalPDF
+sumPDFs = combinePDFs (+)
+
+-- | Multiply probabilty densities
+multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
+multiplyPDFs = combinePDFs (*)
+
+-- | Combine probability densities
+-- CalPDF could be an instance of Semigroup, or even Monoid, but unfortunately mempty depends on the input PDFs
 combinePDFs :: (Float -> Float -> Float) -> CalPDF -> CalPDF -> CalPDF
 combinePDFs f (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) = 
     let startRange = minimum [VU.head cals1, VU.head cals2]
