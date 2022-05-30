@@ -108,7 +108,7 @@ data CalPDF = CalPDF {
     , _calPDFCals :: VU.Vector YearBCAD
     -- | Probability densities for each year in '_calPDFCals'
     , _calPDFDens :: VU.Vector Float
-    } deriving Show
+    } deriving (Show, Eq)
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {
