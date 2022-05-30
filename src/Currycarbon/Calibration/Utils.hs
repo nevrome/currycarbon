@@ -21,7 +21,7 @@ multiplyPDFs = combinePDFs (*)
 combinePDFs :: (Float -> Float -> Float) -> CalPDF -> CalPDF -> CalPDF
 combinePDFs f (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) = 
     let startRange = minimum [VU.head cals1, VU.head cals2]
-        stopRange = minimum [VU.last cals1, VU.last cals2]
+        stopRange = maximum [VU.last cals1, VU.last cals2]
         emptyBackdrop = zip [startRange..stopRange] (repeat (0.0 :: Float))
         pdf1 = VU.toList $ VU.zip cals1 dens1
         pdf2 = VU.toList $ VU.zip cals2 dens2
