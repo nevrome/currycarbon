@@ -8,6 +8,12 @@ import qualified Data.Vector.Unboxed as VU
 import Data.Maybe (fromMaybe)
 import Numeric.SpecFunctions (logBeta)
 
+instance Semigroup CalPDF where
+  pdf1 <> pdf2 = sumPDFs pdf1 pdf2
+
+instance Monoid CalPDF where
+    mempty = CalPDF "" VU.empty VU.empty
+
 -- | Sum probabilty densities
 sumPDFs :: CalPDF -> CalPDF -> CalPDF
 sumPDFs = combinePDFs (+)
