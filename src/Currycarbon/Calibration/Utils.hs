@@ -25,18 +25,18 @@ combinePDFs f (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
         emptyBackdrop = zip [startRange..stopRange] (repeat (0.0 :: Float))
         pdf1 = VU.toList $ VU.zip cals1 dens1
         pdf2 = VU.toList $ VU.zip cals2 dens2
-        zpdfCombined = fullOuter f pdf2 (fullOuter f pdf1 emptyBackdrop)
-        pdfNew = CalPDF (name1 ++ "+" ++ name2) (VU.fromList $ map fst zpdfCombined) (VU.fromList $ map snd zpdfCombined)
+        pdfCombined = fullOuter f pdf2 (fullOuter f pdf1 emptyBackdrop)
+        pdfNew = CalPDF (name1 ++ "+" ++ name2) (VU.fromList $ map fst pdfCombined) (VU.fromList $ map snd pdfCombined)
     in normalizeCalPDF pdfNew
     where
         -- https://stackoverflow.com/questions/24424403/join-or-merge-function-in-haskell
         fullOuter :: (Float -> Float -> Float) -> [(YearBCAD, Float)] -> [(YearBCAD, Float)] -> [(YearBCAD, Float)]
         fullOuter _ xs [] = xs
         fullOuter _ [] ys = ys
-        fullOuter f xss@(x:xs) yss@(y:ys)
-            | fst x == fst y = (fst x, f (snd x) (snd y)) : fullOuter f xs ys
-            | fst x < fst y  = x                          : fullOuter f xs yss
-            | otherwise      = y                          : fullOuter f xss ys
+        fullOuter f xss@(x@(year1,dens1):xs) yss@(y@(year2,dens2):ys)
+            | year1 == year2 = (year1, f dens1 dens2) : fullOuter f xs ys
+            | year1 < year2  = x                      : fullOuter f xs yss
+            | otherwise      = y                      : fullOuter f xss ys
 
 -- | get the density of a normal distribution at a point x
 -- 
