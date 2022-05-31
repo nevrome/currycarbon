@@ -7,44 +7,6 @@ import Currycarbon.Types
 import qualified Data.Vector.Unboxed as VU
 import Data.Maybe (fromMaybe)
 import Numeric.SpecFunctions (logBeta)
-import Data.Foldable (foldl')
-
-instance Semigroup CalPDF where
-  pdf1 <> pdf2 = sumPDFs pdf1 pdf2
-
-instance Monoid CalPDF where
-    mempty = CalPDF mempty mempty mempty
-
--- | Sum probabilty densities
-sumPDFs :: CalPDF -> CalPDF -> CalPDF
-sumPDFs = combinePDFs (+)
-
--- | Multiply probabilty densities
-multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
-multiplyPDFs = combinePDFs (*)
-
--- | Combine probability densities
--- CalPDF could be an instance of Semigroup, or even Monoid, but unfortunately mempty depends on the input PDFs
-combinePDFs :: (Float -> Float -> Float) -> CalPDF -> CalPDF -> CalPDF
-combinePDFs f pdf1@(CalPDF name1 cals1 dens1) pdf2@(CalPDF name2 cals2 dens2) 
-    | pdf1 == mempty = pdf2
-    | pdf2 == mempty = pdf1
-    | otherwise =
-        let startRange = minimum [VU.head cals1, VU.head cals2]
-            stopRange  = maximum [VU.last cals1, VU.last cals2]
-            emptyBackdrop = zip [startRange..stopRange] (repeat (0.0 :: Float))
-            pdfCombined = foldl' (fullOuter f) emptyBackdrop [VU.toList $ VU.zip cals1 dens1, VU.toList $ VU.zip cals2 dens2]
-            pdfNew = CalPDF (name1 ++ "+" ++ name2) (VU.fromList $ map fst pdfCombined) (VU.fromList $ map snd pdfCombined)
-        in normalizeCalPDF pdfNew
-        where
-            -- https://stackoverflow.com/questions/24424403/join-or-merge-function-in-haskell
-            fullOuter :: (Float -> Float -> Float) -> [(YearBCAD, Float)] -> [(YearBCAD, Float)] -> [(YearBCAD, Float)]
-            fullOuter _ xs [] = xs
-            fullOuter _ [] ys = ys
-            fullOuter f xss@(x@(year1,dens1):xs) yss@(y@(year2,dens2):ys)
-                | year1 == year2 = (year1, f dens1 dens2) : fullOuter f xs ys
-                | year1 < year2  = x                      : fullOuter f xs yss
-                | otherwise      = y                      : fullOuter f xss ys
 
 -- | get the density of a normal distribution at a point x
 -- 
@@ -133,12 +95,6 @@ interpolateCalCurve (CalCurveBP cals uncals sigmas) =
             in (xPred, y1 + xPredRel * yDiffPerxDiff)
         uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)
         uncurry3 f ~(a,b,c) = f a b c
-
-normalizeCalPDF :: CalPDF -> CalPDF
-normalizeCalPDF (CalPDF name cals dens) = 
-    let sumDens = VU.sum dens
-        normalizedDens = VU.map (/ sumDens) dens
-    in CalPDF name cals normalizedDens
 
 trimLowDensityEdgesCalPDF :: CalPDF -> CalPDF
 trimLowDensityEdgesCalPDF (CalPDF name cals dens) =
