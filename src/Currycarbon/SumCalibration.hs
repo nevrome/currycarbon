@@ -32,7 +32,7 @@ evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Maybe CalPDF
 evalCalExpr conf curve (UnCalDate a)    = eitherToMaybe $ head $ calibrateDates conf curve [a]
 evalCalExpr _    _     (CalDate a)      = Just a
 evalCalExpr conf curve (SumCal a b)     = maybeCombinePDFs (+) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
-evalCalExpr conf curve (ProductCal a b) = maybeCombinePDFs (*) (evalCalExpr conf curve a) (evalCalExpr conf curve a)
+evalCalExpr conf curve (ProductCal a b) = maybeCombinePDFs (*) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
 
 --parseCalExpr :: P.Parser CalExpr
 --parseCalExpr = do
