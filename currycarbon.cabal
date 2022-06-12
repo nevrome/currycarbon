@@ -27,6 +27,7 @@ library
       Currycarbon.Calibration.Calibration
       Currycarbon.CLI.RunCalibrate
       Currycarbon.Parsers
+      Currycarbon.SumCalibration
       Currycarbon.Types
       Currycarbon.Utils
     hs-source-dirs:

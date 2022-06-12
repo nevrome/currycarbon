@@ -23,6 +23,7 @@ import Currycarbon.Calibration.MatrixMult
 import Currycarbon.Types
 import Currycarbon.Utils
 
+import Data.Either (Either)
 import Data.List (sort, sortBy, groupBy, elemIndex)
 import Data.Maybe (fromJust)
 import qualified Data.Vector.Unboxed as VU

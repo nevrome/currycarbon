@@ -1,11 +1,9 @@
 {-# LANGUAGE StrictData #-}
-{-# LANGUAGE FlexibleInstances #-}
 
 module Currycarbon.Types where
 
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector as V
-import Data.Foldable (foldl')
 
 -- * Data types
 --
@@ -111,52 +109,6 @@ data CalPDF = CalPDF {
     -- | Probability densities for each year in '_calPDFCals'
     , _calPDFDens :: VU.Vector Float
     } deriving (Show, Eq)
-
--- mconcat [Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)]), Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)]), Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)])]
-
-newtype Sum n = Sum n deriving Show
-
-instance Semigroup (Sum CalPDF) where
-    Sum pdf1 <> Sum pdf2 = Sum $ sumPDFs pdf1 pdf2
-
-instance Monoid (Sum CalPDF) where
-    mempty = Sum $ CalPDF mempty mempty mempty
-
-newtype Product n = Product n deriving Show
-
-instance Semigroup (Product CalPDF) where
-    Product pdf1 <> Product pdf2 = Product $ multiplyPDFs pdf1 pdf2
-
-instance Monoid (Product CalPDF) where
-    mempty = Product $ CalPDF mempty mempty mempty
-
--- | Sum probabilty densities
-sumPDFs :: CalPDF -> CalPDF -> CalPDF
-sumPDFs = combinePDFs (+)
-
--- | Multiply probabilty densities
-multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
-multiplyPDFs = combinePDFs (*)
-
--- Combine probability densities
-combinePDFs :: (Float -> Float -> Float) -> CalPDF -> CalPDF -> CalPDF
-combinePDFs f pdf1@(CalPDF name1 cals1 dens1) pdf2@(CalPDF name2 cals2 dens2) 
-    | cals1 == mempty = pdf2
-    | cals2 == mempty = pdf1
-    | otherwise =
-        let emptyRange = [(VU.last cals1+1)..(VU.head cals2-1)] ++ [(VU.last cals2+1)..(VU.head cals1-1)]
-            pdfEmpty = zip emptyRange (repeat 0)
-            pdfCombined = foldl' (fullOuter f) pdfEmpty [VU.toList $ VU.zip cals1 dens1, VU.toList $ VU.zip cals2 dens2]
-            pdfNew = CalPDF (name1 ++ "+" ++ name2) (VU.fromList $ map fst pdfCombined) (VU.fromList $ map snd pdfCombined)
-        in normalizeCalPDF pdfNew
-        where -- https://stackoverflow.com/questions/24424403/join-or-merge-function-in-haskell
-            fullOuter :: (Float -> Float -> Float) -> [(YearBCAD, Float)] -> [(YearBCAD, Float)] -> [(YearBCAD, Float)]
-            fullOuter _ xs [] = xs
-            fullOuter _ [] ys = ys
-            fullOuter f xss@(x@(year1,dens1):xs) yss@(y@(year2,dens2):ys)
-                | year1 == year2 = (year1, f dens1 dens2) : fullOuter f xs ys
-                | year1 < year2  = x                      : fullOuter f xs yss
-                | otherwise      = y                      : fullOuter f xss ys
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) = 
