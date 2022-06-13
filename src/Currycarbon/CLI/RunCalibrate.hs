@@ -62,7 +62,7 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
                 (expr, Right cPDF) -> handleFirstDate calCurve expr cPDF >> handleDates False calCurve xs
             handleDates False calCurve (x:xs) = case x of
                 (_, Left ex)       -> printEx ex                         >> handleDates False calCurve xs
-                (expr, Right cPDF) -> handleOtherDate expr cPDF          >> handleDates False calCurve xs
+                (expr, Right cPDF) -> normalOut expr cPDF                >> handleDates False calCurve xs
             handleFirstDate :: CalCurveBP -> CalExpr -> CalPDF -> IO ()
             handleFirstDate calCurve expr@(UnCalDate uncal) calPDF = do
                 -- calcurve segment or calcurve matrix file
@@ -77,37 +77,30 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
                     when (isJust calCurveMatrixFile) $ 
                         writeCalCurveMatrix (fromJust calCurveMatrixFile) $ 
                         makeCalCurveMatrix (uncalToPDF uncal) calCurveSegment
-                else do
-                    -- other output
-                    let calC14 = refineCalDate calPDF
-                    unless quiet              $ putStrLn $ renderCalDatePretty (expr, calPDF, calC14)
-                    when (isJust hdrFile)     $ writeCalC14 (fromJust hdrFile) calC14
-                    when (isJust densityFile) $ writeCalPDF (fromJust densityFile) calPDF
-            handleFirstDate _ _ _ = hPutStrLn stderr $ 
-                        "The calCurveSegment file and the calCurveMatrix file can only be created for \
-                        \a DATEEXPR with only one uncalibrated date."
-            handleOtherDate :: CalExpr -> CalPDF -> IO ()
-            handleOtherDate expr calPDF = do
+                else do normalOut expr calPDF
+            handleFirstDate _ expr calPDF = normalOut expr calPDF
+            printEx :: CurrycarbonException -> IO ()
+            printEx ex = hPutStrLn stderr $ renderCurrycarbonException ex
+            normalOut :: CalExpr -> CalPDF -> IO ()
+            normalOut expr calPDF = do
                 let calC14 = refineCalDate calPDF
                 unless quiet              $ putStrLn $ renderCalDatePretty (expr, calPDF, calC14)
                 when (isJust hdrFile)     $ appendCalC14 (fromJust hdrFile) calC14
                 when (isJust densityFile) $ appendCalPDF (fromJust densityFile) calPDF
-            printEx :: CurrycarbonException -> IO ()
-            printEx ex = hPutStrLn stderr $ renderCurrycarbonException ex
 
 -- | Helper function to replace empty input names with a sequence of numbers, 
 -- to get each input date an unique identifier
 replaceEmptyNames :: [CalExpr] -> [CalExpr]
-replaceEmptyNames = zipWith replaceName [1..]
+replaceEmptyNames = zipWith (replaceName . (++ ".") . show) [1..]
     where
-        replaceName :: Int -> CalExpr -> CalExpr
+        replaceName :: String -> CalExpr -> CalExpr
         replaceName i (UnCalDate (UncalC14 name x y)) =
             if name == "unknownSampleName"
-            then UnCalDate $ UncalC14 (show i) x y
+            then UnCalDate $ UncalC14 i x y
             else UnCalDate $ UncalC14 name x y
         replaceName i (CalDate (CalPDF name x y)) = 
             if name == "unknownSampleName"
-            then CalDate $ CalPDF (show i) x y
+            then CalDate $ CalPDF i x y
             else CalDate $ CalPDF name x y
-        replaceName i (SumCal a b)     = SumCal (replaceName i a) (replaceName i b)
-        replaceName i (ProductCal a b) = ProductCal (replaceName i a) (replaceName i b)
+        replaceName i (SumCal a b)     = SumCal (replaceName (i ++ "s") a) (replaceName (i ++ "S") b)
+        replaceName i (ProductCal a b) = ProductCal (replaceName (i ++ "m") a) (replaceName (i ++ "M") b)

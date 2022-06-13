@@ -44,10 +44,10 @@ renderCalDatePretty (expr, calPDF, calC14) =
         ]
 
 renderCalExpr :: CalExpr -> String
-renderCalExpr (UnCalDate a)               = renderUncalC14 a
+renderCalExpr (UnCalDate a)               = renderUncalC14WithoutName a
 renderCalExpr (CalDate (CalPDF name _ _)) = name
-renderCalExpr (SumCal a b)                = "(" ++ renderCalExpr a ++ "+" ++ renderCalExpr b ++ ")"
-renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ "*" ++ renderCalExpr b ++ ")"
+renderCalExpr (SumCal a b)                = "(" ++ renderCalExpr a ++ " + " ++ renderCalExpr b ++ ")"
+renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ renderCalExpr b ++ ")"
 
 -- http://www.cse.chalmers.se/edu/year/2018/course/TDA452/lectures/RecursiveDataTypes.html
 data CalExpr =

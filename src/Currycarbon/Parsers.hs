@@ -259,6 +259,9 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                             in (a >= ha && a <= hb) || (b >= ha && b <= hb) || (a <= ha && b >= hb)
 
 -- UncalC14
+renderUncalC14WithoutName :: UncalC14 -> String
+renderUncalC14WithoutName (UncalC14 _ bp sigma) = show bp ++ "±" ++ show sigma ++ "BP"
+
 renderUncalC14 :: UncalC14 -> String
 renderUncalC14 (UncalC14 name bp sigma) = name ++ ":" ++ show bp ++ "±" ++ show sigma ++ "BP"
 
