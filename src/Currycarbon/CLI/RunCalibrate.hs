@@ -79,19 +79,19 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
                         makeCalCurveMatrix (uncalToPDF uncal) calCurveSegment
                 else do normalOut expr calPDF
             handleFirstDate _ expr calPDF = normalOut expr calPDF
-            printEx :: CurrycarbonException -> IO ()
-            printEx ex = hPutStrLn stderr $ renderCurrycarbonException ex
             normalOut :: CalExpr -> CalPDF -> IO ()
             normalOut expr calPDF = do
                 let calC14 = refineCalDate calPDF
                 unless quiet              $ putStrLn $ renderCalDatePretty (expr, calPDF, calC14)
                 when (isJust hdrFile)     $ appendCalC14 (fromJust hdrFile) calC14
                 when (isJust densityFile) $ appendCalPDF (fromJust densityFile) calPDF
+            printEx :: CurrycarbonException -> IO ()
+            printEx ex = hPutStrLn stderr $ renderCurrycarbonException ex
 
 -- | Helper function to replace empty input names with a sequence of numbers, 
 -- to get each input date an unique identifier
 replaceEmptyNames :: [CalExpr] -> [CalExpr]
-replaceEmptyNames = zipWith (replaceName . (++ ".") . show) [1..]
+replaceEmptyNames = zipWith (replaceName . show) [1..]
     where
         replaceName :: String -> CalExpr -> CalExpr
         replaceName i (UnCalDate (UncalC14 name x y)) =
