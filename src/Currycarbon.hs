@@ -42,6 +42,7 @@ module Currycarbon (
 
 import Currycarbon.Calibration.Calibration
 import Currycarbon.Parsers
+import Currycarbon.SumCalibration
 import Currycarbon.Types
 import Currycarbon.CalCurves.Intcal20
 

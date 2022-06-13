@@ -12,16 +12,48 @@ import qualified Data.Vector.Unboxed            as VU
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
 import Control.Exception (throwIO)
+import Data.List (intercalate)
 
-eitherToMaybe :: Either a b -> Maybe b
-eitherToMaybe = either (const Nothing) Just
+-- | Combine 'UncalC14', 'CalPDF' and 'CalC14' to render pretty command line output
+-- like this:
+-- 
+-- @
+-- Sample: 1 ~\> [5000±30BP]
+-- Calibrated: 3941BC >> 3894BC > 3773BC < 3709BC << 3655BC
+-- 1-sigma: 3894-3880BC, 3797-3709BC
+-- 2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
+--                                     ▁▁▁                      
+--                                    ▁▒▒▒▁▁    ▁▁▁▁            
+--                    ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
+--                  ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
+--             ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
+--           ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
+--         ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
+--  -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
+--           \>       \>                   \^          \<        \<  
+--                   ───             ────────────────           
+--           ──────────────        ───────────────────   ───── 
+-- @
+--
+renderCalDatesPretty :: [(CalExpr, CalPDF, CalC14)] -> String
+renderCalDatesPretty xs =
+    intercalate "\n" $ map renderCalDatePretty xs
+
+renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
+renderCalDatePretty (expr, calPDF, calC14) =
+    "DATE: " ++ intercalate "\n" [
+          renderCalExpr expr
+        , renderCalC14 calC14
+        , renderCLIPlotCalPDF 6 50 calPDF calC14
+        ]
+
+renderCalExpr :: CalExpr -> String
+renderCalExpr (UnCalDate a)               = renderUncalC14 a
+renderCalExpr (CalDate (CalPDF name _ _)) = name
+renderCalExpr (SumCal a b)                = "(" ++ renderCalExpr a ++ "+" ++ renderCalExpr b ++ ")"
+renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ "*" ++ renderCalExpr b ++ ")"
 
 -- http://www.cse.chalmers.se/edu/year/2018/course/TDA452/lectures/RecursiveDataTypes.html
---data UnCalExpr =
---    | UncalDate UncalC14
---    | SumUnCal UnCalExpr UnCalExpr
---    | ProductUnCal UnCalExpr UnCalExpr
-
 data CalExpr =
       UnCalDate UncalC14
     | CalDate CalPDF
@@ -29,11 +61,11 @@ data CalExpr =
     | ProductCal CalExpr CalExpr
     deriving Show
 
-evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Maybe CalPDF
-evalCalExpr conf curve (UnCalDate a)    = eitherToMaybe $ head $ calibrateDates conf curve [a]
-evalCalExpr _    _     (CalDate a)      = Just a
-evalCalExpr conf curve (SumCal a b)     = maybeCombinePDFs (+) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
-evalCalExpr conf curve (ProductCal a b) = maybeCombinePDFs (*) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
+evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
+evalCalExpr conf curve (UnCalDate a)    = calibrateDate conf curve a
+evalCalExpr _    _     (CalDate a)      = Right a
+evalCalExpr conf curve (SumCal a b)     = eitherCombinePDFs (+) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
+evalCalExpr conf curve (ProductCal a b) = eitherCombinePDFs (*) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
 
 --parseCalExpr :: P.Parser CalExpr
 --parseCalExpr = do
@@ -99,10 +131,10 @@ instance Semigroup (Product CalPDF) where
 instance Monoid (Product CalPDF) where
     mempty = Product $ CalPDF mempty mempty mempty
 
-maybeCombinePDFs :: (Float -> Float -> Float) -> Maybe CalPDF -> Maybe CalPDF -> Maybe CalPDF
-maybeCombinePDFs _ Nothing _ = Nothing
-maybeCombinePDFs _ _ Nothing = Nothing
-maybeCombinePDFs f (Just a) (Just b) = Just $ combinePDFs f a b
+eitherCombinePDFs :: (Float -> Float -> Float) -> Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF
+eitherCombinePDFs _ (Left e) _ = Left e
+eitherCombinePDFs _ _ (Left e) = Left e
+eitherCombinePDFs f (Right a) (Right b) = Right $ combinePDFs f a b
 
 -- | Sum probabilty densities
 sumPDFs :: CalPDF -> CalPDF -> CalPDF

@@ -19,39 +19,6 @@ import qualified Data.Vector                    as V
 -- This module contains a number of functions to manage data input and 
 -- output plumbing for different datatypes
 
--- | Combine 'UncalC14', 'CalPDF' and 'CalC14' to render pretty command line output
--- like this:
--- 
--- @
--- Sample: 1 ~\> [5000±30BP]
--- Calibrated: 3941BC >> 3894BC > 3773BC < 3709BC << 3655BC
--- 1-sigma: 3894-3880BC, 3797-3709BC
--- 2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
---                                     ▁▁▁                      
---                                    ▁▒▒▒▁▁    ▁▁▁▁            
---                    ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
---                  ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
---             ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
---           ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
---         ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
---  -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
---           \>       \>                   \^          \<        \<  
---                   ───             ────────────────           
---           ──────────────        ───────────────────   ───── 
--- @
---
-renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
-renderCalDatesPretty xs =
-    intercalate "\n" $ map renderCalDatePretty xs
-
-renderCalDatePretty :: (UncalC14, CalPDF, CalC14) -> String
-renderCalDatePretty (uncalC14, calPDF, calC14) =
-    intercalate "\n" [
-          renderUncalC14 uncalC14
-        , renderCalC14 calC14
-        , renderCLIPlotCalPDF 6 50 calPDF calC14
-        ]
-
 -- CalibrationMethod
 readCalibrationMethod :: String -> Either String CalibrationMethod
 readCalibrationMethod s =
@@ -293,7 +260,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
 
 -- UncalC14
 renderUncalC14 :: UncalC14 -> String
-renderUncalC14 (UncalC14 name bp sigma) = "Sample: " ++ name ++ " ~> [" ++ show bp ++ "±" ++ show sigma ++ "BP]"
+renderUncalC14 (UncalC14 name bp sigma) = name ++ ":" ++ show bp ++ "±" ++ show sigma ++ "BP"
 
 -- | Read uncalibrated radiocarbon dates from a file. The file should feature one radiocarbon date
 -- per line in the form "\<sample name\>,\<mean age BP\>,\<one sigma standard deviation\>", where 

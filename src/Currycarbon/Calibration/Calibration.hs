@@ -10,6 +10,7 @@ module Currycarbon.Calibration.Calibration
       , prepareCalCurveSegment
       , makeCalCurveMatrix
       , uncalToPDF
+      , calibrateDate
       , calibrateDates
       , refineCalDates
       , refineCalDate
@@ -67,6 +68,17 @@ calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate
     map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates
 calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDates =
     map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates
+
+-- | Calibrates a date with the provided calibration curve
+calibrateDate :: CalibrateDatesConf -- ^ Configuration options to consider
+                 -> CalCurveBP -- ^ A calibration curve
+                 -> UncalC14 -- ^ An uncalibrated radiocarbon date
+                 -> Either CurrycarbonException CalPDF -- ^ The function returns either an exception if the 
+                                                        -- calibration failed for some reason, or a 'CalPDF'
+calibrateDate (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDate =
+    calibrateDateMatrixMult allowOutside interpolate calCurve uncalDate
+calibrateDate (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDate =
+    calibrateDateBchron distr allowOutside interpolate calCurve uncalDate
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
