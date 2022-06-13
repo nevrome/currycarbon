@@ -3,6 +3,7 @@
 import           Currycarbon.CLI.RunCalibrate       (runCalibrate, 
                                                      CalibrateOptions (..))
 import           Currycarbon.Parsers
+import           Currycarbon.SumCalibration
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import           Paths_currycarbon                  (version)
@@ -51,8 +52,9 @@ optParser :: OP.Parser Options
 optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> optParseUncalC14String
-                                      <*> optParseUncalC14FromFile
+calibrateOptParser = CalibrateOptions <$> optParseCalExprString
+                                      -- optParseUncalC14String
+                                      -- <*> optParseUncalC14FromFile
                                       <*> optParseCalCurveFromFile
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -68,6 +70,12 @@ calibrateOptParser = CalibrateOptions <$> optParseUncalC14String
 -- $inputParsing
 --
 -- These functions define and handle the CLI input arguments
+
+optParseCalExprString :: OP.Parser [CalExpr]
+optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCalExpr) (
+    OP.metavar "DATES" <>
+    OP.help "..."
+    ))
 
 optParseUncalC14String :: OP.Parser [UncalC14]
 optParseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14) (

@@ -61,12 +61,14 @@ term = P.try mul P.<|> factor
 expr :: P.Parser CalExpr
 expr = P.try add P.<|> term -- <* P.eof
 
-readCalExpr :: String -> Either String CalExpr
+readCalExpr :: String -> Either String [CalExpr]
 readCalExpr s =
-    case P.runParser expr () "" s of
+    case P.runParser parseCalExprSepBySemicolon () "" s of
         Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
         Right x -> Right x
-
+        where
+        parseCalExprSepBySemicolon :: P.Parser [CalExpr]
+        parseCalExprSepBySemicolon = P.sepBy expr (P.char ';' <* P.spaces) <* P.eof
 
 -- mconcat [Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)]), Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)]), Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)])]
 
