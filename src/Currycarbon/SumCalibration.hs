@@ -63,10 +63,6 @@ evalCalExpr _    _     (CalDate a)      = Right a
 evalCalExpr conf curve (SumCal a b)     = eitherCombinePDFs (+) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
 evalCalExpr conf curve (ProductCal a b) = eitherCombinePDFs (*) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
 
---parseCalExpr :: P.Parser CalExpr
---parseCalExpr = do
---    parseUncalC14 
-
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 spaceChar :: Char -> P.Parser Char
 spaceChar c = P.between P.spaces P.spaces (P.char c)

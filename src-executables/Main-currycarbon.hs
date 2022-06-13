@@ -13,6 +13,7 @@ import           Data.Version                       (showVersion)
 import qualified Options.Applicative                as OP
 import           System.Exit                        (exitFailure)
 import           System.IO                          (hPutStrLn, stderr)
+import GHC.Base (VecElem(Word8ElemRep))
 
 -- * CLI interface configuration
 --
@@ -72,26 +73,24 @@ calibrateOptParser = CalibrateOptions <$> optParseCalExprString
 
 optParseCalExprString :: OP.Parser [CalExpr]
 optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCalExpr) (
-    OP.metavar "DATEEXPR" <>
-    OP.help "..."
+    OP.metavar "DATE" <>
+    OP.help "A string with one or multiple uncalibrated dates of \
+            \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>\" \
+            \where <sample name> is optional (e.g. \"S1,4000,50\"). \
+            \Multiple dates can be listed separated by \";\" (e.g. \"S1,4000,50; 3000,25; S3,1000,20\"). \
+            \To sum or multiply the post calibration probability distributions, dates can be combined with \
+            \\"+\" or \"*\" (e.g. \"4000,50 + 4100,100\"). \
+            \These expressions can be combined arbitrarily. Parentheses can be added to specify the order \
+            \of operations (e.g. \"(4000,50 + 4100,100) * 3800,50\")"
     ))
-
--- optParseUncalC14String :: OP.Parser [UncalC14]
--- optParseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14) (
---     OP.metavar "DATES" <>
---     OP.help "A string with one or multiple uncalibrated dates of \
---             \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>;...\" \
---             \where <sample name> is optional. \
---             \So for example \"S1,4000,50;3000,25;S3,1000,20\"."
---     ))
 
 optParseCalExprFromFile :: OP.Parser [FilePath]
 optParseCalExprFromFile = OP.many (OP.strOption (
     OP.long "inputFile" <>
     OP.short 'i' <>
     OP.help "A file with a list of calibration expressions. \
-            \Formated just as DATEEXPR, but with a new line for each input date. \
-            \DATEEXPR and --inputFile can be combined and you can provide multiple instances of --inputFile"
+            \Formated just as DATE, but with a new line for each input date. \
+            \DATE and --inputFile can be combined and you can provide multiple instances of --inputFile"
     ))
 
 optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)
