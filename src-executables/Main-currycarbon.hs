@@ -53,8 +53,7 @@ optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> optParseCalExprString
-                                      -- optParseUncalC14String
-                                      <*> optParseUncalC14FromFile
+                                      <*> optParseCalExprFromFile
                                       <*> optParseCalCurveFromFile
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -73,7 +72,7 @@ calibrateOptParser = CalibrateOptions <$> optParseCalExprString
 
 optParseCalExprString :: OP.Parser [CalExpr]
 optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCalExpr) (
-    OP.metavar "DATES" <>
+    OP.metavar "DATEEXPR" <>
     OP.help "..."
     ))
 
@@ -86,13 +85,13 @@ optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCal
 --             \So for example \"S1,4000,50;3000,25;S3,1000,20\"."
 --     ))
 
-optParseUncalC14FromFile :: OP.Parser [FilePath]
-optParseUncalC14FromFile = OP.many (OP.strOption (
+optParseCalExprFromFile :: OP.Parser [FilePath]
+optParseCalExprFromFile = OP.many (OP.strOption (
     OP.long "inputFile" <>
     OP.short 'i' <>
-    OP.help "A file with a list of uncalibrated dates. \
-            \Formated just as DATES, but with a new line for each input date. \
-            \DATES and --inputFile can be combined and you can provide multiple instances of --inputFile"
+    OP.help "A file with a list of calibration expressions. \
+            \Formated just as DATEEXPR, but with a new line for each input date. \
+            \DATEEXPR and --inputFile can be combined and you can provide multiple instances of --inputFile"
     ))
 
 optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)

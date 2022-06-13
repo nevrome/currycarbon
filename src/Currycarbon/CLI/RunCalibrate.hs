@@ -19,9 +19,8 @@ import           System.IO          (hPutStrLn, stderr)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
-        _calibrateCalExpr :: [CalExpr]
-      --  _calibrateUncalC14 :: [UncalC14]  -- ^ Uncalibrated dates that should be calibrated
-      , _calibrateUncalC14File :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
+        _calibrateExprs :: [CalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
+      , _calibrateExprFiles :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
       , _calibrateCalCurveFile :: Maybe FilePath -- ^ Path to a .14c file
       , _calibrateCalibrationMethod :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateAllowOutside :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve 
@@ -36,12 +35,12 @@ data CalibrateOptions = CalibrateOptions {
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
 --runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOutside noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
-runCalibrate (CalibrateOptions uncalDates _ calCurveFile method allowOutside noInterpolate _ _ _ _ _) = do
+runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside noInterpolate _ _ _ _ _) = do
     -- compile dates
-    --entitiesFromFile <- mapM readUncalC14FromFile uncalFile
+    exprsFromFile <- mapM readCalExprFromFile exprFiles
     --let uncalDatesRenamed = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
-    let uncalDatesRenamed = uncalDates-- ++ concat entitiesFromFile
-    if null uncalDatesRenamed
+    let exprsRenamed = exprs ++ concat exprsFromFile
+    if null exprsRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"
     else do
         -- prep data
@@ -56,7 +55,7 @@ runCalibrate (CalibrateOptions uncalDates _ calCurveFile method allowOutside noI
         -- run calibration
         hPutStrLn stderr "Calibrating..."
         --let errorOrCalPDFs = calibrateDates calConf calCurve uncalDatesRenamed
-        let calPDF = head $ catMaybes $ map (evalCalExpr calConf calCurve) uncalDatesRenamed
+        let calPDF = head $ catMaybes $ map (evalCalExpr calConf calCurve) exprsRenamed
             calC14 = refineCalDate calPDF
         putStrLn $ renderCalDatePretty (UncalC14 "hu" 0 0, calPDF, calC14)
         -- handleDates True calCurve $ zip uncalDatesRenamed errorOrCalPDFs

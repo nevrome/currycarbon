@@ -11,6 +11,7 @@ import           Data.Foldable                  (foldl')
 import qualified Data.Vector.Unboxed            as VU
 import qualified Text.Parsec                    as P
 import qualified Text.Parsec.String             as P
+import Control.Exception (throwIO)
 
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe = either (const Nothing) Just
@@ -69,6 +70,16 @@ readCalExpr s =
         where
         parseCalExprSepBySemicolon :: P.Parser [CalExpr]
         parseCalExprSepBySemicolon = P.sepBy expr (P.char ';' <* P.spaces) <* P.eof
+
+readCalExprFromFile :: FilePath -> IO [CalExpr]
+readCalExprFromFile uncalFile = do
+    s <- readFile uncalFile
+    case P.runParser parseCalExprSepByNewline () "" s of
+        Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
+        Right x -> return x
+    where
+        parseCalExprSepByNewline :: P.Parser [CalExpr]
+        parseCalExprSepByNewline = P.endBy expr (P.newline <* P.spaces) <* P.eof
 
 -- mconcat [Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)]), Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)]), Sum (head $ rights $ calibrateDates defaultCalConf intcal20 [(UncalC14 "a" 1000 30)])]
 
