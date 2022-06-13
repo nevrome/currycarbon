@@ -37,8 +37,7 @@ runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
     -- compile dates
     exprsFromFile <- mapM readCalExprFromFile exprFiles
-    --let uncalDatesRenamed = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
-    let exprsRenamed = exprs ++ concat exprsFromFile
+    let exprsRenamed = replaceEmptyNames $ exprs ++ concat exprsFromFile
     if null exprsRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"
     else do
@@ -54,9 +53,6 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
         -- run calibration
         hPutStrLn stderr "Calibrating..."
         let errorOrCalPDFs = map (evalCalExpr calConf calCurve) exprsRenamed
-          --let calPDF = head $ catMaybes $ map (evalCalExpr calConf calCurve) exprsRenamed
-          --    calC14 = refineCalDate calPDF
-          --putStrLn $ renderCalDatePretty (UncalC14 "hu" 0 0, calPDF, calC14)
         handleDates True calCurve $ zip exprsRenamed errorOrCalPDFs
         where
             handleDates :: Bool -> CalCurveBP -> [(CalExpr, Either CurrycarbonException CalPDF)] -> IO ()
@@ -101,12 +97,17 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
 
 -- | Helper function to replace empty input names with a sequence of numbers, 
 -- to get each input date an unique identifier
--- replaceEmptyNames :: [UncalC14] -> [UncalC14]
--- replaceEmptyNames xs =
---     zipWith replaceName xs [1..]
---     where
---         replaceName :: UncalC14 -> Int -> UncalC14
---         replaceName (UncalC14 name mean std) number =
---             if name == "unknownSampleName"
---             then UncalC14 (show number) mean std
---             else UncalC14 name mean std
+replaceEmptyNames :: [CalExpr] -> [CalExpr]
+replaceEmptyNames = zipWith replaceName [1..]
+    where
+        replaceName :: Int -> CalExpr -> CalExpr
+        replaceName i (UnCalDate (UncalC14 name x y)) =
+            if name == "unknownSampleName"
+            then UnCalDate $ UncalC14 (show i) x y
+            else UnCalDate $ UncalC14 name x y
+        replaceName i (CalDate (CalPDF name x y)) = 
+            if name == "unknownSampleName"
+            then CalDate $ CalPDF (show i) x y
+            else CalDate $ CalPDF name x y
+        replaceName i (SumCal a b)     = SumCal (replaceName i a) (replaceName i b)
+        replaceName i (ProductCal a b) = ProductCal (replaceName i a) (replaceName i b)

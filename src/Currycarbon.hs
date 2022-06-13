@@ -37,7 +37,7 @@ module Currycarbon (
     refineCalDates,
     CalC14 (..),
     writeCalC14s,
-    renderCalDatesPretty
+    renderCalDatePretty
     ) where
 
 import Currycarbon.Calibration.Calibration

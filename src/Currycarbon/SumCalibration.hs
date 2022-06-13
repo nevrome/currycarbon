@@ -14,7 +14,7 @@ import qualified Text.Parsec.String             as P
 import Control.Exception (throwIO)
 import Data.List (intercalate)
 
--- | Combine 'UncalC14', 'CalPDF' and 'CalC14' to render pretty command line output
+-- | Combine 'CalExpr', 'CalPDF' and 'CalC14' to render pretty command line output
 -- like this:
 -- 
 -- @
@@ -35,10 +35,6 @@ import Data.List (intercalate)
 --           ──────────────        ───────────────────   ───── 
 -- @
 --
-renderCalDatesPretty :: [(CalExpr, CalPDF, CalC14)] -> String
-renderCalDatesPretty xs =
-    intercalate "\n" $ map renderCalDatePretty xs
-
 renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
 renderCalDatePretty (expr, calPDF, calC14) =
     "DATE: " ++ intercalate "\n" [
