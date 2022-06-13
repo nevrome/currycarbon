@@ -54,7 +54,7 @@ optParser = CmdCalibrate <$> calibrateOptParser
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> optParseCalExprString
                                       -- optParseUncalC14String
-                                      -- <*> optParseUncalC14FromFile
+                                      <*> optParseUncalC14FromFile
                                       <*> optParseCalCurveFromFile
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -77,14 +77,14 @@ optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCal
     OP.help "..."
     ))
 
-optParseUncalC14String :: OP.Parser [UncalC14]
-optParseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14) (
-    OP.metavar "DATES" <>
-    OP.help "A string with one or multiple uncalibrated dates of \
-            \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>;...\" \
-            \where <sample name> is optional. \
-            \So for example \"S1,4000,50;3000,25;S3,1000,20\"."
-    ))
+-- optParseUncalC14String :: OP.Parser [UncalC14]
+-- optParseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14) (
+--     OP.metavar "DATES" <>
+--     OP.help "A string with one or multiple uncalibrated dates of \
+--             \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>;...\" \
+--             \where <sample name> is optional. \
+--             \So for example \"S1,4000,50;3000,25;S3,1000,20\"."
+--     ))
 
 optParseUncalC14FromFile :: OP.Parser [FilePath]
 optParseUncalC14FromFile = OP.many (OP.strOption (

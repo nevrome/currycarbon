@@ -21,7 +21,7 @@ import           System.IO          (hPutStrLn, stderr)
 data CalibrateOptions = CalibrateOptions {
         _calibrateCalExpr :: [CalExpr]
       --  _calibrateUncalC14 :: [UncalC14]  -- ^ Uncalibrated dates that should be calibrated
-      -- , _calibrateUncalC14File :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
+      , _calibrateUncalC14File :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
       , _calibrateCalCurveFile :: Maybe FilePath -- ^ Path to a .14c file
       , _calibrateCalibrationMethod :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateAllowOutside :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve 
@@ -36,7 +36,7 @@ data CalibrateOptions = CalibrateOptions {
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
 --runCalibrate (CalibrateOptions uncalDates uncalFile calCurveFile method allowOutside noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
-runCalibrate (CalibrateOptions uncalDates calCurveFile method allowOutside noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
+runCalibrate (CalibrateOptions uncalDates _ calCurveFile method allowOutside noInterpolate _ _ _ _ _) = do
     -- compile dates
     --entitiesFromFile <- mapM readUncalC14FromFile uncalFile
     --let uncalDatesRenamed = replaceEmptyNames $ uncalDates ++ concat entitiesFromFile
@@ -100,12 +100,12 @@ runCalibrate (CalibrateOptions uncalDates calCurveFile method allowOutside noInt
 
 -- | Helper function to replace empty input names with a sequence of numbers, 
 -- to get each input date an unique identifier
-replaceEmptyNames :: [UncalC14] -> [UncalC14]
-replaceEmptyNames xs =
-    zipWith replaceName xs [1..]
-    where
-        replaceName :: UncalC14 -> Int -> UncalC14
-        replaceName (UncalC14 name mean std) number =
-            if name == "unknownSampleName"
-            then UncalC14 (show number) mean std
-            else UncalC14 name mean std
+-- replaceEmptyNames :: [UncalC14] -> [UncalC14]
+-- replaceEmptyNames xs =
+--     zipWith replaceName xs [1..]
+--     where
+--         replaceName :: UncalC14 -> Int -> UncalC14
+--         replaceName (UncalC14 name mean std) number =
+--             if name == "unknownSampleName"
+--             then UncalC14 (show number) mean std
+--             else UncalC14 name mean std

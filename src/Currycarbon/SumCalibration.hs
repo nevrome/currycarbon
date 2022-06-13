@@ -112,12 +112,13 @@ combinePDFs f pdf1@(CalPDF name1 cals1 dens1) pdf2@(CalPDF name2 cals2 dens2)
             pdfCombined = foldl' (fullOuter f) pdfEmpty [VU.toList $ VU.zip cals1 dens1, VU.toList $ VU.zip cals2 dens2]
             pdfNew = CalPDF (name1 ++ "+" ++ name2) (VU.fromList $ map fst pdfCombined) (VU.fromList $ map snd pdfCombined)
         in normalizeCalPDF pdfNew
-        where -- https://stackoverflow.com/questions/24424403/join-or-merge-function-in-haskell
-            fullOuter :: (Float -> Float -> Float) -> [(YearBCAD, Float)] -> [(YearBCAD, Float)] -> [(YearBCAD, Float)]
-            fullOuter _ xs [] = xs
-            fullOuter _ [] ys = ys
-            fullOuter f xss@(x@(year1,dens1):xs) yss@(y@(year2,dens2):ys)
-                | year1 == year2 = (year1, f dens1 dens2) : fullOuter f xs ys
-                | year1 < year2  = x                      : fullOuter f xs yss
-                | otherwise      = y                      : fullOuter f xss ys
+
+-- https://stackoverflow.com/questions/24424403/join-or-merge-function-in-haskell
+fullOuter :: (Float -> Float -> Float) -> [(YearBCAD, Float)] -> [(YearBCAD, Float)] -> [(YearBCAD, Float)]
+fullOuter _ xs [] = xs
+fullOuter _ [] ys = ys
+fullOuter f xss@(x@(year1,dens1):xs) yss@(y@(year2,dens2):ys)
+    | year1 == year2 = (year1, f dens1 dens2) : fullOuter f xs ys
+    | year1 < year2  = x                      : fullOuter f xs yss
+    | otherwise      = y                      : fullOuter f xss ys
 
