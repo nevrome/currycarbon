@@ -130,7 +130,7 @@ eitherCombinePDFs f (Right a) (Right b) = Right $ combinePDFs f a b
 
 -- | Sum probabilty densities
 sumPDFs :: CalPDF -> CalPDF -> CalPDF
-sumPDFs = combinePDFs (+)
+sumPDFs x y = combinePDFs (+) x y
 
 -- | Multiply probabilty densities
 multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
@@ -146,7 +146,7 @@ combinePDFs f pdf1@(CalPDF name1 cals1 dens1) pdf2@(CalPDF name2 cals2 dens2)
             pdfEmpty = zip emptyRange (repeat 0)
             pdfCombined = foldl' (fullOuter f) pdfEmpty [VU.toList $ VU.zip cals1 dens1, VU.toList $ VU.zip cals2 dens2]
             pdfNew = CalPDF (name1 ++ ":" ++ name2) (VU.fromList $ map fst pdfCombined) (VU.fromList $ map snd pdfCombined)
-        in normalizeCalPDF pdfNew
+        in pdfNew
 
 -- https://stackoverflow.com/questions/24424403/join-or-merge-function-in-haskell
 fullOuter :: (Float -> Float -> Float) -> [(YearBCAD, Float)] -> [(YearBCAD, Float)] -> [(YearBCAD, Float)]
