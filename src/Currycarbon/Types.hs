@@ -112,9 +112,9 @@ data CalPDF = CalPDF {
 
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) = 
-    let sumDens = VU.sum dens
-        normalizedDens = VU.map (/ sumDens) dens
-    in CalPDF name cals normalizedDens
+    case VU.sum dens of
+      0.0 -> CalPDF name cals dens
+      s   -> CalPDF name cals $ VU.map (/s) dens
 
 -- | A data type to represent an expression for sum- or product calibration
 data CalExpr =

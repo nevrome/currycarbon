@@ -53,6 +53,7 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
         -- run calibration
         hPutStrLn stderr "Calibrating..."
         let errorOrCalPDFs = map (evalCalExpr calConf calCurve) exprsRenamed
+        --error $ show errorOrCalPDFs
         handleDates True calCurve $ zip exprsRenamed errorOrCalPDFs
         where
             handleDates :: Bool -> CalCurveBP -> [(CalExpr, Either CurrycarbonException CalPDF)] -> IO ()
