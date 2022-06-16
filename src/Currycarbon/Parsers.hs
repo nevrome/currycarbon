@@ -44,6 +44,83 @@ parseCalibrationMethod = do
             _ <- P.string "MatrixMult"
             return MatrixMultiplication
 
+-- | Combine 'CalExpr', 'CalPDF' and 'CalC14' to render pretty command line output
+-- like this:
+-- 
+-- @
+-- Sample: 1 ~\> [5000±30BP]
+-- Calibrated: 3941BC >> 3894BC > 3773BC < 3709BC << 3655BC
+-- 1-sigma: 3894-3880BC, 3797-3709BC
+-- 2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
+--                                     ▁▁▁                      
+--                                    ▁▒▒▒▁▁    ▁▁▁▁            
+--                    ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
+--                  ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
+--             ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
+--           ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
+--         ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
+--  -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
+--           \>       \>                   \^          \<        \<  
+--                   ───             ────────────────           
+--           ──────────────        ───────────────────   ───── 
+-- @
+--
+renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
+renderCalDatePretty (calExpr, calPDF, calC14) =
+    "DATE: " ++ intercalate "\n" [
+          renderCalExpr calExpr
+        , renderCalC14 calC14
+        , renderCLIPlotCalPDF 6 50 calPDF calC14
+        ]
+
+renderCalExpr :: CalExpr -> String
+renderCalExpr (UnCalDate a)               = renderUncalC14WithoutName a
+renderCalExpr (CalDate (CalPDF name _ _)) = name
+renderCalExpr (SumCal a b)                = "(" ++ renderCalExpr a ++ " + " ++ renderCalExpr b ++ ")"
+renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ renderCalExpr b ++ ")"
+
+-- https://gist.github.com/abhin4v/017a36477204a1d57745
+spaceChar :: Char -> P.Parser Char
+spaceChar c = P.between P.spaces P.spaces (P.char c)
+--spaceChar = P.char
+
+add :: P.Parser CalExpr
+add = SumCal <$> term <*> (spaceChar '+' *> expr)
+
+mul :: P.Parser CalExpr
+mul = ProductCal <$> factor <*> (spaceChar '*' *> term)
+
+parens :: P.Parser CalExpr
+parens = P.between (spaceChar '(') (spaceChar ')') expr
+
+factor :: P.Parser CalExpr
+factor = parens P.<|> (UnCalDate <$> parseUncalC14)
+
+term :: P.Parser CalExpr
+term = P.try mul P.<|> factor
+
+expr :: P.Parser CalExpr
+expr = P.try add P.<|> term -- <* P.eof
+
+readCalExpr :: String -> Either String [CalExpr]
+readCalExpr s =
+    case P.runParser parseCalExprSepBySemicolon () "" s of
+        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
+        Right x -> Right x
+        where
+        parseCalExprSepBySemicolon :: P.Parser [CalExpr]
+        parseCalExprSepBySemicolon = P.sepBy expr (P.char ';' <* P.spaces) <* P.eof
+
+readCalExprFromFile :: FilePath -> IO [CalExpr]
+readCalExprFromFile uncalFile = do
+    s <- readFile uncalFile
+    case P.runParser parseCalExprSepByNewline () "" s of
+        Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
+        Right x -> return x
+    where
+        parseCalExprSepByNewline :: P.Parser [CalExpr]
+        parseCalExprSepByNewline = P.endBy expr (P.newline <* P.spaces) <* P.eof
+
 -- CalC14
 -- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:
 -- 

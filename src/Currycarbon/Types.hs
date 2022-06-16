@@ -116,6 +116,15 @@ normalizeCalPDF (CalPDF name cals dens) =
         normalizedDens = VU.map (/ sumDens) dens
     in CalPDF name cals normalizedDens
 
+-- | A data type to represent an expression for sum- or product calibration
+data CalExpr =
+      UnCalDate UncalC14
+    | CalDate CalPDF
+    | SumCal CalExpr CalExpr
+    | ProductCal CalExpr CalExpr
+    deriving Show
+-- http://www.cse.chalmers.se/edu/year/2018/course/TDA452/lectures/RecursiveDataTypes.html
+
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {
     -- | Identifier, e.g. a lab number
