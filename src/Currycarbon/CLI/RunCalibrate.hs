@@ -59,12 +59,12 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
             handleDates _ _ [] = hPutStrLn stderr "Done."
             handleDates True calCurve (x:xs) = case x of
                 (_, Left ex)       -> printEx ex                         >> handleDates True  calCurve xs
-                (expr, Right cPDF) -> handleFirstDate calCurve expr cPDF >> handleDates False calCurve xs
+                (calExpr, Right cPDF) -> handleFirstDate calCurve calExpr cPDF >> handleDates False calCurve xs
             handleDates False calCurve (x:xs) = case x of
                 (_, Left ex)       -> printEx ex                         >> handleDates False calCurve xs
-                (expr, Right cPDF) -> normalOut expr cPDF                >> handleDates False calCurve xs
+                (calExpr, Right cPDF) -> normalOut calExpr cPDF                >> handleDates False calCurve xs
             handleFirstDate :: CalCurveBP -> CalExpr -> CalPDF -> IO ()
-            handleFirstDate calCurve expr@(UnCalDate uncal) calPDF = do
+            handleFirstDate calCurve calExpr@(UnCalDate uncal) calPDF = do
                 -- calcurve segment or calcurve matrix file
                 if isJust calCurveSegmentFile || isJust calCurveMatrixFile 
                 then do
@@ -77,12 +77,12 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
                     when (isJust calCurveMatrixFile) $ 
                         writeCalCurveMatrix (fromJust calCurveMatrixFile) $ 
                         makeCalCurveMatrix (uncalToPDF uncal) calCurveSegment
-                else do normalOut expr calPDF
-            handleFirstDate _ expr calPDF = normalOut expr calPDF
+                else do normalOut calExpr calPDF
+            handleFirstDate _ calExpr calPDF = normalOut calExpr calPDF
             normalOut :: CalExpr -> CalPDF -> IO ()
-            normalOut expr calPDF = do
+            normalOut calExpr calPDF = do
                 let calC14 = refineCalDate calPDF
-                unless quiet              $ putStrLn $ renderCalDatePretty (expr, calPDF, calC14)
+                unless quiet              $ putStrLn $ renderCalDatePretty (calExpr, calPDF, calC14)
                 when (isJust hdrFile)     $ appendCalC14 (fromJust hdrFile) calC14
                 when (isJust densityFile) $ appendCalPDF (fromJust densityFile) calPDF
             printEx :: CurrycarbonException -> IO ()
@@ -91,7 +91,7 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
 -- | Helper function to replace empty input names with a sequence of numbers, 
 -- to get each input date an unique identifier
 replaceEmptyNames :: [CalExpr] -> [CalExpr]
-replaceEmptyNames = zipWith (replaceName . show) [1..]
+replaceEmptyNames = zipWith (replaceName . show) ([1..] :: [Integer])
     where
         replaceName :: String -> CalExpr -> CalExpr
         replaceName i (UnCalDate (UncalC14 name x y)) =

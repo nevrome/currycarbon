@@ -36,9 +36,9 @@ import Data.List (intercalate)
 -- @
 --
 renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
-renderCalDatePretty (expr, calPDF, calC14) =
+renderCalDatePretty (calExpr, calPDF, calC14) =
     "DATE: " ++ intercalate "\n" [
-          renderCalExpr expr
+          renderCalExpr calExpr
         , renderCalC14 calC14
         , renderCLIPlotCalPDF 6 50 calPDF calC14
         ]
@@ -58,13 +58,13 @@ data CalExpr =
     deriving Show
 
 evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
-evalCalExpr conf curve expr = mapEither id normalizeCalPDF $ evalE conf curve expr
+evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
     where
-        evalE :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
-        evalE conf curve (UnCalDate a)    = calibrateDate conf curve a
-        evalE _    _     (CalDate a)      = Right a
-        evalE conf curve (SumCal a b)     = eitherCombinePDFs (+) (evalE conf curve a) (evalE conf curve b)
-        evalE conf curve (ProductCal a b) = eitherCombinePDFs (*) (evalE conf curve a) (evalE conf curve b)
+        evalE :: CalExpr -> Either CurrycarbonException CalPDF
+        evalE (UnCalDate a)    = calibrateDate conf curve a
+        evalE (CalDate a)      = Right a
+        evalE (SumCal a b)     = eitherCombinePDFs (+) (evalE a) (evalE b)
+        evalE (ProductCal a b) = eitherCombinePDFs (*) (evalE a) (evalE b)
         -- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
         mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
         mapEither f _ (Left x)  = Left (f x)
