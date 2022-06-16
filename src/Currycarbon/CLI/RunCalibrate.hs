@@ -59,10 +59,10 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
             handleDates _ _ [] = hPutStrLn stderr "Done."
             handleDates True calCurve (x:xs) = case x of
                 (_, Left ex)       -> printEx ex                         >> handleDates True  calCurve xs
-                (expr, Right cPDF) -> handleFirstDate calCurve expr (normalizeCalPDF cPDF) >> handleDates False calCurve xs
+                (expr, Right cPDF) -> handleFirstDate calCurve expr cPDF >> handleDates False calCurve xs
             handleDates False calCurve (x:xs) = case x of
                 (_, Left ex)       -> printEx ex                         >> handleDates False calCurve xs
-                (expr, Right cPDF) -> normalOut expr (normalizeCalPDF cPDF)                >> handleDates False calCurve xs
+                (expr, Right cPDF) -> normalOut expr cPDF                >> handleDates False calCurve xs
             handleFirstDate :: CalCurveBP -> CalExpr -> CalPDF -> IO ()
             handleFirstDate calCurve expr@(UnCalDate uncal) calPDF = do
                 -- calcurve segment or calcurve matrix file

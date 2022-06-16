@@ -58,10 +58,17 @@ data CalExpr =
     deriving Show
 
 evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
-evalCalExpr conf curve (UnCalDate a)    = calibrateDate conf curve a
-evalCalExpr _    _     (CalDate a)      = Right a
-evalCalExpr conf curve (SumCal a b)     = eitherCombinePDFs (+) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
-evalCalExpr conf curve (ProductCal a b) = eitherCombinePDFs (*) (evalCalExpr conf curve a) (evalCalExpr conf curve b)
+evalCalExpr conf curve expr = mapEither id normalizeCalPDF $ evalE conf curve expr
+    where
+        evalE :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
+        evalE conf curve (UnCalDate a)    = calibrateDate conf curve a
+        evalE _    _     (CalDate a)      = Right a
+        evalE conf curve (SumCal a b)     = eitherCombinePDFs (+) (evalE conf curve a) (evalE conf curve b)
+        evalE conf curve (ProductCal a b) = eitherCombinePDFs (*) (evalE conf curve a) (evalE conf curve b)
+        -- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
+        mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
+        mapEither f _ (Left x)  = Left (f x)
+        mapEither _ f (Right x) = Right (f x)
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 spaceChar :: Char -> P.Parser Char

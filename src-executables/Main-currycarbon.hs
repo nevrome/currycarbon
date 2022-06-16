@@ -13,7 +13,6 @@ import           Data.Version                       (showVersion)
 import qualified Options.Applicative                as OP
 import           System.Exit                        (exitFailure)
 import           System.IO                          (hPutStrLn, stderr)
-import GHC.Base (VecElem(Word8ElemRep))
 
 -- * CLI interface configuration
 --
