@@ -84,13 +84,13 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
             normalOut calExpr calPDF = do
                 case refineCalDate calPDF of
                     Nothing -> do
-                        unless quiet              $ do
-                            putStrLn $ renderCalDatePretty (calExpr, calPDF, Nothing)
+                        unless quiet $ do
+                            putStrLn $ renderCalExpr calExpr
                             hPutStrLn stderr "Warning: Could not calculate meaningful HDRs for this expression"
-                        when (isJust hdrFile)     $  hPutStrLn stderr "Nothing written to the HDR file"
+                        when (isJust hdrFile)     $ unless quiet $ hPutStrLn stderr "Nothing written to the HDR file"
                         when (isJust densityFile) $ appendCalPDF (fromJust densityFile) calPDF
                     Just calC14 -> do
-                        unless quiet              $ putStrLn $ renderCalDatePretty (calExpr, calPDF, Just calC14)
+                        unless quiet              $ putStrLn $ renderCalDatePretty (calExpr, calPDF, calC14)
                         when (isJust hdrFile)     $ appendCalC14 (fromJust hdrFile) calC14
                         when (isJust densityFile) $ appendCalPDF (fromJust densityFile) calPDF
             printEx :: CurrycarbonException -> IO ()
