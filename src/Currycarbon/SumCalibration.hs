@@ -23,7 +23,7 @@ evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
         evalE (CalDate a)      = Right a
         evalE (SumCal a b)     = eitherCombinePDFs (+) 0 (evalE a) (evalE b)
         evalE (ProductCal a b) = mapEither id normalizeCalPDF $ eitherCombinePDFs (*) 1 
-            (mapEither id normalizeCalPDF $ evalE a) (mapEither id normalizeCalPDF $ evalE b)
+            (mapEither id normalizeCalPDF $ evalE a) (mapEither id normalizeCalPDF $ evalE b) -- product needs extra normalization
         -- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
         mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
         mapEither f _ (Left x)  = Left (f x)

@@ -59,10 +59,10 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
             handleDates :: Bool -> CalCurveBP -> [(CalExpr, Either CurrycarbonException CalPDF)] -> IO ()
             handleDates _ _ [] = hPutStrLn stderr "Done."
             handleDates True calCurve (x:xs) = case x of
-                (_, Left ex)       -> printEx ex                         >> handleDates True  calCurve xs
+                (_, Left ex)          -> printEx ex                            >> handleDates True  calCurve xs
                 (calExpr, Right cPDF) -> handleFirstDate calCurve calExpr cPDF >> handleDates False calCurve xs
             handleDates False calCurve (x:xs) = case x of
-                (_, Left ex)       -> printEx ex                         >> handleDates False calCurve xs
+                (_, Left ex)          -> printEx ex                            >> handleDates False calCurve xs
                 (calExpr, Right cPDF) -> normalOut calExpr cPDF                >> handleDates False calCurve xs
             handleFirstDate :: CalCurveBP -> CalExpr -> CalPDF -> IO ()
             handleFirstDate calCurve calExpr@(UnCalDate uncal) calPDF = do
@@ -82,10 +82,17 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
             handleFirstDate _ calExpr calPDF = normalOut calExpr calPDF
             normalOut :: CalExpr -> CalPDF -> IO ()
             normalOut calExpr calPDF = do
-                let calC14 = refineCalDate calPDF
-                unless quiet              $ putStrLn $ renderCalDatePretty (calExpr, calPDF, calC14)
-                when (isJust hdrFile)     $ appendCalC14 (fromJust hdrFile) calC14
-                when (isJust densityFile) $ appendCalPDF (fromJust densityFile) calPDF
+                case refineCalDate calPDF of
+                    Nothing -> do
+                        unless quiet              $ do
+                            putStrLn $ renderCalDatePretty (calExpr, calPDF, Nothing)
+                            hPutStrLn stderr "Warning: Could not calculate meaningful HDRs for this expression"
+                        when (isJust hdrFile)     $  hPutStrLn stderr "Nothing written to the HDR file"
+                        when (isJust densityFile) $ appendCalPDF (fromJust densityFile) calPDF
+                    Just calC14 -> do
+                        unless quiet              $ putStrLn $ renderCalDatePretty (calExpr, calPDF, Just calC14)
+                        when (isJust hdrFile)     $ appendCalC14 (fromJust hdrFile) calC14
+                        when (isJust densityFile) $ appendCalPDF (fromJust densityFile) calPDF
             printEx :: CurrycarbonException -> IO ()
             printEx ex = hPutStrLn stderr $ renderCurrycarbonException ex
 

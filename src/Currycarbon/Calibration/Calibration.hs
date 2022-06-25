@@ -82,23 +82,14 @@ calibrateDate (CalibrateDatesConf Bchron{distribution=distr} allowOutside interp
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
-refineCalDates :: [CalPDF] -> [CalC14]
+refineCalDates :: [CalPDF] -> [Maybe CalC14]
 refineCalDates = map refineCalDate
 
-refineCalDate :: CalPDF -> CalC14
+refineCalDate :: CalPDF -> Maybe CalC14
 refineCalDate (CalPDF name cals dens) =
-    let -- simple density cumsum for median age
-        cumsumDensities = cumsumDens (VU.toList $ VU.zip cals dens)
-        distanceTo05 = map (\x -> abs $ (x - 0.5)) cumsumDensities
-        -- sorted density cumsum for hdrs
-        sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip cals dens)
-        cumsumSortedDensities = cumsumDens sortedDensities
-        isIn68 = map (< 0.683) cumsumSortedDensities
-        isIn95 = map (< 0.954) cumsumSortedDensities
-        contextualizedDensities = sort $ zipWith3 (\(y,d) in68 in95 -> (y,d,in68,in95)) sortedDensities isIn68 isIn95
-        hdrs68 = densities2HDR68 contextualizedDensities
-        hdrs95 = densities2HDR95 contextualizedDensities
-    in CalC14 {
+    if VU.sum dens == 0 || VU.length (VU.filter (>= 1.0) dens) == 1 -- don't calculate CalC14, if it's not meaningful
+    then Nothing
+    else Just $ CalC14 {
           _calC14id           = name
         , _calC14RangeSummary = CalRangeSummary {
               _calRangeStartTwoSigma = _hdrstart $ head hdrs95
@@ -111,6 +102,18 @@ refineCalDate (CalPDF name cals dens) =
         , _calC14HDRTwoSigma  = hdrs95
     }
     where
+        -- simple density cumsum for median age
+        cumsumDensities = cumsumDens (VU.toList $ VU.zip cals dens)
+        distanceTo05 = map (\x -> abs $ (x - 0.5)) cumsumDensities
+        -- sorted density cumsum for hdrs
+        sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip cals dens)
+        cumsumSortedDensities = cumsumDens sortedDensities
+        isIn68 = map (< 0.683) cumsumSortedDensities
+        isIn95 = map (< 0.954) cumsumSortedDensities
+        contextualizedDensities = sort $ zipWith3 (\(y,d) in68 in95 -> (y,d,in68,in95)) sortedDensities isIn68 isIn95
+        hdrs68 = densities2HDR68 contextualizedDensities
+        hdrs95 = densities2HDR95 contextualizedDensities
+        -- helper functions
         indexVU _ Nothing = Nothing
         indexVU x (Just i) = x VU.!? i
         cumsumDens :: [(YearBCAD, Float)] -> [Float]

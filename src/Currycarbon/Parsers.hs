@@ -65,8 +65,12 @@ parseCalibrationMethod = do
 --           ──────────────        ───────────────────   ───── 
 -- @
 --
-renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
-renderCalDatePretty (calExpr, calPDF, calC14) =
+renderCalDatePretty :: (CalExpr, CalPDF, Maybe CalC14) -> String
+renderCalDatePretty (calExpr, _, Nothing) =
+    "DATE: " ++ intercalate "\n" [
+          renderCalExpr calExpr
+        ]
+renderCalDatePretty (calExpr, calPDF, Just calC14) =
     "DATE: " ++ intercalate "\n" [
           renderCalExpr calExpr
         , renderCalC14 calC14
