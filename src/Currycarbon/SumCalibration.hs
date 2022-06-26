@@ -16,6 +16,8 @@ import Control.Exception (throwIO)
 import Data.List (intercalate, sortBy, group, groupBy)
 import Data.Ord (comparing)
 
+-- | Evaluate a dating expression by calibrating the individual dates and forming the respective 
+--   sums and products of post-calibration density distributions
 evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
 evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
     where
@@ -30,16 +32,20 @@ evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
         mapEither f _ (Left x)  = Left (f x)
         mapEither _ f (Right x) = Right (f x)
 
-eitherCombinePDFs :: (Float -> Float -> Float) -> Float -> Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF
+eitherCombinePDFs :: 
+    (Float -> Float -> Float) -> Float -> 
+    Either CurrycarbonException CalPDF -> 
+    Either CurrycarbonException CalPDF -> 
+    Either CurrycarbonException CalPDF
 eitherCombinePDFs _ _ (Left e) _ = Left e
 eitherCombinePDFs _ _ _ (Left e) = Left e
 eitherCombinePDFs f initVal (Right a) (Right b) = Right $ combinePDFs f initVal a b
 
--- | Sum probabilty densities
-sumPDFs :: CalPDF -> CalPDF -> CalPDF
-sumPDFs = combinePDFs (+) 0
+-- | Add two probabilty densities
+addPDFs :: CalPDF -> CalPDF -> CalPDF
+addPDFs = combinePDFs (+) 0
 
--- | Multiply probabilty densities
+-- | Multiply two probabilty densities
 multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
 multiplyPDFs = combinePDFs (*) 1
 
