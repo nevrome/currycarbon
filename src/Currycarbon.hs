@@ -120,8 +120,8 @@ result for a given sample.
 
 Calculating the sum or product of two calibration curves is a common
 application, which currycarbon supports with a custom algebraic data type
-'CalExpr'. It encodes a langauge to describe (very simple) chronological 
-models, which can be evaluated to a single 'CalPDF' with 'evalCalExpr'.
+'CalExpr'. It encodes a language to describe (very simple) chronological
+models, to be evaluated to a single 'CalPDF' with 'evalCalExpr'.
 
 A more basic interface is available with 'addPDFs' and 'multiplyPDFs',
 which allow to combine two 'CalPDF's with the respective operation.
