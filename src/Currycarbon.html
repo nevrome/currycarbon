@@ -37,15 +37,25 @@
 </span><span id="line-37"></span><span>    </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#refineCalDates"><span class="hs-identifier">refineCalDates</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-38"></span><span>    </span><span class="annot"><a href="Currycarbon.Types.html#CalC14"><span class="hs-identifier">CalC14</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
 </span><span id="line-39"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#writeCalC14s"><span class="hs-identifier">writeCalC14s</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-40"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#renderCalDatesPretty"><span class="hs-identifier">renderCalDatesPretty</span></a></span><span>
-</span><span id="line-41"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-42"></span><span>
-</span><span id="line-43"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html"><span class="hs-identifier">Currycarbon.Calibration.Calibration</span></a></span><span>
-</span><span id="line-44"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Parsers.html"><span class="hs-identifier">Currycarbon.Parsers</span></a></span><span>
-</span><span id="line-45"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Types.html"><span class="hs-identifier">Currycarbon.Types</span></a></span><span>
-</span><span id="line-46"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.CalCurves.Intcal20.html"><span class="hs-identifier">Currycarbon.CalCurves.Intcal20</span></a></span><span>
-</span><span id="line-47"></span><span>
-</span><span id="line-48"></span><span class="hs-comment">{- $calibration
+</span><span id="line-40"></span><span>    </span><span class="annot"><a href="Currycarbon.Parsers.html#renderCalDatePretty"><span class="hs-identifier">renderCalDatePretty</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Sum (and product) calibration</span></span><span>
+</span><span id="line-43"></span><span>    </span><span class="annot"><span class="hs-comment">-- $sumcal</span></span><span>
+</span><span id="line-44"></span><span>    </span><span class="annot"><a href="Currycarbon.SumCalibration.html#evalCalExpr"><span class="hs-identifier">evalCalExpr</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span class="annot"><a href="Currycarbon.Types.html#CalExpr"><span class="hs-identifier">CalExpr</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><a href="Currycarbon.SumCalibration.html#addPDFs"><span class="hs-identifier">addPDFs</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><a href="Currycarbon.SumCalibration.html#multiplyPDFs"><span class="hs-identifier">multiplyPDFs</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><a href="Currycarbon.Calibration.Utils.html#normalizeCalPDF"><span class="hs-identifier">normalizeCalPDF</span></a></span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html"><span class="hs-identifier">Currycarbon.Calibration.Calibration</span></a></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Parsers.html"><span class="hs-identifier">Currycarbon.Parsers</span></a></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.SumCalibration.html"><span class="hs-identifier">Currycarbon.SumCalibration</span></a></span><span>
+</span><span id="line-54"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Types.html"><span class="hs-identifier">Currycarbon.Types</span></a></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.CalCurves.Intcal20.html"><span class="hs-identifier">Currycarbon.CalCurves.Intcal20</span></a></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Currycarbon.Calibration.Utils.html"><span class="hs-identifier">Currycarbon.Calibration.Utils</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Calibration.Utils.html#normalizeCalPDF"><span class="hs-identifier">normalizeCalPDF</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="hs-comment">{- $calibration
 
 The main function in this module 'calibrateDates' calibrates 
 radiocarbon dates, given the uncalibrated input dates, a calibration 
@@ -66,8 +76,8 @@ default I suggest to use 'defaultCalConf'.
 'CalPDF' format, which can be written to a file with 'writeCalPDFs'.
 See the Derived output section below for more pretty output formats.
 -}</span><span>
-</span><span id="line-69"></span><span>
-</span><span id="line-70"></span><span class="hs-comment">{- $yearDataTypes
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-comment">{- $yearDataTypes
 
 A number of types were introcuded to distinguish clearly between
 ages in years BP, years BC/AD and year ranges (e.g. for standard
@@ -78,8 +88,8 @@ process, so that calibration curves have to be adjusted as well.
 That is why the two types 'CalCurveBP' and 'CalCurveBCAD' are
 distinguished.
 -}</span><span>
-</span><span id="line-81"></span><span>
-</span><span id="line-82"></span><span class="hs-comment">{- $calCurves
+</span><span id="line-91"></span><span>
+</span><span id="line-92"></span><span class="hs-comment">{- $calCurves
 
 Currycarbon features two separate data types for calibration curves:
 'CalCurveBP' and 'CalCurveBCAD' to distinguish between versions with
@@ -88,8 +98,8 @@ Currycarbon features two separate data types for calibration curves:
 The library only comes with one curve: 'intcal20'. At runtime curves
 can be read and used with 'readCalCurveFromFile'.
 -}</span><span>
-</span><span id="line-91"></span><span>
-</span><span id="line-92"></span><span class="hs-comment">{- $derivedOutput
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span class="hs-comment">{- $derivedOutput
 
 The main calibration function 'calibrateDates' returns a list of
 'CalPDF's. This is very useful output for further computational
@@ -104,4 +114,17 @@ These can also be written to a file with 'writeCalC14s'.
 'renderCalDatesPretty' finally combines 'UncalC14', 'CalPDF' and 
 'CalC14' to produce nice command line output summarising the calibration
 result for a given sample.
+-}</span><span>
+</span><span id="line-118"></span><span>
+</span><span id="line-119"></span><span class="hs-comment">{- $sumcal
+
+Calculating the sum or product of two calibration curves is a common
+application, which currycarbon supports with a custom algebraic data type
+'CalExpr'. It encodes a language to describe (very simple) chronological
+models, to be evaluated to a single 'CalPDF' with 'evalCalExpr'.
+
+A more basic interface is available with 'addPDFs' and 'multiplyPDFs',
+which allow to combine two 'CalPDF's with the respective operation.
+Depending on the application, 'normalizeCalPDF' will come in handy here,
+to normalize the output density distributions.
 -}</span></pre></body></html>

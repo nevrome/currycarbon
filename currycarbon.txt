@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.1.2.0
+@version 0.2.0.0
 
 module Currycarbon.Types
 
@@ -142,6 +142,13 @@ CalPDF :: String -> Vector YearBCAD -> Vector Float -> CalPDF
 -- | Probability densities for each year in <a>_calPDFCals</a>
 [_calPDFDens] :: CalPDF -> Vector Float
 
+-- | A data type to represent an expression for sum- or product calibration
+data CalExpr
+UnCalDate :: UncalC14 -> CalExpr
+CalDate :: CalPDF -> CalExpr
+SumCal :: CalExpr -> CalExpr -> CalExpr
+ProductCal :: CalExpr -> CalExpr -> CalExpr
+
 -- | A data type to represent a human readable summary of a calibrated
 --   radiocarbon date
 data CalC14
@@ -202,7 +209,9 @@ instance GHC.Show.Show Currycarbon.Types.UncalPDF
 instance GHC.Show.Show Currycarbon.Types.CalCurveBP
 instance GHC.Show.Show Currycarbon.Types.CalCurveBCAD
 instance GHC.Show.Show Currycarbon.Types.CalCurveMatrix
+instance GHC.Classes.Eq Currycarbon.Types.CalPDF
 instance GHC.Show.Show Currycarbon.Types.CalPDF
+instance GHC.Show.Show Currycarbon.Types.CalExpr
 instance GHC.Show.Show Currycarbon.Types.CalRangeSummary
 instance GHC.Classes.Eq Currycarbon.Types.HDR
 instance GHC.Show.Show Currycarbon.Types.HDR
@@ -210,20 +219,13 @@ instance GHC.Show.Show Currycarbon.Types.CalC14
 
 module Currycarbon.Calibration.Utils
 
+-- | Rescale a CalPDF so that the sum of the densities is approx. 1.0
+normalizeCalPDF :: CalPDF -> CalPDF
+
 -- | get the density of a normal distribution at a point x
---   
---   <pre>
---   &gt;&gt;&gt; dnorm 1.0 1.0 1.0
---   0.3989423
---   </pre>
 dnorm :: Float -> Float -> Float -> Float
 
 -- | get the density of student's-t distribution at a point x
---   
---   <pre>
---   &gt;&gt;&gt; dt 1.0 1.0
---   0.15915494
---   </pre>
 dt :: Double -> Float -> Float
 isOutsideRangeOfCalCurve :: CalCurveBP -> UncalC14 -> Bool
 
@@ -237,7 +239,6 @@ prepareCalCurveSegment :: Bool -> CalCurveBP -> CalCurveBCAD
 makeBCADCalCurve :: CalCurveBP -> CalCurveBCAD
 vectorBPToBCAD :: Vector YearBP -> Vector YearBCAD
 interpolateCalCurve :: CalCurveBP -> CalCurveBP
-normalizeCalPDF :: CalPDF -> CalPDF
 trimLowDensityEdgesCalPDF :: CalPDF -> CalPDF
 
 module Currycarbon.Utils
@@ -256,31 +257,40 @@ instance GHC.Show.Show Currycarbon.Utils.CurrycarbonException
 instance GHC.Exception.Type.Exception Currycarbon.Utils.CurrycarbonException
 
 module Currycarbon.Parsers
+readCalibrationMethod :: String -> Either String CalibrationMethod
+parseCalibrationMethod :: Parser CalibrationMethod
 
--- | Combine <a>UncalC14</a>, <a>CalPDF</a> and <a>CalC14</a> to render
+-- | Combine <a>CalExpr</a>, <a>CalPDF</a> and <a>CalC14</a> to render
 --   pretty command line output like this:
 --   
 --   <pre>
---   Sample: 1 ~&gt; [5000±30BP]
---   Calibrated: 3941BC &gt;&gt; 3894BC &gt; 3773BC &lt; 3709BC &lt;&lt; 3655BC
---   1-sigma: 3894-3880BC, 3797-3709BC
---   2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
---                                       ▁▁▁                      
---                                      ▁▒▒▒▁▁    ▁▁▁▁            
---                      ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
---                    ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
---               ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
---             ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
---           ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
---    -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
---             &gt;       &gt;                   ^          &lt;        &lt;  
---                     ───             ────────────────           
---             ──────────────        ───────────────────   ───── 
+--   DATE: (5000±30BP + 5100±100BP)
+--   Calibrated: 4150BC &gt;&gt; 3941BC &gt; 3814BC &lt; 3660BC &lt;&lt; 3651BC
+--   1-sigma: 3941-3864BC, 3810-3707BC, 3667-3660BC
+--   2-sigma: 4150-4148BC, 4048-3651BC
+--                                             ▁                
+--                                             ▒▁ ▁▁            
+--                                     ▁▁▁    ▁▒▒▁▒▒            
+--                                   ▁▁▒▒▒    ▒▒▒▒▒▒            
+--                                 ▁▁▒▒▒▒▒▁▁▁▁▒▒▒▒▒▒▁ ▁         
+--                             ▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▒▁        
+--           ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁
+--    -4330 ┄──┬─────┬─────┬─────┬──────┬─────┬─────┬─────┬─────┄ -3530
+--                      &gt;            &gt;       ^         &lt;        
+--                                   ──────  ──────── ──        
+--                      ─     ──────────────────────────
 --   </pre>
-renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
-renderCalDatePretty :: (UncalC14, CalPDF, CalC14) -> String
-readCalibrationMethod :: String -> Either String CalibrationMethod
-parseCalibrationMethod :: Parser CalibrationMethod
+renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
+renderCalExpr :: CalExpr -> String
+spaceChar :: Char -> Parser Char
+add :: Parser CalExpr
+mul :: Parser CalExpr
+parens :: Parser CalExpr
+factor :: Parser CalExpr
+term :: Parser CalExpr
+expr :: Parser CalExpr
+readCalExpr :: String -> Either String [CalExpr]
+readCalExprFromFile :: FilePath -> IO [CalExpr]
 
 -- | Write <a>CalC14</a>s to the file system. The output file is a long
 --   .csv file with the following structure:
@@ -338,6 +348,7 @@ appendCalPDF :: FilePath -> CalPDF -> IO ()
 renderCalPDFs :: [CalPDF] -> String
 renderCalPDF :: CalPDF -> String
 renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> CalC14 -> String
+renderUncalC14WithoutName :: UncalC14 -> String
 renderUncalC14 :: UncalC14 -> String
 
 -- | Read uncalibrated radiocarbon dates from a file. The file should
@@ -393,15 +404,6 @@ module Currycarbon.Calibration.Bchron
 
 -- | Intercept calibration as implemented in the Bchron R package (see
 --   <a>Bchron</a>)
---   
---   <pre>
---   &gt;&gt;&gt; :{
---     let calResult = calibrateDateBchron NormalDist False True intcal20 (UncalC14 "" 3000 30)
---         simplifyResult = \(Right (CalPDF _ age dens)) -&gt; VU.zip (VU.take 3 age) (VU.take 3 dens)
---     in simplifyResult calResult
---   :}
---   [(-1413,1.0703295e-5),(-1412,1.4653518e-5),(-1411,1.799142e-5)]
---   </pre>
 calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
 
 module Currycarbon.Calibration.Calibration
@@ -422,13 +424,16 @@ makeCalCurveMatrix :: UncalPDF -> CalCurveBCAD -> CalCurveMatrix
 --   table
 uncalToPDF :: UncalC14 -> UncalPDF
 
+-- | Calibrates a date with the provided calibration curve
+calibrateDate :: CalibrateDatesConf -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
+
 -- | Calibrates a list of dates with the provided calibration curve
 calibrateDates :: CalibrateDatesConf -> CalCurveBP -> [UncalC14] -> [Either CurrycarbonException CalPDF]
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date
-refineCalDates :: [CalPDF] -> [CalC14]
-refineCalDate :: CalPDF -> CalC14
+refineCalDates :: [CalPDF] -> [Maybe CalC14]
+refineCalDate :: CalPDF -> Maybe CalC14
 
 -- | A data type to cover the configuration options of the calibrateDates
 --   function
@@ -451,14 +456,24 @@ CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 
 -- | A default configuration that should yield almost identical calibration
 --   results to the <a>Bchron R package</a>
---   
---   <pre>
---   &gt;&gt;&gt; defaultCalConf
---   CalibrateDatesConf {_calConfMethod = Bchron {distribution = StudentTDist {ndf = 100.0}}, _calConfAllowOutside = False, _calConfInterpolateCalCurve = True}
---   </pre>
 defaultCalConf :: CalibrateDatesConf
 instance GHC.Classes.Eq Currycarbon.Calibration.Calibration.CalibrateDatesConf
 instance GHC.Show.Show Currycarbon.Calibration.Calibration.CalibrateDatesConf
+
+module Currycarbon.SumCalibration
+
+-- | Evaluate a dating expression by calibrating the individual dates and
+--   forming the respective sums and products of post-calibration density
+--   distributions
+evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
+eitherCombinePDFs :: (Float -> Float -> Float) -> Float -> Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF
+
+-- | Add two probabilty densities
+addPDFs :: CalPDF -> CalPDF -> CalPDF
+
+-- | Multiply two probabilty densities
+multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
+combinePDFs :: (Float -> Float -> Float) -> Float -> CalPDF -> CalPDF -> CalPDF
 
 
 -- | This module implements an algorithm for the calibration of
@@ -490,11 +505,6 @@ CalibrateDatesConf :: CalibrationMethod -> Bool -> Bool -> CalibrateDatesConf
 
 -- | A default configuration that should yield almost identical calibration
 --   results to the <a>Bchron R package</a>
---   
---   <pre>
---   &gt;&gt;&gt; defaultCalConf
---   CalibrateDatesConf {_calConfMethod = Bchron {distribution = StudentTDist {ndf = 100.0}}, _calConfAllowOutside = False, _calConfInterpolateCalCurve = True}
---   </pre>
 defaultCalConf :: CalibrateDatesConf
 
 -- | Different calibration algorithms implemented in currycarbon. Currently
@@ -629,7 +639,7 @@ readCalCurveFromFile :: FilePath -> IO CalCurveBP
 
 -- | Transforms the raw, calibrated probability density table to a
 --   meaningful representation of a calibrated radiocarbon date
-refineCalDates :: [CalPDF] -> [CalC14]
+refineCalDates :: [CalPDF] -> [Maybe CalC14]
 
 -- | A data type to represent a human readable summary of a calibrated
 --   radiocarbon date
@@ -668,40 +678,61 @@ CalC14 :: String -> CalRangeSummary -> [HDR] -> [HDR] -> CalC14
 --   </pre>
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 
--- | Combine <a>UncalC14</a>, <a>CalPDF</a> and <a>CalC14</a> to render
+-- | Combine <a>CalExpr</a>, <a>CalPDF</a> and <a>CalC14</a> to render
 --   pretty command line output like this:
 --   
 --   <pre>
---   Sample: 1 ~&gt; [5000±30BP]
---   Calibrated: 3941BC &gt;&gt; 3894BC &gt; 3773BC &lt; 3709BC &lt;&lt; 3655BC
---   1-sigma: 3894-3880BC, 3797-3709BC
---   2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
---                                       ▁▁▁                      
---                                      ▁▒▒▒▁▁    ▁▁▁▁            
---                      ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
---                    ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
---               ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
---             ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
---           ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
---    -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
---             &gt;       &gt;                   ^          &lt;        &lt;  
---                     ───             ────────────────           
---             ──────────────        ───────────────────   ───── 
+--   DATE: (5000±30BP + 5100±100BP)
+--   Calibrated: 4150BC &gt;&gt; 3941BC &gt; 3814BC &lt; 3660BC &lt;&lt; 3651BC
+--   1-sigma: 3941-3864BC, 3810-3707BC, 3667-3660BC
+--   2-sigma: 4150-4148BC, 4048-3651BC
+--                                             ▁                
+--                                             ▒▁ ▁▁            
+--                                     ▁▁▁    ▁▒▒▁▒▒            
+--                                   ▁▁▒▒▒    ▒▒▒▒▒▒            
+--                                 ▁▁▒▒▒▒▒▁▁▁▁▒▒▒▒▒▒▁ ▁         
+--                             ▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▒▁        
+--           ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁
+--    -4330 ┄──┬─────┬─────┬─────┬──────┬─────┬─────┬─────┬─────┄ -3530
+--                      &gt;            &gt;       ^         &lt;        
+--                                   ──────  ──────── ──        
+--                      ─     ──────────────────────────
 --   </pre>
-renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
+renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
+
+-- | Evaluate a dating expression by calibrating the individual dates and
+--   forming the respective sums and products of post-calibration density
+--   distributions
+evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
+
+-- | A data type to represent an expression for sum- or product calibration
+data CalExpr
+UnCalDate :: UncalC14 -> CalExpr
+CalDate :: CalPDF -> CalExpr
+SumCal :: CalExpr -> CalExpr -> CalExpr
+ProductCal :: CalExpr -> CalExpr -> CalExpr
+
+-- | Add two probabilty densities
+addPDFs :: CalPDF -> CalPDF -> CalPDF
+
+-- | Multiply two probabilty densities
+multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
+
+-- | Rescale a CalPDF so that the sum of the densities is approx. 1.0
+normalizeCalPDF :: CalPDF -> CalPDF
 
 module Currycarbon.CLI.RunCalibrate
 
 -- | A data type to represent the options to the CLI module function
 --   runCalibrate
 data CalibrateOptions
-CalibrateOptions :: [UncalC14] -> [FilePath] -> Maybe FilePath -> CalibrationMethod -> Bool -> Bool -> Bool -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> CalibrateOptions
+CalibrateOptions :: [CalExpr] -> [FilePath] -> Maybe FilePath -> CalibrationMethod -> Bool -> Bool -> Bool -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> CalibrateOptions
 
--- | Uncalibrated dates that should be calibrated
-[_calibrateUncalC14] :: CalibrateOptions -> [UncalC14]
+-- | String listing the uncalibrated dates that should be calibrated
+[_calibrateExprs] :: CalibrateOptions -> [CalExpr]
 
 -- | List of files with uncalibrated dates to be calibrated
-[_calibrateUncalC14File] :: CalibrateOptions -> [FilePath]
+[_calibrateExprFiles] :: CalibrateOptions -> [FilePath]
 
 -- | Path to a .14c file
 [_calibrateCalCurveFile] :: CalibrateOptions -> Maybe FilePath
