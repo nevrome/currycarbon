@@ -8,6 +8,13 @@ import qualified Data.Vector.Unboxed as VU
 import Data.Maybe (fromMaybe)
 import Numeric.SpecFunctions (logBeta)
 
+-- | Rescale a CalPDF so that the sum of the densitites is approx. 1.0
+normalizeCalPDF :: CalPDF -> CalPDF
+normalizeCalPDF (CalPDF name cals dens) = 
+    case VU.sum dens of
+      0.0 -> CalPDF name cals dens
+      s   -> CalPDF name cals $ VU.map (/s) dens
+
 -- | get the density of a normal distribution at a point x
 -- 
 -- >>> dnorm 1.0 1.0 1.0

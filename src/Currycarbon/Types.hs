@@ -110,12 +110,6 @@ data CalPDF = CalPDF {
     , _calPDFDens :: VU.Vector Float
     } deriving (Show, Eq)
 
-normalizeCalPDF :: CalPDF -> CalPDF
-normalizeCalPDF (CalPDF name cals dens) = 
-    case VU.sum dens of
-      0.0 -> CalPDF name cals dens
-      s   -> CalPDF name cals $ VU.map (/s) dens
-
 -- | A data type to represent an expression for sum- or product calibration
 data CalExpr =
       UnCalDate UncalC14

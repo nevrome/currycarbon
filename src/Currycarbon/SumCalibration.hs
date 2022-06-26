@@ -5,6 +5,7 @@ module Currycarbon.SumCalibration where
 import Currycarbon.Types
 import Currycarbon.Utils
 import Currycarbon.Calibration.Calibration
+import Currycarbon.Calibration.Utils
 import Currycarbon.Parsers
 
 import           Data.Foldable                  (foldl')
@@ -66,23 +67,3 @@ combinePDFs f initVal (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
                 | otherwise = []
             foldYearGroup :: [(YearBCAD, Float)] -> (YearBCAD, Float)
             foldYearGroup oneYear = (fst $ head oneYear, foldl' f initVal $ map snd oneYear)
-
-
--- -- Combine probability densities
--- combinePDFs :: (Float -> Float -> Float) -> CalPDF -> CalPDF -> CalPDF
--- combinePDFs f (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
---         let emptyRange = [(VU.last cals1+1)..(VU.head cals2-1)] ++ [(VU.last cals2+1)..(VU.head cals1-1)]
---             pdfEmpty = zip emptyRange (repeat 0.0)
---             pdfCombined = foldl' (fullOuter f) pdfEmpty [VU.toList $ VU.zip cals1 dens1, VU.toList $ VU.zip cals2 dens2]
---             pdfNew = CalPDF (name1 ++ ":" ++ name2) (VU.fromList $ map fst pdfCombined) (VU.fromList $ map snd pdfCombined)
---         in error $ show pdfEmpty--pdfNew
-
--- -- https://stackoverflow.com/questions/24424403/join-or-merge-function-in-haskell
--- fullOuter :: (Float -> Float -> Float) -> [(YearBCAD, Float)] -> [(YearBCAD, Float)] -> [(YearBCAD, Float)]
--- fullOuter _ xs [] = xs
--- fullOuter _ [] ys = ys
--- fullOuter f xss@(x@(year1,dens1):xs) yss@(y@(year2,dens2):ys)
---     | year1 == year2 = (year1, f dens1 dens2) : fullOuter f xs ys
---     | year1 < year2  = x                      : fullOuter f xs yss
---     | otherwise      = y                      : fullOuter f xss ys
-
