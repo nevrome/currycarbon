@@ -267,7 +267,10 @@ renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
      let startYear = VU.head cals
          stopYear = VU.last cals
-         yearsPerCol = quot (VU.length cals) cols
+         yearsPerCol = case quot (VU.length cals) cols of
+            0 -> 1 -- relevant for very short PDFs
+            1 -> 2
+            q -> q
         -- last bin will often be shorter, which renders the whole plot slightly incorrect for the last column
          meanDensPerCol = calculateMeanDens yearsPerCol dens
          effectiveCols = length meanDensPerCol
