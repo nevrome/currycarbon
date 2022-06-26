@@ -16,9 +16,6 @@ normalizeCalPDF (CalPDF name cals dens) =
       s   -> CalPDF name cals $ VU.map (/s) dens
 
 -- | get the density of a normal distribution at a point x
--- 
--- >>> dnorm 1.0 1.0 1.0
--- 0.3989423
 dnorm :: Float -> Float -> Float -> Float 
 dnorm mu sigma x = 
     let a = recip (sqrt (2 * pi * sigma2))
@@ -32,9 +29,6 @@ dnorm mu sigma x =
     -- realToFrac $ density (normalDistr (realToFrac mu) (realToFrac sigma)) (realToFrac x)
 
 -- | get the density of student's-t distribution at a point x
--- 
--- >>> dt 1.0 1.0
--- 0.15915494
 dt :: Double -> Float -> Float
 dt dof x =
     let xDouble = realToFrac x

@@ -11,9 +11,6 @@ import           Currycarbon.Types
 import           Currycarbon.Utils
 
 import           Control.Monad      (when, unless)
-import           Data.Either        (rights, lefts, isRight)
-import           Data.Maybe         (catMaybes)
-import           Data.Foldable      (forM_)
 import           Data.Maybe         (fromJust, isJust, fromMaybe)
 import           System.IO          (hPutStrLn, stderr)
 

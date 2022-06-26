@@ -3,7 +3,6 @@
 import           Currycarbon.CLI.RunCalibrate       (runCalibrate, 
                                                      CalibrateOptions (..))
 import           Currycarbon.Parsers
-import           Currycarbon.SumCalibration
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import           Paths_currycarbon                  (version)

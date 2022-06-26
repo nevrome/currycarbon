@@ -24,7 +24,6 @@ import Currycarbon.Calibration.MatrixMult
 import Currycarbon.Types
 import Currycarbon.Utils
 
-import Data.Either (Either)
 import Data.List (sort, sortBy, groupBy, elemIndex)
 import Data.Maybe (fromJust)
 import qualified Data.Vector.Unboxed as VU
@@ -46,9 +45,6 @@ data CalibrateDatesConf = CalibrateDatesConf {
 
 -- | A default configuration that should yield almost identical calibration results 
 -- to the [Bchron R package](https://github.com/andrewcparnell/Bchron)
---
--- >>> defaultCalConf
--- CalibrateDatesConf {_calConfMethod = Bchron {distribution = StudentTDist {ndf = 100.0}}, _calConfAllowOutside = False, _calConfInterpolateCalCurve = True}
 defaultCalConf :: CalibrateDatesConf
 defaultCalConf = CalibrateDatesConf {
         _calConfMethod = Bchron { distribution = StudentTDist 100 }

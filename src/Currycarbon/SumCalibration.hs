@@ -6,14 +6,10 @@ import Currycarbon.Types
 import Currycarbon.Utils
 import Currycarbon.Calibration.Calibration
 import Currycarbon.Calibration.Utils
-import Currycarbon.Parsers
 
 import           Data.Foldable                  (foldl')
 import qualified Data.Vector.Unboxed            as VU
-import qualified Text.Parsec                    as P
-import qualified Text.Parsec.String             as P
-import Control.Exception (throwIO)
-import Data.List (intercalate, sortBy, group, groupBy)
+import Data.List (sortBy, groupBy)
 import Data.Ord (comparing)
 
 -- | Evaluate a dating expression by calibrating the individual dates and forming the respective 
