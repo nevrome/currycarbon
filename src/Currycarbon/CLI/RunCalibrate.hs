@@ -55,19 +55,21 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
         let errorOrCalPDFs = map (evalCalExpr calConf calCurve) exprsRenamed
         handleDates True calCurve $ zip exprsRenamed errorOrCalPDFs
         where
+            -- the bool manages if a date is the first, calibratable date
             handleDates :: Bool -> CalCurveBP -> [(CalExpr, Either CurrycarbonException CalPDF)] -> IO ()
             handleDates _ _ [] = hPutStrLn stderr "Done."
-            handleDates True calCurve (x:xs) = case x of
-                (_, Left e)          -> printE e                            >> handleDates True  calCurve xs
-                (calExpr, Right cPDF) -> handleFirstDate calCurve calExpr cPDF >> handleDates False calCurve xs
-            handleDates False calCurve (x:xs) = case x of
-                (_, Left e)          -> printE e                            >> handleDates False calCurve xs
-                (calExpr, Right cPDF) -> normalOut calExpr cPDF appendCalPDF appendCalC14 >> handleDates False calCurve xs
-            handleFirstDate :: CalCurveBP -> CalExpr -> CalPDF -> IO ()
-            handleFirstDate calCurve calExpr@(UnCalDate uncal) calPDF = do
+            handleDates True calCurve (firstDate:otherDates) = case firstDate of
+                (_, Left e)           -> printE e                       >> handleDates True  calCurve otherDates
+                (calExpr, Right cPDF) -> firstOut calCurve calExpr cPDF >> handleDates False calCurve otherDates
+            handleDates False calCurve (firstDate:otherDates) = case firstDate of
+                (_, Left e)           -> printE e                       >> handleDates False calCurve otherDates
+                (calExpr, Right cPDF) -> otherOut calExpr cPDF          >> handleDates False calCurve otherDates
+            firstOut :: CalCurveBP -> CalExpr -> CalPDF -> IO ()
+            firstOut calCurve calExpr@(UnCalDate uncal) calPDF = do
+                flexOut calExpr calPDF writeCalPDF writeCalC14
                 when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
                     hPutStrLn stderr $
-                        "The calCurveSegment file and the calCurveMatrix file only consider the first date, " ++
+                        "Warning: The calCurveSegment file and the calCurveMatrix file only consider the first date, " ++
                         renderUncalC14 uncal
                     let calCurveSegment = prepareCalCurveSegment (not noInterpolate) $ getRelevantCalCurveSegment uncal calCurve
                     when (isJust calCurveSegmentFile) $
@@ -75,16 +77,20 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
                     when (isJust calCurveMatrixFile) $
                         writeCalCurveMatrix (fromJust calCurveMatrixFile) $
                         makeCalCurveMatrix (uncalToPDF uncal) calCurveSegment
-                normalOut calExpr calPDF writeCalPDF writeCalC14
-            handleFirstDate _ calExpr calPDF =
-                normalOut calExpr calPDF writeCalPDF writeCalC14
-            normalOut :: CalExpr -> CalPDF -> (FilePath -> CalPDF -> IO ()) -> (FilePath -> CalC14 -> IO ()) -> IO ()
-            normalOut calExpr calPDF calPDFToFile calC14ToFile = do
+            firstOut _ calExpr calPDF = do
+                flexOut calExpr calPDF writeCalPDF writeCalC14
+                when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
+                    hPutStrLn stderr $ "Warning: The calCurveSegment file and the calCurveMatrix file can only be produced for simple dates"
+            otherOut :: CalExpr -> CalPDF -> IO ()
+            otherOut calExpr calPDF =
+                flexOut calExpr calPDF appendCalPDF appendCalC14
+            flexOut :: CalExpr -> CalPDF -> (FilePath -> CalPDF -> IO ()) -> (FilePath -> CalC14 -> IO ()) -> IO ()
+            flexOut calExpr calPDF calPDFToFile calC14ToFile = do
                 case refineCalDate calPDF of
                     Nothing -> do
                         unless quiet $ do
                             putStrLn $ renderCalExpr calExpr
-                            hPutStrLn stderr "Warning: Could not calculate meaningful HDRs for this expression"
+                            hPutStrLn stderr "Warning: Could not calculate meaningful HDRs for this expression. Check --densityFile."
                         when (isJust hdrFile)     $ unless quiet $ hPutStrLn stderr "Nothing written to the HDR file"
                         when (isJust densityFile) $ calPDFToFile (fromJust densityFile) calPDF
                     Just calC14 -> do
@@ -109,4 +115,4 @@ replaceEmptyNames = zipWith (replaceName . show) ([1..] :: [Integer])
             then CalDate $ CalPDF i x y
             else CalDate $ CalPDF name x y
         replaceName i (SumCal a b)     = SumCal (replaceName (i ++ "s") a) (replaceName (i ++ "S") b)
-        replaceName i (ProductCal a b) = ProductCal (replaceName (i ++ "m") a) (replaceName (i ++ "M") b)
+        replaceName i (ProductCal a b) = ProductCal (replaceName (i ++ "p") a) (replaceName (i ++ "P") b)
