@@ -108,7 +108,16 @@ data CalPDF = CalPDF {
     , _calPDFCals :: VU.Vector YearBCAD
     -- | Probability densities for each year in '_calPDFCals'
     , _calPDFDens :: VU.Vector Float
-    } deriving Show
+    } deriving (Show, Eq)
+
+-- | A data type to represent an expression for sum- or product calibration
+data CalExpr =
+      UnCalDate UncalC14
+    | CalDate CalPDF
+    | SumCal CalExpr CalExpr
+    | ProductCal CalExpr CalExpr
+    deriving Show
+-- http://www.cse.chalmers.se/edu/year/2018/course/TDA452/lectures/RecursiveDataTypes.html
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {

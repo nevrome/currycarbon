@@ -8,10 +8,14 @@ import qualified Data.Vector.Unboxed as VU
 import Data.Maybe (fromMaybe)
 import Numeric.SpecFunctions (logBeta)
 
+-- | Rescale a CalPDF so that the sum of the densities is approx. 1.0
+normalizeCalPDF :: CalPDF -> CalPDF
+normalizeCalPDF (CalPDF name cals dens) = 
+    case VU.sum dens of
+      0.0 -> CalPDF name cals dens -- product calibration can yield empty calPDFs
+      s   -> CalPDF name cals $ VU.map (/s) dens
+
 -- | get the density of a normal distribution at a point x
--- 
--- >>> dnorm 1.0 1.0 1.0
--- 0.3989423
 dnorm :: Float -> Float -> Float -> Float 
 dnorm mu sigma x = 
     let a = recip (sqrt (2 * pi * sigma2))
@@ -25,9 +29,6 @@ dnorm mu sigma x =
     -- realToFrac $ density (normalDistr (realToFrac mu) (realToFrac sigma)) (realToFrac x)
 
 -- | get the density of student's-t distribution at a point x
--- 
--- >>> dt 1.0 1.0
--- 0.15915494
 dt :: Double -> Float -> Float
 dt dof x =
     let xDouble = realToFrac x
@@ -95,12 +96,6 @@ interpolateCalCurve (CalCurveBP cals uncals sigmas) =
             in (xPred, y1 + xPredRel * yDiffPerxDiff)
         uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)
         uncurry3 f ~(a,b,c) = f a b c
-
-normalizeCalPDF :: CalPDF -> CalPDF
-normalizeCalPDF (CalPDF name cals dens) = 
-    let sumDens = VU.sum dens
-        normalizedDens = VU.map (/ sumDens) dens
-    in CalPDF name cals normalizedDens
 
 trimLowDensityEdgesCalPDF :: CalPDF -> CalPDF
 trimLowDensityEdgesCalPDF (CalPDF name cals dens) =

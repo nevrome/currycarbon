@@ -19,39 +19,6 @@ import qualified Data.Vector                    as V
 -- This module contains a number of functions to manage data input and 
 -- output plumbing for different datatypes
 
--- | Combine 'UncalC14', 'CalPDF' and 'CalC14' to render pretty command line output
--- like this:
--- 
--- @
--- Sample: 1 ~\> [5000±30BP]
--- Calibrated: 3941BC >> 3894BC > 3773BC < 3709BC << 3655BC
--- 1-sigma: 3894-3880BC, 3797-3709BC
--- 2-sigma: 3941-3864BC, 3810-3700BC, 3680-3655BC
---                                     ▁▁▁                      
---                                    ▁▒▒▒▁▁    ▁▁▁▁            
---                    ▁▁              ▒▒▒▒▒▒▁▁▁▁▒▒▒▒            
---                  ▁▁▒▒             ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁           
---             ▁▁▁▁▁▒▒▒▒▁           ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ▁▁   
---           ▁▁▒▒▒▒▒▒▒▒▒▒▁▁        ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁   ▁▁▒▒▁  
---         ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▒▒▒▒▒▁▁
---  -3960 ┄─────────┬────────────────┬───────────────┬──────────┄ -3640
---           \>       \>                   \^          \<        \<  
---                   ───             ────────────────           
---           ──────────────        ───────────────────   ───── 
--- @
---
-renderCalDatesPretty :: [(UncalC14, CalPDF, CalC14)] -> String
-renderCalDatesPretty xs =
-    intercalate "\n" $ map renderCalDatePretty xs
-
-renderCalDatePretty :: (UncalC14, CalPDF, CalC14) -> String
-renderCalDatePretty (uncalC14, calPDF, calC14) =
-    intercalate "\n" [
-          renderUncalC14 uncalC14
-        , renderCalC14 calC14
-        , renderCLIPlotCalPDF 6 50 calPDF calC14
-        ]
-
 -- CalibrationMethod
 readCalibrationMethod :: String -> Either String CalibrationMethod
 readCalibrationMethod s =
@@ -76,6 +43,83 @@ parseCalibrationMethod = do
         matrixMultiplication = do
             _ <- P.string "MatrixMult"
             return MatrixMultiplication
+
+-- | Combine 'CalExpr', 'CalPDF' and 'CalC14' to render pretty command line output
+-- like this:
+-- 
+-- @
+-- DATE: (5000±30BP + 5100±100BP)
+-- Calibrated: 4150BC \>\> 3941BC \> 3814BC \< 3660BC \<\< 3651BC
+-- 1-sigma: 3941-3864BC, 3810-3707BC, 3667-3660BC
+-- 2-sigma: 4150-4148BC, 4048-3651BC
+--                                           ▁                
+--                                           ▒▁ ▁▁            
+--                                   ▁▁▁    ▁▒▒▁▒▒            
+--                                 ▁▁▒▒▒    ▒▒▒▒▒▒            
+--                               ▁▁▒▒▒▒▒▁▁▁▁▒▒▒▒▒▒▁ ▁         
+--                           ▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▒▁        
+--         ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁
+--  -4330 ┄──┬─────┬─────┬─────┬──────┬─────┬─────┬─────┬─────┄ -3530
+--                    \>            \>       \^         \<        
+--                                 ──────  ──────── ──        
+--                    ─     ──────────────────────────
+-- @
+--
+renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
+renderCalDatePretty (calExpr, calPDF, calC14) =
+    "DATE: " ++ intercalate "\n" [
+          renderCalExpr calExpr
+        , renderCalC14 calC14
+        , renderCLIPlotCalPDF 6 50 calPDF calC14
+        ]
+
+renderCalExpr :: CalExpr -> String
+renderCalExpr (UnCalDate a)               = renderUncalC14WithoutName a
+renderCalExpr (CalDate (CalPDF name _ _)) = name
+renderCalExpr (SumCal a b)                = "(" ++ renderCalExpr a ++ " + " ++ renderCalExpr b ++ ")"
+renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ renderCalExpr b ++ ")"
+
+-- https://gist.github.com/abhin4v/017a36477204a1d57745
+spaceChar :: Char -> P.Parser Char
+spaceChar c = P.between P.spaces P.spaces (P.char c)
+--spaceChar = P.char
+
+add :: P.Parser CalExpr
+add = SumCal <$> term <*> (spaceChar '+' *> expr)
+
+mul :: P.Parser CalExpr
+mul = ProductCal <$> factor <*> (spaceChar '*' *> term)
+
+parens :: P.Parser CalExpr
+parens = P.between (spaceChar '(') (spaceChar ')') expr
+
+factor :: P.Parser CalExpr
+factor = parens P.<|> (UnCalDate <$> parseUncalC14)
+
+term :: P.Parser CalExpr
+term = P.try mul P.<|> factor
+
+expr :: P.Parser CalExpr
+expr = P.try add P.<|> term -- <* P.eof
+
+readCalExpr :: String -> Either String [CalExpr]
+readCalExpr s =
+    case P.runParser parseCalExprSepBySemicolon () "" s of
+        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
+        Right x -> Right x
+        where
+        parseCalExprSepBySemicolon :: P.Parser [CalExpr]
+        parseCalExprSepBySemicolon = P.sepBy expr (P.char ';' <* P.spaces) <* P.eof
+
+readCalExprFromFile :: FilePath -> IO [CalExpr]
+readCalExprFromFile uncalFile = do
+    s <- readFile uncalFile
+    case P.runParser parseCalExprSepByNewline () "" s of
+        Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
+        Right x -> return x
+    where
+        parseCalExprSepByNewline :: P.Parser [CalExpr]
+        parseCalExprSepByNewline = P.endBy expr (P.newline <* P.spaces) <* P.eof
 
 -- CalC14
 -- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:
@@ -223,7 +267,10 @@ renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
      let startYear = VU.head cals
          stopYear = VU.last cals
-         yearsPerCol = quot (VU.length cals) cols
+         yearsPerCol = case quot (VU.length cals) cols of
+            0 -> 1 -- relevant for very short PDFs
+            1 -> 2
+            q -> q
         -- last bin will often be shorter, which renders the whole plot slightly incorrect for the last column
          meanDensPerCol = calculateMeanDens yearsPerCol dens
          effectiveCols = length meanDensPerCol
@@ -292,8 +339,11 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                             in (a >= ha && a <= hb) || (b >= ha && b <= hb) || (a <= ha && b >= hb)
 
 -- UncalC14
+renderUncalC14WithoutName :: UncalC14 -> String
+renderUncalC14WithoutName (UncalC14 _ bp sigma) = show bp ++ "±" ++ show sigma ++ "BP"
+
 renderUncalC14 :: UncalC14 -> String
-renderUncalC14 (UncalC14 name bp sigma) = "Sample: " ++ name ++ " ~> [" ++ show bp ++ "±" ++ show sigma ++ "BP]"
+renderUncalC14 (UncalC14 name bp sigma) = name ++ ":" ++ show bp ++ "±" ++ show sigma ++ "BP"
 
 -- | Read uncalibrated radiocarbon dates from a file. The file should feature one radiocarbon date
 -- per line in the form "\<sample name\>,\<mean age BP\>,\<one sigma standard deviation\>", where 

@@ -62,7 +62,7 @@ calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr:
 
 #currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q --densityFile /dev/null
 
-#### other tests ####
+#### cal curve ####
 
 run_currycarbon(paste(
   "--calCurveMatrixFile /tmp/curryMatrix.csv",
@@ -92,4 +92,47 @@ ggplot() +
   scale_y_reverse() +
   coord_fixed()
 
-  
+#### sum and product cal ####
+
+system('currycarbon "A,3000,20+B,2500,200+C,2800,70" --densityFile /tmp/currycarbonSumCalTest1.csv')
+
+sumCalTest1 <- readr::read_csv(
+  "/tmp/currycarbonSumCalTest1.csv",
+  col_types = readr::cols()
+)
+
+sumCalTest1 |>
+  ggplot() +
+  geom_line(aes(x = calBCAD, y = density))
+
+# Oxcal:
+#
+# Sum("A+B+C)")
+# {
+#   R_Date("A",3000,20);
+#   R_Date("B",2500,200);
+#   R_Date("C",2800,70);
+# };
+
+system('currycarbon "A,3000,30+B,3200,40*C,3300,30" --densityFile /tmp/currycarbonSumCalTest2.csv')
+
+sumCalTest2 <- readr::read_csv(
+  "/tmp/currycarbonSumCalTest2.csv",
+  col_types = readr::cols()
+)
+
+sumCalTest2 |>
+  ggplot() +
+  geom_line(aes(x = calBCAD, y = density))
+
+# Oxcal:
+#
+# Sum("A+(B*C)")
+# {
+#   R_Date("A",3000,30);
+#   Combine("B*C")
+#   {
+#     R_Date("B",3200,40);
+#     R_Date("C",3300,30);
+#   };
+# };

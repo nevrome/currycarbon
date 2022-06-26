@@ -51,8 +51,8 @@ optParser :: OP.Parser Options
 optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> optParseUncalC14String
-                                      <*> optParseUncalC14FromFile
+calibrateOptParser = CalibrateOptions <$> optParseCalExprString
+                                      <*> optParseCalExprFromFile
                                       <*> optParseCalCurveFromFile
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -69,22 +69,26 @@ calibrateOptParser = CalibrateOptions <$> optParseUncalC14String
 --
 -- These functions define and handle the CLI input arguments
 
-optParseUncalC14String :: OP.Parser [UncalC14]
-optParseUncalC14String = concat <$> OP.many (OP.argument (OP.eitherReader readUncalC14) (
-    OP.metavar "DATES" <>
+optParseCalExprString :: OP.Parser [CalExpr]
+optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCalExpr) (
+    OP.metavar "DATE" <>
     OP.help "A string with one or multiple uncalibrated dates of \
-            \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>;...\" \
-            \where <sample name> is optional. \
-            \So for example \"S1,4000,50;3000,25;S3,1000,20\"."
+            \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>\" \
+            \where <sample name> is optional (e.g. \"S1,4000,50\"). \
+            \Multiple dates can be listed separated by \";\" (e.g. \"S1,4000,50; 3000,25; S3,1000,20\"). \
+            \To sum or multiply the post calibration probability distributions, dates can be combined with \
+            \\"+\" or \"*\" (e.g. \"4000,50 + 4100,100\"). \
+            \These expressions can be combined arbitrarily. Parentheses can be added to specify the order \
+            \of operations (e.g. \"(4000,50 + 4100,100) * 3800,50\")"
     ))
 
-optParseUncalC14FromFile :: OP.Parser [FilePath]
-optParseUncalC14FromFile = OP.many (OP.strOption (
+optParseCalExprFromFile :: OP.Parser [FilePath]
+optParseCalExprFromFile = OP.many (OP.strOption (
     OP.long "inputFile" <>
     OP.short 'i' <>
-    OP.help "A file with a list of uncalibrated dates. \
-            \Formated just as DATES, but with a new line for each input date. \
-            \DATES and --inputFile can be combined and you can provide multiple instances of --inputFile"
+    OP.help "A file with a list of calibration expressions. \
+            \Formated just as DATE, but with a new line for each input date. \
+            \DATE and --inputFile can be combined and you can provide multiple instances of --inputFile"
     ))
 
 optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)

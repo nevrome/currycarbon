@@ -37,13 +37,23 @@ module Currycarbon (
     refineCalDates,
     CalC14 (..),
     writeCalC14s,
-    renderCalDatesPretty
+    renderCalDatePretty,
+
+    -- * Sum (and product) calibration
+    -- $sumcal
+    evalCalExpr,
+    CalExpr (..),
+    addPDFs,
+    multiplyPDFs,
+    normalizeCalPDF
     ) where
 
 import Currycarbon.Calibration.Calibration
 import Currycarbon.Parsers
+import Currycarbon.SumCalibration
 import Currycarbon.Types
 import Currycarbon.CalCurves.Intcal20
+import Currycarbon.Calibration.Utils (normalizeCalPDF)
 
 {- $calibration
 
@@ -104,4 +114,17 @@ These can also be written to a file with 'writeCalC14s'.
 'renderCalDatesPretty' finally combines 'UncalC14', 'CalPDF' and 
 'CalC14' to produce nice command line output summarising the calibration
 result for a given sample.
+-}
+
+{- $sumcal
+
+Calculating the sum or product of two calibration curves is a common
+application, which currycarbon supports with a custom algebraic data type
+'CalExpr'. It encodes a language to describe (very simple) chronological
+models, to be evaluated to a single 'CalPDF' with 'evalCalExpr'.
+
+A more basic interface is available with 'addPDFs' and 'multiplyPDFs',
+which allow to combine two 'CalPDF's with the respective operation.
+Depending on the application, 'normalizeCalPDF' will come in handy here,
+to normalize the output density distributions.
 -}

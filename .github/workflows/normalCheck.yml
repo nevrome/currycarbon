@@ -38,10 +38,7 @@ jobs:
         --bench \
         --no-run-tests \
         --no-run-benchmarks \
-        --pedantic \
-        --ghc-options -fno-warn-unused-imports
-      # the last line is only for doctest dependency management:
-      # warning about unused imports is turned off
+        --pedantic
 
     - name: Render haddock documentation
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
@@ -67,10 +64,10 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ${{ steps.haddockpath.outputs.DOCPATH }}
 
-    - name: Test
-      run: |
-        stack test \
-        --system-ghc
+    #- name: Test
+    #  run: |
+    #    stack test \
+    #    --system-ghc
     #     --coverage
 
     # - name: Generate coverage report

@@ -1,5 +1,5 @@
 name:                currycarbon
-version:             0.1.2.0
+version:             0.2.0.0
 synopsis:            A package for simple, fast radiocarbon calibration
 description:         Radiocarbon calibration with the intercept method optimised for fast calibration of many dates.
 homepage:            https://github.com/nevrome/currycarbon
@@ -27,6 +27,7 @@ library
       Currycarbon.Calibration.Calibration
       Currycarbon.CLI.RunCalibrate
       Currycarbon.Parsers
+      Currycarbon.SumCalibration
       Currycarbon.Types
       Currycarbon.Utils
     hs-source-dirs:
@@ -55,20 +56,4 @@ executable currycarbon
     default-language:
       Haskell2010
     ghc-options: 
-      -threaded -with-rtsopts=-N
-
-Test-Suite currycarbon-test
-    type:
-      exitcode-stdio-1.0
-    main-is:
-      Spec.hs
-    hs-source-dirs:
-      test
-    build-depends:
-        currycarbon
-      , base
-      , doctest >= 0.17 && < 0.18
-    default-language:
-      Haskell2010
-    ghc-options:
       -threaded -with-rtsopts=-N

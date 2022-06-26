@@ -10,6 +10,7 @@ module Currycarbon.Calibration.Calibration
       , prepareCalCurveSegment
       , makeCalCurveMatrix
       , uncalToPDF
+      , calibrateDate
       , calibrateDates
       , refineCalDates
       , refineCalDate
@@ -44,9 +45,6 @@ data CalibrateDatesConf = CalibrateDatesConf {
 
 -- | A default configuration that should yield almost identical calibration results 
 -- to the [Bchron R package](https://github.com/andrewcparnell/Bchron)
---
--- >>> defaultCalConf
--- CalibrateDatesConf {_calConfMethod = Bchron {distribution = StudentTDist {ndf = 100.0}}, _calConfAllowOutside = False, _calConfInterpolateCalCurve = True}
 defaultCalConf :: CalibrateDatesConf
 defaultCalConf = CalibrateDatesConf {
         _calConfMethod = Bchron { distribution = StudentTDist 100 }
@@ -67,25 +65,27 @@ calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate
 calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDates =
     map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates
 
+-- | Calibrates a date with the provided calibration curve
+calibrateDate :: CalibrateDatesConf -- ^ Configuration options to consider
+                 -> CalCurveBP -- ^ A calibration curve
+                 -> UncalC14 -- ^ An uncalibrated radiocarbon date
+                 -> Either CurrycarbonException CalPDF -- ^ The function returns either an exception if the 
+                                                        -- calibration failed for some reason, or a 'CalPDF'
+calibrateDate (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDate =
+    calibrateDateMatrixMult allowOutside interpolate calCurve uncalDate
+calibrateDate (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDate =
+    calibrateDateBchron distr allowOutside interpolate calCurve uncalDate
+
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
-refineCalDates :: [CalPDF] -> [CalC14]
+refineCalDates :: [CalPDF] -> [Maybe CalC14]
 refineCalDates = map refineCalDate
 
-refineCalDate :: CalPDF -> CalC14
+refineCalDate :: CalPDF -> Maybe CalC14
 refineCalDate (CalPDF name cals dens) =
-    let -- simple density cumsum for median age
-        cumsumDensities = cumsumDens (VU.toList $ VU.zip cals dens)
-        distanceTo05 = map (\x -> abs $ (x - 0.5)) cumsumDensities
-        -- sorted density cumsum for hdrs
-        sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip cals dens)
-        cumsumSortedDensities = cumsumDens sortedDensities
-        isIn68 = map (< 0.683) cumsumSortedDensities
-        isIn95 = map (< 0.954) cumsumSortedDensities
-        contextualizedDensities = sort $ zipWith3 (\(y,d) in68 in95 -> (y,d,in68,in95)) sortedDensities isIn68 isIn95
-        hdrs68 = densities2HDR68 contextualizedDensities
-        hdrs95 = densities2HDR95 contextualizedDensities
-    in CalC14 {
+    if VU.sum dens == 0 || VU.length (VU.filter (>= 1.0) dens) == 1 -- don't calculate CalC14, if it's not meaningful
+    then Nothing
+    else Just $ CalC14 {
           _calC14id           = name
         , _calC14RangeSummary = CalRangeSummary {
               _calRangeStartTwoSigma = _hdrstart $ head hdrs95
@@ -98,6 +98,18 @@ refineCalDate (CalPDF name cals dens) =
         , _calC14HDRTwoSigma  = hdrs95
     }
     where
+        -- simple density cumsum for median age
+        cumsumDensities = cumsumDens (VU.toList $ VU.zip cals dens)
+        distanceTo05 = map (\x -> abs $ (x - 0.5)) cumsumDensities
+        -- sorted density cumsum for hdrs
+        sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip cals dens)
+        cumsumSortedDensities = cumsumDens sortedDensities
+        isIn68 = map (< 0.683) cumsumSortedDensities
+        isIn95 = map (< 0.954) cumsumSortedDensities
+        contextualizedDensities = sort $ zipWith3 (\(y,d) in68 in95 -> (y,d,in68,in95)) sortedDensities isIn68 isIn95
+        hdrs68 = densities2HDR68 contextualizedDensities
+        hdrs95 = densities2HDR95 contextualizedDensities
+        -- helper functions
         indexVU _ Nothing = Nothing
         indexVU x (Just i) = x VU.!? i
         cumsumDens :: [(YearBCAD, Float)] -> [Float]
