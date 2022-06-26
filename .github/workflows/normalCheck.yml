@@ -64,10 +64,10 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ${{ steps.haddockpath.outputs.DOCPATH }}
 
-    - name: Test
-      run: |
-        stack test \
-        --system-ghc
+    #- name: Test
+    #  run: |
+    #    stack test \
+    #    --system-ghc
     #     --coverage
 
     # - name: Generate coverage report

@@ -32,7 +32,7 @@ chmod +x currycarbon-Linux
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
-Sample: Sample1 ~> [4990±30BP]
+DATE: 4990±30BP
 Calibrated: 3936BC >> 3794BC > 3757BC < 3662BC << 3654BC
 1-sigma: 3794-3707BC, 3666-3662BC
 2-sigma: 3936-3874BC, 3804-3697BC, 3684-3654BC
@@ -51,7 +51,7 @@ Done.
 ```
 
 ```
-Usage: currycarbon [--version] [DATES] [-i|--inputFile ARG] 
+Usage: currycarbon [--version] [DATE] [-i|--inputFile ARG] 
                    [--calibrationCurveFile ARG] [--method ARG] [--allowOutside] 
                    [--noInterpolation] [-q|--quiet] [--densityFile ARG] 
                    [--hdrFile ARG] [--calCurveSegmentFile ARG] 
@@ -61,15 +61,21 @@ Usage: currycarbon [--version] [DATES] [-i|--inputFile ARG]
 Available options:
   -h,--help                Show this help text
   --version                Show version
-  DATES                    A string with one or multiple uncalibrated dates of
+  DATE                     A string with one or multiple uncalibrated dates of
                            the form "<sample name>,<mean age BP>,<one sigma
-                           standard deviation>;..." where <sample name> is
-                           optional. So for example
-                           "S1,4000,50;3000,25;S3,1000,20".
-  -i,--inputFile ARG       A file with a list of uncalibrated dates. Formated
-                           just as DATES, but with a new line for each input
-                           date. DATES and --inputFile can be combined and you
-                           can provide multiple instances of --inputFile
+                           standard deviation>" where <sample name> is optional
+                           (e.g. "S1,4000,50"). Multiple dates can be listed
+                           separated by ";" (e.g. "S1,4000,50; 3000,25;
+                           S3,1000,20"). To sum or multiply the post calibration
+                           probability distributions, dates can be combined with
+                           "+" or "*" (e.g. "4000,50 + 4100,100"). These
+                           expressions can be combined arbitrarily. Parentheses
+                           can be added to specify the order of operations (e.g.
+                           "(4000,50 + 4100,100) * 3800,50")
+  -i,--inputFile ARG       A file with a list of calibration expressions.
+                           Formated just as DATE, but with a new line for each
+                           input date. DATE and --inputFile can be combined and
+                           you can provide multiple instances of --inputFile
   --calibrationCurveFile ARG
                            Path to an calibration curve file in .14c format. The
                            calibration curve will be read and used for
