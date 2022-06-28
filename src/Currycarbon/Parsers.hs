@@ -74,7 +74,7 @@ renderCalDatePretty (calExpr, calPDF, calC14) =
         ]
 
 renderCalExpr :: CalExpr -> String
-renderCalExpr (UnCalDate a)               = renderUncalC14WithoutName a
+renderCalExpr (UnCalDate a)               = renderUncalC14 a
 renderCalExpr (CalDate (CalPDF name _ _)) = name
 renderCalExpr (SumCal a b)                = "(" ++ renderCalExpr a ++ " + " ++ renderCalExpr b ++ ")"
 renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ renderCalExpr b ++ ")"
