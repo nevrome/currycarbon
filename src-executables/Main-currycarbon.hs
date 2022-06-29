@@ -11,8 +11,7 @@ import           Control.Exception                  (catch)
 import           Data.Version                       (showVersion)
 import qualified Options.Applicative                as OP
 import           System.Exit                        (exitFailure)
-import           System.IO                          (hPutStrLn, stderr)
-
+import           System.IO                          (hPutStrLn, stderr, stdout, hGetEncoding)
 -- * CLI interface configuration
 --
 -- $cliInterface
@@ -25,8 +24,13 @@ data Options = CmdCalibrate CalibrateOptions
 -- CLI interface configuration
 main :: IO ()
 main = do
+    -- check stdout encoding for the CLI plot
+    stdOutEncoding <- hGetEncoding stdout
+    let encoding = maybe "unknown" show stdOutEncoding
+    hPutStrLn stderr $ "currycarbon v" ++ showVersion version ++ " (" ++ encoding ++ ")"
+    -- prepare input parsing
     cmdOpts <- OP.customExecParser p optParserInfo
-    catch (runCmd cmdOpts) handler
+    catch (runCmd encoding cmdOpts) handler
     where
         p = OP.prefs OP.showHelpOnEmpty
         handler :: CurrycarbonException -> IO ()
@@ -34,9 +38,9 @@ main = do
             hPutStrLn stderr $ renderCurrycarbonException e
             exitFailure
 
-runCmd :: Options -> IO ()
-runCmd o = case o of
-    CmdCalibrate opts -> runCalibrate opts
+runCmd :: String -> Options -> IO ()
+runCmd enc o = case o of
+    CmdCalibrate opts -> runCalibrate opts {_calibrateStdOutEncoding = enc}
 
 optParserInfo :: OP.ParserInfo Options
 optParserInfo = OP.info (OP.helper <*> versionOption <*> optParser) (
@@ -58,6 +62,7 @@ calibrateOptParser = CalibrateOptions <$> optParseCalExprString
                                       <*> optParseAllowOutside
                                       <*> optParseDontInterpolateCalCurve
                                       <*> optParseQuiet
+                                      <*> pure "unknown"
                                       <*> optParseDensityFile
                                       <*> optParseHDRFile
                                       <*> optParseCalCurveSegmentFile

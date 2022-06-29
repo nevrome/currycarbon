@@ -12,7 +12,7 @@ import           Currycarbon.Utils
 
 import           Control.Monad      (when, unless)
 import           Data.Maybe         (fromJust, isJust, fromMaybe)
-import           System.IO          (hPutStrLn, stderr, stdout, hGetEncoding)
+import           System.IO          (hPutStrLn, stderr, stdout)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
@@ -23,6 +23,7 @@ data CalibrateOptions = CalibrateOptions {
       , _calibrateAllowOutside :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve 
       , _calibrateDontInterpolateCalCurve :: Bool -- ^ Don't interpolate the calibration curve
       , _calibrateQuiet :: Bool -- ^ Suppress the printing of calibration results to the command line
+      , _calibrateStdOutEncoding :: String -- ^ Encoding of the stdout stream (show TextEncoding)
       , _calibrateDensityFile :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
       , _calibrateHDRFile :: Maybe FilePath -- ^ Path to an output file
       , _calibrateCalCurveSegmentFile :: Maybe FilePath -- ^ Path to an output file 
@@ -31,12 +32,8 @@ data CalibrateOptions = CalibrateOptions {
 
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
-runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
-    -- check terminal environment: "ascii" means actually just "not UTF-8"
-    stdOutEncoding <- hGetEncoding stdout
-    let ascii = case stdOutEncoding of
-            Nothing -> True
-            Just enc -> show enc /= "UTF-8"
+runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside noInterpolate quiet encoding densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
+    let ascii = encoding /= "UTF-8"
     -- compile dates
     exprsFromFile <- mapM readCalExprFromFile exprFiles
     let exprsRenamed = replaceEmptyNames $ exprs ++ concat exprsFromFile
