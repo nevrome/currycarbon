@@ -13,7 +13,7 @@ This repository stores the dev version with up-to-date documentation available [
 
 ### CLI app
 
-For stable release versions we automatically prepare binaries that can be downloaded and run.
+For stable release versions we automatically prepare statically built binaries that can be downloaded and run directly.
 
 You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) | [Windows 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Windows.exe) ]. Older release versions are available [here](https://github.com/nevrome/currycarbon/releases).
 
@@ -29,10 +29,11 @@ chmod +x currycarbon-Linux
 ```
 
 ```
+currycarbon v0.2.1.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
-DATE: 4990±30BP
+DATE: Sample1:4990±30BP
 Calibrated: 3936BC >> 3794BC > 3757BC < 3662BC << 3654BC
 1-sigma: 3794-3707BC, 3666-3662BC
 2-sigma: 3936-3874BC, 3804-3697BC, 3684-3654BC
@@ -110,9 +111,9 @@ Available options:
                            (!) input date in a wide matrix format
 ```
 
-### For developers
+### For developers who want to edit the code
 
-To install the latest development version you can follow these steps:
+To install the latest development version (!) you can follow these steps:
 
 1. Install the Haskell build tool [Stack](https://docs.haskellstack.org/en/stable/README/)
 2. Clone the repository
