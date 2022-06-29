@@ -280,7 +280,7 @@ parseCalibrationMethod :: Parser CalibrationMethod
 --                                   ──────  ──────── ──        
 --                      ─     ──────────────────────────
 --   </pre>
-renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
+renderCalDatePretty :: Bool -> (CalExpr, CalPDF, CalC14) -> String
 renderCalExpr :: CalExpr -> String
 spaceChar :: Char -> Parser Char
 add :: Parser CalExpr
@@ -347,7 +347,14 @@ writeCalPDF :: FilePath -> CalPDF -> IO ()
 appendCalPDF :: FilePath -> CalPDF -> IO ()
 renderCalPDFs :: [CalPDF] -> String
 renderCalPDF :: CalPDF -> String
-renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> CalC14 -> String
+data PlotSymbol
+HistFill :: PlotSymbol
+HistTop :: PlotSymbol
+AxisEnd :: PlotSymbol
+AxisLine :: PlotSymbol
+AxisTick :: PlotSymbol
+HDRLine :: PlotSymbol
+renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
 renderUncalC14WithoutName :: UncalC14 -> String
 renderUncalC14 :: UncalC14 -> String
 
@@ -698,7 +705,7 @@ writeCalC14s :: FilePath -> [CalC14] -> IO ()
 --                                   ──────  ──────── ──        
 --                      ─     ──────────────────────────
 --   </pre>
-renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
+renderCalDatePretty :: Bool -> (CalExpr, CalPDF, CalC14) -> String
 
 -- | Evaluate a dating expression by calibrating the individual dates and
 --   forming the respective sums and products of post-calibration density

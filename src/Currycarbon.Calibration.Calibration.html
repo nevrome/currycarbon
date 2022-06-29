@@ -44,7 +44,7 @@
 </span><span id="line-42"></span><span>      </span><span class="hs-comment">-- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)</span><span>
 </span><span id="line-43"></span><span>      </span><span class="hs-special">,</span><span> </span><span id="_calConfInterpolateCalCurve"><span class="annot"><span class="annottext">CalibrateDatesConf -&gt; Bool
 </span><a href="Currycarbon.Calibration.Calibration.html#_calConfInterpolateCalCurve"><span class="hs-identifier hs-var hs-var">_calConfInterpolateCalCurve</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span>
-</span><span id="line-44"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679066808"><span id="local-6989586621679066810"><span id="local-6989586621679066812"><span class="annot"><span class="annottext">Int -&gt; CalibrateDatesConf -&gt; ShowS
+</span><span id="line-44"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679067134"><span id="local-6989586621679067136"><span id="local-6989586621679067138"><span class="annot"><span class="annottext">Int -&gt; CalibrateDatesConf -&gt; ShowS
 [CalibrateDatesConf] -&gt; ShowS
 CalibrateDatesConf -&gt; String
 (Int -&gt; CalibrateDatesConf -&gt; ShowS)
@@ -59,7 +59,7 @@ show :: CalibrateDatesConf -&gt; String
 $cshow :: CalibrateDatesConf -&gt; String
 showsPrec :: Int -&gt; CalibrateDatesConf -&gt; ShowS
 $cshowsPrec :: Int -&gt; CalibrateDatesConf -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679066803"><span id="local-6989586621679066805"><span class="annot"><span class="annottext">CalibrateDatesConf -&gt; CalibrateDatesConf -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679067129"><span id="local-6989586621679067131"><span class="annot"><span class="annottext">CalibrateDatesConf -&gt; CalibrateDatesConf -&gt; Bool
 (CalibrateDatesConf -&gt; CalibrateDatesConf -&gt; Bool)
 -&gt; (CalibrateDatesConf -&gt; CalibrateDatesConf -&gt; Bool)
 -&gt; Eq CalibrateDatesConf
@@ -103,11 +103,11 @@ $c== :: CalibrateDatesConf -&gt; CalibrateDatesConf -&gt; Bool
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
 </span><span id="line-63"></span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#calibrateDates"><span class="hs-identifier hs-var">calibrateDates</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#CalibrateDatesConf"><span class="hs-identifier hs-type">CalibrateDatesConf</span></a></span><span> </span><span class="annot"><span class="annottext">CalibrationMethod
-</span><a href="Currycarbon.Types.html#MatrixMultiplication"><span class="hs-identifier hs-var">MatrixMultiplication</span></a></span><span> </span><span id="local-6989586621679066797"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066797"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679066796"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066796"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679066795"><span class="annot"><span class="annottext">CalCurveBP
-</span><a href="#local-6989586621679066795"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679066794"><span class="annot"><span class="annottext">[UncalC14]
-</span><a href="#local-6989586621679066794"><span class="hs-identifier hs-var">uncalDates</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Currycarbon.Types.html#MatrixMultiplication"><span class="hs-identifier hs-var">MatrixMultiplication</span></a></span><span> </span><span id="local-6989586621679067123"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067123"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679067122"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067122"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679067121"><span class="annot"><span class="annottext">CalCurveBP
+</span><a href="#local-6989586621679067121"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679067120"><span class="annot"><span class="annottext">[UncalC14]
+</span><a href="#local-6989586621679067120"><span class="hs-identifier hs-var">uncalDates</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-64"></span><span>    </span><span class="annot"><span class="annottext">(UncalC14 -&gt; Either CurrycarbonException CalPDF)
 -&gt; [UncalC14] -&gt; [Either CurrycarbonException CalPDF]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
@@ -117,17 +117,17 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 -&gt; UncalC14
 -&gt; Either CurrycarbonException CalPDF
 </span><a href="Currycarbon.Calibration.MatrixMult.html#calibrateDateMatrixMult"><span class="hs-identifier hs-var">calibrateDateMatrixMult</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066797"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066796"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
-</span><a href="#local-6989586621679066795"><span class="hs-identifier hs-var">calCurve</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[UncalC14]
-</span><a href="#local-6989586621679066794"><span class="hs-identifier hs-var">uncalDates</span></a></span><span>
+</span><a href="#local-6989586621679067123"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067122"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
+</span><a href="#local-6989586621679067121"><span class="hs-identifier hs-var">calCurve</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[UncalC14]
+</span><a href="#local-6989586621679067120"><span class="hs-identifier hs-var">uncalDates</span></a></span><span>
 </span><span id="line-65"></span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#calibrateDates"><span class="hs-identifier hs-var">calibrateDates</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#CalibrateDatesConf"><span class="hs-identifier hs-type">CalibrateDatesConf</span></a></span><span> </span><span class="annot"><a href="Currycarbon.Types.html#Bchron"><span class="hs-identifier hs-type">Bchron</span></a></span><span class="hs-special">{</span><span class="annot"><span class="annottext">distribution :: CalibrationMethod -&gt; CalibrationDistribution
-</span><a href="Currycarbon.Types.html#distribution"><span class="hs-identifier hs-var">distribution</span></a></span><span class="hs-glyph">=</span><span id="local-6989586621679066792"><span class="annot"><span class="annottext">CalibrationDistribution
-</span><a href="#local-6989586621679066792"><span class="hs-identifier hs-var">distr</span></a></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679066791"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066791"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679066790"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066790"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679066789"><span class="annot"><span class="annottext">CalCurveBP
-</span><a href="#local-6989586621679066789"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679066788"><span class="annot"><span class="annottext">[UncalC14]
-</span><a href="#local-6989586621679066788"><span class="hs-identifier hs-var">uncalDates</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Currycarbon.Types.html#distribution"><span class="hs-identifier hs-var">distribution</span></a></span><span class="hs-glyph">=</span><span id="local-6989586621679067118"><span class="annot"><span class="annottext">CalibrationDistribution
+</span><a href="#local-6989586621679067118"><span class="hs-identifier hs-var">distr</span></a></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679067117"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067117"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679067116"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067116"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679067115"><span class="annot"><span class="annottext">CalCurveBP
+</span><a href="#local-6989586621679067115"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679067114"><span class="annot"><span class="annottext">[UncalC14]
+</span><a href="#local-6989586621679067114"><span class="hs-identifier hs-var">uncalDates</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-66"></span><span>    </span><span class="annot"><span class="annottext">(UncalC14 -&gt; Either CurrycarbonException CalPDF)
 -&gt; [UncalC14] -&gt; [Either CurrycarbonException CalPDF]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
@@ -138,11 +138,11 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 -&gt; UncalC14
 -&gt; Either CurrycarbonException CalPDF
 </span><a href="Currycarbon.Calibration.Bchron.html#calibrateDateBchron"><span class="hs-identifier hs-var">calibrateDateBchron</span></a></span><span> </span><span class="annot"><span class="annottext">CalibrationDistribution
-</span><a href="#local-6989586621679066792"><span class="hs-identifier hs-var">distr</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066791"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066790"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
-</span><a href="#local-6989586621679066789"><span class="hs-identifier hs-var">calCurve</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[UncalC14]
-</span><a href="#local-6989586621679066788"><span class="hs-identifier hs-var">uncalDates</span></a></span><span>
+</span><a href="#local-6989586621679067118"><span class="hs-identifier hs-var">distr</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067117"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067116"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
+</span><a href="#local-6989586621679067115"><span class="hs-identifier hs-var">calCurve</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[UncalC14]
+</span><a href="#local-6989586621679067114"><span class="hs-identifier hs-var">uncalDates</span></a></span><span>
 </span><span id="line-67"></span><span>
 </span><span id="line-68"></span><span class="hs-comment">-- | Calibrates a date with the provided calibration curve</span><span>
 </span><span id="line-69"></span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#calibrateDate"><span class="hs-identifier hs-type">calibrateDate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#CalibrateDatesConf"><span class="hs-identifier hs-type">CalibrateDatesConf</span></a></span><span> </span><span class="hs-comment">-- ^ Configuration options to consider</span><span>
@@ -153,28 +153,28 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span id="line-74"></span><span id="calibrateDate"><span class="annot"><span class="annottext">calibrateDate :: CalibrateDatesConf
 -&gt; CalCurveBP -&gt; UncalC14 -&gt; Either CurrycarbonException CalPDF
 </span><a href="Currycarbon.Calibration.Calibration.html#calibrateDate"><span class="hs-identifier hs-var hs-var">calibrateDate</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#CalibrateDatesConf"><span class="hs-identifier hs-type">CalibrateDatesConf</span></a></span><span> </span><span class="annot"><span class="annottext">CalibrationMethod
-</span><a href="Currycarbon.Types.html#MatrixMultiplication"><span class="hs-identifier hs-var">MatrixMultiplication</span></a></span><span> </span><span id="local-6989586621679066786"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066786"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679066785"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066785"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679066784"><span class="annot"><span class="annottext">CalCurveBP
-</span><a href="#local-6989586621679066784"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679066783"><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679066783"><span class="hs-identifier hs-var">uncalDate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Currycarbon.Types.html#MatrixMultiplication"><span class="hs-identifier hs-var">MatrixMultiplication</span></a></span><span> </span><span id="local-6989586621679067112"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067112"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679067111"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067111"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679067110"><span class="annot"><span class="annottext">CalCurveBP
+</span><a href="#local-6989586621679067110"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679067109"><span class="annot"><span class="annottext">UncalC14
+</span><a href="#local-6989586621679067109"><span class="hs-identifier hs-var">uncalDate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-75"></span><span>    </span><span class="annot"><span class="annottext">Bool
 -&gt; Bool
 -&gt; CalCurveBP
 -&gt; UncalC14
 -&gt; Either CurrycarbonException CalPDF
 </span><a href="Currycarbon.Calibration.MatrixMult.html#calibrateDateMatrixMult"><span class="hs-identifier hs-var">calibrateDateMatrixMult</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066786"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066785"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
-</span><a href="#local-6989586621679066784"><span class="hs-identifier hs-var">calCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679066783"><span class="hs-identifier hs-var">uncalDate</span></a></span><span>
+</span><a href="#local-6989586621679067112"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067111"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
+</span><a href="#local-6989586621679067110"><span class="hs-identifier hs-var">calCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
+</span><a href="#local-6989586621679067109"><span class="hs-identifier hs-var">uncalDate</span></a></span><span>
 </span><span id="line-76"></span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#calibrateDate"><span class="hs-identifier hs-var">calibrateDate</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#CalibrateDatesConf"><span class="hs-identifier hs-type">CalibrateDatesConf</span></a></span><span> </span><span class="annot"><a href="Currycarbon.Types.html#Bchron"><span class="hs-identifier hs-type">Bchron</span></a></span><span class="hs-special">{</span><span class="annot"><span class="annottext">distribution :: CalibrationMethod -&gt; CalibrationDistribution
-</span><a href="Currycarbon.Types.html#distribution"><span class="hs-identifier hs-var">distribution</span></a></span><span class="hs-glyph">=</span><span id="local-6989586621679066782"><span class="annot"><span class="annottext">CalibrationDistribution
-</span><a href="#local-6989586621679066782"><span class="hs-identifier hs-var">distr</span></a></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679066781"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066781"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679066780"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066780"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679066779"><span class="annot"><span class="annottext">CalCurveBP
-</span><a href="#local-6989586621679066779"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679066778"><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679066778"><span class="hs-identifier hs-var">uncalDate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Currycarbon.Types.html#distribution"><span class="hs-identifier hs-var">distribution</span></a></span><span class="hs-glyph">=</span><span id="local-6989586621679067108"><span class="annot"><span class="annottext">CalibrationDistribution
+</span><a href="#local-6989586621679067108"><span class="hs-identifier hs-var">distr</span></a></span></span><span class="hs-special">}</span><span> </span><span id="local-6989586621679067107"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067107"><span class="hs-identifier hs-var">allowOutside</span></a></span></span><span> </span><span id="local-6989586621679067106"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067106"><span class="hs-identifier hs-var">interpolate</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679067105"><span class="annot"><span class="annottext">CalCurveBP
+</span><a href="#local-6989586621679067105"><span class="hs-identifier hs-var">calCurve</span></a></span></span><span> </span><span id="local-6989586621679067104"><span class="annot"><span class="annottext">UncalC14
+</span><a href="#local-6989586621679067104"><span class="hs-identifier hs-var">uncalDate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-77"></span><span>    </span><span class="annot"><span class="annottext">CalibrationDistribution
 -&gt; Bool
 -&gt; Bool
@@ -182,11 +182,11 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 -&gt; UncalC14
 -&gt; Either CurrycarbonException CalPDF
 </span><a href="Currycarbon.Calibration.Bchron.html#calibrateDateBchron"><span class="hs-identifier hs-var">calibrateDateBchron</span></a></span><span> </span><span class="annot"><span class="annottext">CalibrationDistribution
-</span><a href="#local-6989586621679066782"><span class="hs-identifier hs-var">distr</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066781"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066780"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
-</span><a href="#local-6989586621679066779"><span class="hs-identifier hs-var">calCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
-</span><a href="#local-6989586621679066778"><span class="hs-identifier hs-var">uncalDate</span></a></span><span>
+</span><a href="#local-6989586621679067108"><span class="hs-identifier hs-var">distr</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067107"><span class="hs-identifier hs-var">allowOutside</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067106"><span class="hs-identifier hs-var">interpolate</span></a></span><span> </span><span class="annot"><span class="annottext">CalCurveBP
+</span><a href="#local-6989586621679067105"><span class="hs-identifier hs-var">calCurve</span></a></span><span> </span><span class="annot"><span class="annottext">UncalC14
+</span><a href="#local-6989586621679067104"><span class="hs-identifier hs-var">uncalDate</span></a></span><span>
 </span><span id="line-78"></span><span>
 </span><span id="line-79"></span><span class="hs-comment">-- | Transforms the raw, calibrated probability density table to a meaningful representation of a</span><span>
 </span><span id="line-80"></span><span class="hs-comment">-- calibrated radiocarbon date</span><span>
@@ -199,14 +199,14 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span id="line-83"></span><span>
 </span><span id="line-84"></span><span class="annot"><a href="Currycarbon.Calibration.Calibration.html#refineCalDate"><span class="hs-identifier hs-type">refineCalDate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-type">CalPDF</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Currycarbon.Types.html#CalC14"><span class="hs-identifier hs-type">CalC14</span></a></span><span>
 </span><span id="line-85"></span><span id="refineCalDate"><span class="annot"><span class="annottext">refineCalDate :: CalPDF -&gt; Maybe CalC14
-</span><a href="Currycarbon.Calibration.Calibration.html#refineCalDate"><span class="hs-identifier hs-var hs-var">refineCalDate</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-type">CalPDF</span></a></span><span> </span><span id="local-6989586621679066776"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679066776"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679066775"><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679066775"><span class="hs-identifier hs-var">cals</span></a></span></span><span> </span><span id="local-6989586621679066774"><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679066774"><span class="hs-identifier hs-var">dens</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Currycarbon.Calibration.Calibration.html#refineCalDate"><span class="hs-identifier hs-var hs-var">refineCalDate</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#CalPDF"><span class="hs-identifier hs-type">CalPDF</span></a></span><span> </span><span id="local-6989586621679067102"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679067102"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679067101"><span class="annot"><span class="annottext">Vector Int
+</span><a href="#local-6989586621679067101"><span class="hs-identifier hs-var">cals</span></a></span></span><span> </span><span id="local-6989586621679067100"><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679067100"><span class="hs-identifier hs-var">dens</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-86"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Vector Float -&gt; Float
 forall a. (Unbox a, Num a) =&gt; Vector a -&gt; a
 </span><span class="hs-identifier hs-var">VU.sum</span></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679066774"><span class="hs-identifier hs-var">dens</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Bool
+</span><a href="#local-6989586621679067100"><span class="hs-identifier hs-var">dens</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
@@ -218,7 +218,7 @@ forall a. Unbox a =&gt; (a -&gt; Bool) -&gt; Vector a -&gt; Vector a
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">1.0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679066774"><span class="hs-identifier hs-var">dens</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+</span><a href="#local-6989586621679067100"><span class="hs-identifier hs-var">dens</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="hs-comment">-- don't calculate CalC14, if it's not meaningful</span><span>
@@ -233,7 +233,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="Currycarbon.Types.html#CalC14"><span class="hs-identifier hs-type">CalC14</span></a></span><span> </span><span class="hs-special">{</span><span>
 </span><span id="line-89"></span><span>          </span><span class="annot"><span class="annottext">_calC14id :: String
 </span><a href="Currycarbon.Types.html#_calC14id"><span class="hs-identifier hs-var">_calC14id</span></a></span><span>           </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679066776"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><a href="#local-6989586621679067102"><span class="hs-identifier hs-var">name</span></a></span><span>
 </span><span id="line-90"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_calC14RangeSummary :: CalRangeSummary
 </span><a href="Currycarbon.Types.html#_calC14RangeSummary"><span class="hs-identifier hs-var">_calC14RangeSummary</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CalRangeSummary :: Int -&gt; Int -&gt; Int -&gt; Int -&gt; Int -&gt; CalRangeSummary
 </span><a href="Currycarbon.Types.html#CalRangeSummary"><span class="hs-identifier hs-type">CalRangeSummary</span></a></span><span> </span><span class="hs-special">{</span><span>
@@ -244,7 +244,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[HDR] -&gt; HDR
 forall a. [a] -&gt; a
 </span><span class="hs-identifier hs-var">head</span></span><span> </span><span class="annot"><span class="annottext">[HDR]
-</span><a href="#local-6989586621679066762"><span class="hs-identifier hs-var">hdrs95</span></a></span><span>
+</span><a href="#local-6989586621679067088"><span class="hs-identifier hs-var">hdrs95</span></a></span><span>
 </span><span id="line-92"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_calRangeStartOneSigma :: Int
 </span><a href="Currycarbon.Types.html#_calRangeStartOneSigma"><span class="hs-identifier hs-var">_calRangeStartOneSigma</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HDR -&gt; Int
 </span><a href="Currycarbon.Types.html#_hdrstart"><span class="hs-identifier hs-var hs-var">_hdrstart</span></a></span><span> </span><span class="annot"><span class="annottext">(HDR -&gt; Int) -&gt; HDR -&gt; Int
@@ -252,22 +252,22 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[HDR] -&gt; HDR
 forall a. [a] -&gt; a
 </span><span class="hs-identifier hs-var">head</span></span><span> </span><span class="annot"><span class="annottext">[HDR]
-</span><a href="#local-6989586621679066760"><span class="hs-identifier hs-var">hdrs68</span></a></span><span>
+</span><a href="#local-6989586621679067086"><span class="hs-identifier hs-var">hdrs68</span></a></span><span>
 </span><span id="line-93"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_calRangeMedian :: Int
 </span><a href="Currycarbon.Types.html#_calRangeMedian"><span class="hs-identifier hs-var">_calRangeMedian</span></a></span><span>        </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Int -&gt; Int
 forall a. HasCallStack =&gt; Maybe a -&gt; a
 </span><span class="hs-identifier hs-var">fromJust</span></span><span> </span><span class="annot"><span class="annottext">(Maybe Int -&gt; Int) -&gt; Maybe Int -&gt; Int
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679066775"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int -&gt; Maybe Int -&gt; Maybe Int
+</span><a href="#local-6989586621679067101"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Int -&gt; Maybe Int -&gt; Maybe Int
 forall a. Unbox a =&gt; Vector a -&gt; Maybe Int -&gt; Maybe a
-</span><a href="#local-6989586621679066758"><span class="hs-operator hs-var">`indexVU`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; [Float] -&gt; Maybe Int
+</span><a href="#local-6989586621679067084"><span class="hs-operator hs-var">`indexVU`</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; [Float] -&gt; Maybe Int
 forall a. Eq a =&gt; a -&gt; [a] -&gt; Maybe Int
 </span><span class="hs-identifier hs-var">elemIndex</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Float] -&gt; Float
 forall (t :: * -&gt; *) a. (Foldable t, Ord a) =&gt; t a -&gt; a
 </span><span class="hs-identifier hs-var">minimum</span></span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679066756"><span class="hs-identifier hs-var">distanceTo05</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679066756"><span class="hs-identifier hs-var">distanceTo05</span></a></span><span>
+</span><a href="#local-6989586621679067082"><span class="hs-identifier hs-var">distanceTo05</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Float]
+</span><a href="#local-6989586621679067082"><span class="hs-identifier hs-var">distanceTo05</span></a></span><span>
 </span><span id="line-94"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_calRangeStopOneSigma :: Int
 </span><a href="Currycarbon.Types.html#_calRangeStopOneSigma"><span class="hs-identifier hs-var">_calRangeStopOneSigma</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HDR -&gt; Int
 </span><a href="Currycarbon.Types.html#_hdrstop"><span class="hs-identifier hs-var hs-var">_hdrstop</span></a></span><span>  </span><span class="annot"><span class="annottext">(HDR -&gt; Int) -&gt; HDR -&gt; Int
@@ -275,7 +275,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[HDR] -&gt; HDR
 forall a. [a] -&gt; a
 </span><span class="hs-identifier hs-var">last</span></span><span> </span><span class="annot"><span class="annottext">[HDR]
-</span><a href="#local-6989586621679066760"><span class="hs-identifier hs-var">hdrs68</span></a></span><span>
+</span><a href="#local-6989586621679067086"><span class="hs-identifier hs-var">hdrs68</span></a></span><span>
 </span><span id="line-95"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_calRangeStopTwoSigma :: Int
 </span><a href="Currycarbon.Types.html#_calRangeStopTwoSigma"><span class="hs-identifier hs-var">_calRangeStopTwoSigma</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HDR -&gt; Int
 </span><a href="Currycarbon.Types.html#_hdrstop"><span class="hs-identifier hs-var hs-var">_hdrstop</span></a></span><span>  </span><span class="annot"><span class="annottext">(HDR -&gt; Int) -&gt; HDR -&gt; Int
@@ -283,20 +283,20 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[HDR] -&gt; HDR
 forall a. [a] -&gt; a
 </span><span class="hs-identifier hs-var">last</span></span><span> </span><span class="annot"><span class="annottext">[HDR]
-</span><a href="#local-6989586621679066762"><span class="hs-identifier hs-var">hdrs95</span></a></span><span>
+</span><a href="#local-6989586621679067088"><span class="hs-identifier hs-var">hdrs95</span></a></span><span>
 </span><span id="line-96"></span><span>            </span><span class="hs-special">}</span><span>
 </span><span id="line-97"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_calC14HDROneSigma :: [HDR]
 </span><a href="Currycarbon.Types.html#_calC14HDROneSigma"><span class="hs-identifier hs-var">_calC14HDROneSigma</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[HDR]
-</span><a href="#local-6989586621679066760"><span class="hs-identifier hs-var">hdrs68</span></a></span><span>
+</span><a href="#local-6989586621679067086"><span class="hs-identifier hs-var">hdrs68</span></a></span><span>
 </span><span id="line-98"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">_calC14HDRTwoSigma :: [HDR]
 </span><a href="Currycarbon.Types.html#_calC14HDRTwoSigma"><span class="hs-identifier hs-var">_calC14HDRTwoSigma</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[HDR]
-</span><a href="#local-6989586621679066762"><span class="hs-identifier hs-var">hdrs95</span></a></span><span>
+</span><a href="#local-6989586621679067088"><span class="hs-identifier hs-var">hdrs95</span></a></span><span>
 </span><span id="line-99"></span><span>    </span><span class="hs-special">}</span><span>
 </span><span id="line-100"></span><span>    </span><span class="hs-keyword">where</span><span>
 </span><span id="line-101"></span><span>        </span><span class="hs-comment">-- simple density cumsum for median age</span><span>
-</span><span id="line-102"></span><span>        </span><span id="local-6989586621679066749"><span class="annot"><span class="annottext">cumsumDensities :: [Float]
-</span><a href="#local-6989586621679066749"><span class="hs-identifier hs-var hs-var">cumsumDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float)] -&gt; [Float]
-</span><a href="#local-6989586621679066748"><span class="hs-identifier hs-var">cumsumDens</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector (Int, Float) -&gt; [(Int, Float)]
+</span><span id="line-102"></span><span>        </span><span id="local-6989586621679067075"><span class="annot"><span class="annottext">cumsumDensities :: [Float]
+</span><a href="#local-6989586621679067075"><span class="hs-identifier hs-var hs-var">cumsumDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float)] -&gt; [Float]
+</span><a href="#local-6989586621679067074"><span class="hs-identifier hs-var">cumsumDens</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector (Int, Float) -&gt; [(Int, Float)]
 forall a. Unbox a =&gt; Vector a -&gt; [a]
 </span><span class="hs-identifier hs-var">VU.toList</span></span><span> </span><span class="annot"><span class="annottext">(Vector (Int, Float) -&gt; [(Int, Float)])
 -&gt; Vector (Int, Float) -&gt; [(Int, Float)]
@@ -306,39 +306,39 @@ forall a b.
 (Unbox a, Unbox b) =&gt;
 Vector a -&gt; Vector b -&gt; Vector (a, b)
 </span><span class="hs-identifier hs-var">VU.zip</span></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679066775"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679066774"><span class="hs-identifier hs-var">dens</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-103"></span><span>        </span><span id="local-6989586621679066756"><span class="annot"><span class="annottext">distanceTo05 :: [Float]
-</span><a href="#local-6989586621679066756"><span class="hs-identifier hs-var hs-var">distanceTo05</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; [Float] -&gt; [Float]
+</span><a href="#local-6989586621679067101"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679067100"><span class="hs-identifier hs-var">dens</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span>        </span><span id="local-6989586621679067082"><span class="annot"><span class="annottext">distanceTo05 :: [Float]
+</span><a href="#local-6989586621679067082"><span class="hs-identifier hs-var hs-var">distanceTo05</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; [Float] -&gt; [Float]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679066745"><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679066745"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679067071"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679067071"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float
 forall a. Num a =&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">abs</span></span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; Float -&gt; Float
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679066745"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+</span><a href="#local-6989586621679067071"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.5</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679066749"><span class="hs-identifier hs-var">cumsumDensities</span></a></span><span>
+</span><a href="#local-6989586621679067075"><span class="hs-identifier hs-var">cumsumDensities</span></a></span><span>
 </span><span id="line-104"></span><span>        </span><span class="hs-comment">-- sorted density cumsum for hdrs</span><span>
-</span><span id="line-105"></span><span>        </span><span id="local-6989586621679066743"><span class="annot"><span class="annottext">sortedDensities :: [(Int, Float)]
-</span><a href="#local-6989586621679066743"><span class="hs-identifier hs-var hs-var">sortedDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float) -&gt; (Int, Float) -&gt; Ordering)
+</span><span id="line-105"></span><span>        </span><span id="local-6989586621679067069"><span class="annot"><span class="annottext">sortedDensities :: [(Int, Float)]
+</span><a href="#local-6989586621679067069"><span class="hs-identifier hs-var hs-var">sortedDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float) -&gt; (Int, Float) -&gt; Ordering)
 -&gt; [(Int, Float)] -&gt; [(Int, Float)]
 forall a. (a -&gt; a -&gt; Ordering) -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">sortBy</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Int, Float) -&gt; (Int, Float) -&gt; Ordering)
 -&gt; (Int, Float) -&gt; (Int, Float) -&gt; Ordering
 forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
 </span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679066741"><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679066741"><span class="hs-identifier hs-var">dens1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679066740"><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679066740"><span class="hs-identifier hs-var">dens2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Ordering
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679067067"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679067067"><span class="hs-identifier hs-var">dens1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679067066"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679067066"><span class="hs-identifier hs-var">dens2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Ordering
 forall a. Ord a =&gt; a -&gt; a -&gt; Ordering
 </span><span class="hs-identifier hs-var">compare</span></span><span> </span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679066741"><span class="hs-identifier hs-var">dens1</span></a></span><span> </span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679066740"><span class="hs-identifier hs-var">dens2</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector (Int, Float) -&gt; [(Int, Float)]
+</span><a href="#local-6989586621679067067"><span class="hs-identifier hs-var">dens1</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679067066"><span class="hs-identifier hs-var">dens2</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector (Int, Float) -&gt; [(Int, Float)]
 forall a. Unbox a =&gt; Vector a -&gt; [a]
 </span><span class="hs-identifier hs-var">VU.toList</span></span><span> </span><span class="annot"><span class="annottext">(Vector (Int, Float) -&gt; [(Int, Float)])
 -&gt; Vector (Int, Float) -&gt; [(Int, Float)]
@@ -348,30 +348,30 @@ forall a b.
 (Unbox a, Unbox b) =&gt;
 Vector a -&gt; Vector b -&gt; Vector (a, b)
 </span><span class="hs-identifier hs-var">VU.zip</span></span><span> </span><span class="annot"><span class="annottext">Vector Int
-</span><a href="#local-6989586621679066775"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
-</span><a href="#local-6989586621679066774"><span class="hs-identifier hs-var">dens</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-106"></span><span>        </span><span id="local-6989586621679066738"><span class="annot"><span class="annottext">cumsumSortedDensities :: [Float]
-</span><a href="#local-6989586621679066738"><span class="hs-identifier hs-var hs-var">cumsumSortedDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float)] -&gt; [Float]
-</span><a href="#local-6989586621679066748"><span class="hs-identifier hs-var">cumsumDens</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float)]
-</span><a href="#local-6989586621679066743"><span class="hs-identifier hs-var">sortedDensities</span></a></span><span>
-</span><span id="line-107"></span><span>        </span><span id="local-6989586621679066737"><span class="annot"><span class="annottext">isIn68 :: [Bool]
-</span><a href="#local-6989586621679066737"><span class="hs-identifier hs-var hs-var">isIn68</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Bool) -&gt; [Float] -&gt; [Bool]
+</span><a href="#local-6989586621679067101"><span class="hs-identifier hs-var">cals</span></a></span><span> </span><span class="annot"><span class="annottext">Vector Float
+</span><a href="#local-6989586621679067100"><span class="hs-identifier hs-var">dens</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>        </span><span id="local-6989586621679067064"><span class="annot"><span class="annottext">cumsumSortedDensities :: [Float]
+</span><a href="#local-6989586621679067064"><span class="hs-identifier hs-var hs-var">cumsumSortedDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float)] -&gt; [Float]
+</span><a href="#local-6989586621679067074"><span class="hs-identifier hs-var">cumsumDens</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float)]
+</span><a href="#local-6989586621679067069"><span class="hs-identifier hs-var">sortedDensities</span></a></span><span>
+</span><span id="line-107"></span><span>        </span><span id="local-6989586621679067063"><span class="annot"><span class="annottext">isIn68 :: [Bool]
+</span><a href="#local-6989586621679067063"><span class="hs-identifier hs-var hs-var">isIn68</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Bool) -&gt; [Float] -&gt; [Bool]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.683</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679066738"><span class="hs-identifier hs-var">cumsumSortedDensities</span></a></span><span>
-</span><span id="line-108"></span><span>        </span><span id="local-6989586621679066735"><span class="annot"><span class="annottext">isIn95 :: [Bool]
-</span><a href="#local-6989586621679066735"><span class="hs-identifier hs-var hs-var">isIn95</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Bool) -&gt; [Float] -&gt; [Bool]
+</span><a href="#local-6989586621679067064"><span class="hs-identifier hs-var">cumsumSortedDensities</span></a></span><span>
+</span><span id="line-108"></span><span>        </span><span id="local-6989586621679067061"><span class="annot"><span class="annottext">isIn95 :: [Bool]
+</span><a href="#local-6989586621679067061"><span class="hs-identifier hs-var hs-var">isIn95</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Bool) -&gt; [Float] -&gt; [Bool]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Float
 </span><span class="hs-number">0.954</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Float]
-</span><a href="#local-6989586621679066738"><span class="hs-identifier hs-var">cumsumSortedDensities</span></a></span><span>
-</span><span id="line-109"></span><span>        </span><span id="local-6989586621679066734"><span class="annot"><span class="annottext">contextualizedDensities :: [(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066734"><span class="hs-identifier hs-var hs-var">contextualizedDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)] -&gt; [(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067064"><span class="hs-identifier hs-var">cumsumSortedDensities</span></a></span><span>
+</span><span id="line-109"></span><span>        </span><span id="local-6989586621679067060"><span class="annot"><span class="annottext">contextualizedDensities :: [(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067060"><span class="hs-identifier hs-var hs-var">contextualizedDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)] -&gt; [(Int, Float, Bool, Bool)]
 forall a. Ord a =&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">sort</span></span><span> </span><span class="annot"><span class="annottext">([(Int, Float, Bool, Bool)] -&gt; [(Int, Float, Bool, Bool)])
 -&gt; [(Int, Float, Bool, Bool)] -&gt; [(Int, Float, Bool, Bool)]
@@ -379,44 +379,44 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">((Int, Float) -&gt; Bool -&gt; Bool -&gt; (Int, Float, Bool, Bool))
 -&gt; [(Int, Float)] -&gt; [Bool] -&gt; [Bool] -&gt; [(Int, Float, Bool, Bool)]
 forall a b c d. (a -&gt; b -&gt; c -&gt; d) -&gt; [a] -&gt; [b] -&gt; [c] -&gt; [d]
-</span><span class="hs-identifier hs-var">zipWith3</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679066732"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679066732"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679066731"><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679066731"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679066730"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066730"><span class="hs-identifier hs-var">in68</span></a></span></span><span> </span><span id="local-6989586621679066729"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066729"><span class="hs-identifier hs-var">in95</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679066732"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
-</span><a href="#local-6989586621679066731"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066730"><span class="hs-identifier hs-var">in68</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066729"><span class="hs-identifier hs-var">in95</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Int, Float)]
-</span><a href="#local-6989586621679066743"><span class="hs-identifier hs-var">sortedDensities</span></a></span><span> </span><span class="annot"><span class="annottext">[Bool]
-</span><a href="#local-6989586621679066737"><span class="hs-identifier hs-var">isIn68</span></a></span><span> </span><span class="annot"><span class="annottext">[Bool]
-</span><a href="#local-6989586621679066735"><span class="hs-identifier hs-var">isIn95</span></a></span><span>
-</span><span id="line-110"></span><span>        </span><span id="local-6989586621679066760"><span class="annot"><span class="annottext">hdrs68 :: [HDR]
-</span><a href="#local-6989586621679066760"><span class="hs-identifier hs-var hs-var">hdrs68</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)] -&gt; [HDR]
-</span><a href="#local-6989586621679066728"><span class="hs-identifier hs-var">densities2HDR68</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066734"><span class="hs-identifier hs-var">contextualizedDensities</span></a></span><span>
-</span><span id="line-111"></span><span>        </span><span id="local-6989586621679066762"><span class="annot"><span class="annottext">hdrs95 :: [HDR]
-</span><a href="#local-6989586621679066762"><span class="hs-identifier hs-var hs-var">hdrs95</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)] -&gt; [HDR]
-</span><a href="#local-6989586621679066727"><span class="hs-identifier hs-var">densities2HDR95</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066734"><span class="hs-identifier hs-var">contextualizedDensities</span></a></span><span>
+</span><span class="hs-identifier hs-var">zipWith3</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679067058"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679067058"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679067057"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679067057"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679067056"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067056"><span class="hs-identifier hs-var">in68</span></a></span></span><span> </span><span id="local-6989586621679067055"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067055"><span class="hs-identifier hs-var">in95</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679067058"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679067057"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067056"><span class="hs-identifier hs-var">in68</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067055"><span class="hs-identifier hs-var">in95</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Int, Float)]
+</span><a href="#local-6989586621679067069"><span class="hs-identifier hs-var">sortedDensities</span></a></span><span> </span><span class="annot"><span class="annottext">[Bool]
+</span><a href="#local-6989586621679067063"><span class="hs-identifier hs-var">isIn68</span></a></span><span> </span><span class="annot"><span class="annottext">[Bool]
+</span><a href="#local-6989586621679067061"><span class="hs-identifier hs-var">isIn95</span></a></span><span>
+</span><span id="line-110"></span><span>        </span><span id="local-6989586621679067086"><span class="annot"><span class="annottext">hdrs68 :: [HDR]
+</span><a href="#local-6989586621679067086"><span class="hs-identifier hs-var hs-var">hdrs68</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)] -&gt; [HDR]
+</span><a href="#local-6989586621679067054"><span class="hs-identifier hs-var">densities2HDR68</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067060"><span class="hs-identifier hs-var">contextualizedDensities</span></a></span><span>
+</span><span id="line-111"></span><span>        </span><span id="local-6989586621679067088"><span class="annot"><span class="annottext">hdrs95 :: [HDR]
+</span><a href="#local-6989586621679067088"><span class="hs-identifier hs-var hs-var">hdrs95</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)] -&gt; [HDR]
+</span><a href="#local-6989586621679067053"><span class="hs-identifier hs-var">densities2HDR95</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067060"><span class="hs-identifier hs-var">contextualizedDensities</span></a></span><span>
 </span><span id="line-112"></span><span>        </span><span class="hs-comment">-- helper functions</span><span>
-</span><span id="line-113"></span><span>        </span><span id="local-6989586621679066758"><span class="annot"><span class="annottext">indexVU :: Vector a -&gt; Maybe Int -&gt; Maybe a
-</span><a href="#local-6989586621679066758"><span class="hs-identifier hs-var hs-var">indexVU</span></a></span></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><span id="line-113"></span><span>        </span><span id="local-6989586621679067084"><span class="annot"><span class="annottext">indexVU :: Vector a -&gt; Maybe Int -&gt; Maybe a
+</span><a href="#local-6989586621679067084"><span class="hs-identifier hs-var hs-var">indexVU</span></a></span></span><span> </span><span class="annot"><span class="annottext">Vector a
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Int
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe a
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
-</span><span id="line-114"></span><span>        </span><span class="annot"><a href="#local-6989586621679066758"><span class="hs-identifier hs-var">indexVU</span></a></span><span> </span><span id="local-6989586621679066726"><span class="annot"><span class="annottext">Vector a
-</span><a href="#local-6989586621679066726"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679066725"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679066725"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector a
-</span><a href="#local-6989586621679066726"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; Int -&gt; Maybe a
+</span><span id="line-114"></span><span>        </span><span class="annot"><a href="#local-6989586621679067084"><span class="hs-identifier hs-var">indexVU</span></a></span><span> </span><span id="local-6989586621679067052"><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679067052"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679067051"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679067051"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679067052"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Vector a -&gt; Int -&gt; Maybe a
 forall a. Unbox a =&gt; Vector a -&gt; Int -&gt; Maybe a
 </span><span class="hs-operator hs-var">VU.!?</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679066725"><span class="hs-identifier hs-var">i</span></a></span><span>
-</span><span id="line-115"></span><span>        </span><span class="annot"><a href="#local-6989586621679066748"><span class="hs-identifier hs-type">cumsumDens</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#YearBCAD"><span class="hs-identifier hs-type">YearBCAD</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span>
-</span><span id="line-116"></span><span>        </span><span id="local-6989586621679066748"><span class="annot"><span class="annottext">cumsumDens :: [(Int, Float)] -&gt; [Float]
-</span><a href="#local-6989586621679066748"><span class="hs-identifier hs-var hs-var">cumsumDens</span></a></span></span><span> </span><span id="local-6989586621679066722"><span class="annot"><span class="annottext">[(Int, Float)]
-</span><a href="#local-6989586621679066722"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float -&gt; Float) -&gt; [Float] -&gt; [Float]
+</span><a href="#local-6989586621679067051"><span class="hs-identifier hs-var">i</span></a></span><span>
+</span><span id="line-115"></span><span>        </span><span class="annot"><a href="#local-6989586621679067074"><span class="hs-identifier hs-type">cumsumDens</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="Currycarbon.Types.html#YearBCAD"><span class="hs-identifier hs-type">YearBCAD</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">]</span><span>
+</span><span id="line-116"></span><span>        </span><span id="local-6989586621679067074"><span class="annot"><span class="annottext">cumsumDens :: [(Int, Float)] -&gt; [Float]
+</span><a href="#local-6989586621679067074"><span class="hs-identifier hs-var hs-var">cumsumDens</span></a></span></span><span> </span><span id="local-6989586621679067048"><span class="annot"><span class="annottext">[(Int, Float)]
+</span><a href="#local-6989586621679067048"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float -&gt; Float) -&gt; [Float] -&gt; [Float]
 forall a. (a -&gt; a -&gt; a) -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">scanl1</span></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
 forall a. Num a =&gt; a -&gt; a -&gt; a
@@ -427,131 +427,131 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(Int, Float) -&gt; Float
 forall a b. (a, b) -&gt; b
 </span><span class="hs-identifier hs-var">snd</span></span><span> </span><span class="annot"><span class="annottext">[(Int, Float)]
-</span><a href="#local-6989586621679066722"><span class="hs-identifier hs-var">x</span></a></span><span>
-</span><span id="line-117"></span><span>        </span><span class="annot"><a href="#local-6989586621679066728"><span class="hs-identifier hs-type">densities2HDR68</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-type">HDR</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-118"></span><span>        </span><span id="local-6989586621679066728"><span class="annot"><span class="annottext">densities2HDR68 :: [(Int, Float, Bool, Bool)] -&gt; [HDR]
-</span><a href="#local-6989586621679066728"><span class="hs-identifier hs-var hs-var">densities2HDR68</span></a></span></span><span> </span><span id="local-6989586621679066719"><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066719"><span class="hs-identifier hs-var">cDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
-</span><span id="line-119"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679066718"><span class="annot"><span class="annottext">highDensityGroups :: [[(Int, Float, Bool, Bool)]]
-</span><a href="#local-6989586621679066718"><span class="hs-identifier hs-var hs-var">highDensityGroups</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; (Int, Float, Bool, Bool) -&gt; Bool)
+</span><a href="#local-6989586621679067048"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-117"></span><span>        </span><span class="annot"><a href="#local-6989586621679067054"><span class="hs-identifier hs-type">densities2HDR68</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-type">HDR</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-118"></span><span>        </span><span id="local-6989586621679067054"><span class="annot"><span class="annottext">densities2HDR68 :: [(Int, Float, Bool, Bool)] -&gt; [HDR]
+</span><a href="#local-6989586621679067054"><span class="hs-identifier hs-var hs-var">densities2HDR68</span></a></span></span><span> </span><span id="local-6989586621679067045"><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067045"><span class="hs-identifier hs-var">cDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-119"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679067044"><span class="annot"><span class="annottext">highDensityGroups :: [[(Int, Float, Bool, Bool)]]
+</span><a href="#local-6989586621679067044"><span class="hs-identifier hs-var hs-var">highDensityGroups</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; (Int, Float, Bool, Bool) -&gt; Bool)
 -&gt; [(Int, Float, Bool, Bool)] -&gt; [[(Int, Float, Bool, Bool)]]
 forall a. (a -&gt; a -&gt; Bool) -&gt; [a] -&gt; [[a]]
 </span><span class="hs-identifier hs-var">groupBy</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679066717"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066717"><span class="hs-identifier hs-var">in681</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679067043"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067043"><span class="hs-identifier hs-var">in681</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679066716"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066716"><span class="hs-identifier hs-var">in682</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679067042"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067042"><span class="hs-identifier hs-var">in682</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066717"><span class="hs-identifier hs-var">in681</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621679067043"><span class="hs-identifier hs-var">in681</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066716"><span class="hs-identifier hs-var">in682</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066719"><span class="hs-identifier hs-var">cDensities</span></a></span><span>
-</span><span id="line-120"></span><span>                </span><span id="local-6989586621679066715"><span class="annot"><span class="annottext">filteredDensityGroups :: [[(Int, Float, Bool, Bool)]]
-</span><a href="#local-6989586621679066715"><span class="hs-identifier hs-var hs-var">filteredDensityGroups</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([(Int, Float, Bool, Bool)] -&gt; Bool)
+</span><a href="#local-6989586621679067042"><span class="hs-identifier hs-var">in682</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067045"><span class="hs-identifier hs-var">cDensities</span></a></span><span>
+</span><span id="line-120"></span><span>                </span><span id="local-6989586621679067041"><span class="annot"><span class="annottext">filteredDensityGroups :: [[(Int, Float, Bool, Bool)]]
+</span><a href="#local-6989586621679067041"><span class="hs-identifier hs-var hs-var">filteredDensityGroups</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([(Int, Float, Bool, Bool)] -&gt; Bool)
 -&gt; [[(Int, Float, Bool, Bool)]] -&gt; [[(Int, Float, Bool, Bool)]]
 forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; Bool)
 -&gt; [(Int, Float, Bool, Bool)] -&gt; Bool
 forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
 </span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="annot"><span class="annottext">(Int, Float, Bool, Bool) -&gt; Bool
-</span><a href="#local-6989586621679066713"><span class="hs-identifier hs-var">getIn68</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[(Int, Float, Bool, Bool)]]
-</span><a href="#local-6989586621679066718"><span class="hs-identifier hs-var">highDensityGroups</span></a></span><span>
+</span><a href="#local-6989586621679067039"><span class="hs-identifier hs-var">getIn68</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[(Int, Float, Bool, Bool)]]
+</span><a href="#local-6989586621679067044"><span class="hs-identifier hs-var">highDensityGroups</span></a></span><span>
 </span><span id="line-121"></span><span>            </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">([(Int, Float, Bool, Bool)] -&gt; HDR)
 -&gt; [[(Int, Float, Bool, Bool)]] -&gt; [HDR]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679066712"><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066712"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679066711"><span class="annot"><span class="annottext">yearRange :: [Int]
-</span><a href="#local-6989586621679066711"><span class="hs-identifier hs-var hs-var">yearRange</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; Int)
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679067038"><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067038"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679067037"><span class="annot"><span class="annottext">yearRange :: [Int]
+</span><a href="#local-6989586621679067037"><span class="hs-identifier hs-var hs-var">yearRange</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; Int)
 -&gt; [(Int, Float, Bool, Bool)] -&gt; [Int]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(Int, Float, Bool, Bool) -&gt; Int
-</span><a href="#local-6989586621679066710"><span class="hs-identifier hs-var">getYear</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066712"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; HDR
+</span><a href="#local-6989586621679067036"><span class="hs-identifier hs-var">getYear</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067038"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; HDR
 </span><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-var">HDR</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Int
 forall a. [a] -&gt; a
 </span><span class="hs-identifier hs-var">head</span></span><span> </span><span class="annot"><span class="annottext">[Int]
-</span><a href="#local-6989586621679066711"><span class="hs-identifier hs-var">yearRange</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Int
+</span><a href="#local-6989586621679067037"><span class="hs-identifier hs-var">yearRange</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Int
 forall a. [a] -&gt; a
 </span><span class="hs-identifier hs-var">last</span></span><span> </span><span class="annot"><span class="annottext">[Int]
-</span><a href="#local-6989586621679066711"><span class="hs-identifier hs-var">yearRange</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[(Int, Float, Bool, Bool)]]
-</span><a href="#local-6989586621679066715"><span class="hs-identifier hs-var">filteredDensityGroups</span></a></span><span>
-</span><span id="line-122"></span><span>        </span><span class="annot"><a href="#local-6989586621679066727"><span class="hs-identifier hs-type">densities2HDR95</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-type">HDR</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-123"></span><span>        </span><span id="local-6989586621679066727"><span class="annot"><span class="annottext">densities2HDR95 :: [(Int, Float, Bool, Bool)] -&gt; [HDR]
-</span><a href="#local-6989586621679066727"><span class="hs-identifier hs-var hs-var">densities2HDR95</span></a></span></span><span> </span><span id="local-6989586621679066708"><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066708"><span class="hs-identifier hs-var">cDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
-</span><span id="line-124"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679066707"><span class="annot"><span class="annottext">highDensityGroups :: [[(Int, Float, Bool, Bool)]]
-</span><a href="#local-6989586621679066707"><span class="hs-identifier hs-var hs-var">highDensityGroups</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; (Int, Float, Bool, Bool) -&gt; Bool)
+</span><a href="#local-6989586621679067037"><span class="hs-identifier hs-var">yearRange</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[(Int, Float, Bool, Bool)]]
+</span><a href="#local-6989586621679067041"><span class="hs-identifier hs-var">filteredDensityGroups</span></a></span><span>
+</span><span id="line-122"></span><span>        </span><span class="annot"><a href="#local-6989586621679067053"><span class="hs-identifier hs-type">densities2HDR95</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-type">HDR</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-123"></span><span>        </span><span id="local-6989586621679067053"><span class="annot"><span class="annottext">densities2HDR95 :: [(Int, Float, Bool, Bool)] -&gt; [HDR]
+</span><a href="#local-6989586621679067053"><span class="hs-identifier hs-var hs-var">densities2HDR95</span></a></span></span><span> </span><span id="local-6989586621679067034"><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067034"><span class="hs-identifier hs-var">cDensities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-124"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679067033"><span class="annot"><span class="annottext">highDensityGroups :: [[(Int, Float, Bool, Bool)]]
+</span><a href="#local-6989586621679067033"><span class="hs-identifier hs-var hs-var">highDensityGroups</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; (Int, Float, Bool, Bool) -&gt; Bool)
 -&gt; [(Int, Float, Bool, Bool)] -&gt; [[(Int, Float, Bool, Bool)]]
 forall a. (a -&gt; a -&gt; Bool) -&gt; [a] -&gt; [[a]]
 </span><span class="hs-identifier hs-var">groupBy</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679066706"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066706"><span class="hs-identifier hs-var">in951</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679067032"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067032"><span class="hs-identifier hs-var">in951</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679066705"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066705"><span class="hs-identifier hs-var">in952</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066706"><span class="hs-identifier hs-var">in951</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679067031"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067031"><span class="hs-identifier hs-var">in952</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067032"><span class="hs-identifier hs-var">in951</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066705"><span class="hs-identifier hs-var">in952</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066708"><span class="hs-identifier hs-var">cDensities</span></a></span><span>
-</span><span id="line-125"></span><span>                </span><span id="local-6989586621679066704"><span class="annot"><span class="annottext">filteredDensityGroups :: [[(Int, Float, Bool, Bool)]]
-</span><a href="#local-6989586621679066704"><span class="hs-identifier hs-var hs-var">filteredDensityGroups</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([(Int, Float, Bool, Bool)] -&gt; Bool)
+</span><a href="#local-6989586621679067031"><span class="hs-identifier hs-var">in952</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067034"><span class="hs-identifier hs-var">cDensities</span></a></span><span>
+</span><span id="line-125"></span><span>                </span><span id="local-6989586621679067030"><span class="annot"><span class="annottext">filteredDensityGroups :: [[(Int, Float, Bool, Bool)]]
+</span><a href="#local-6989586621679067030"><span class="hs-identifier hs-var hs-var">filteredDensityGroups</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([(Int, Float, Bool, Bool)] -&gt; Bool)
 -&gt; [[(Int, Float, Bool, Bool)]] -&gt; [[(Int, Float, Bool, Bool)]]
 forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; Bool)
 -&gt; [(Int, Float, Bool, Bool)] -&gt; Bool
 forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
 </span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="annot"><span class="annottext">(Int, Float, Bool, Bool) -&gt; Bool
-</span><a href="#local-6989586621679066703"><span class="hs-identifier hs-var">getIn95</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[(Int, Float, Bool, Bool)]]
-</span><a href="#local-6989586621679066707"><span class="hs-identifier hs-var">highDensityGroups</span></a></span><span>
+</span><a href="#local-6989586621679067029"><span class="hs-identifier hs-var">getIn95</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[(Int, Float, Bool, Bool)]]
+</span><a href="#local-6989586621679067033"><span class="hs-identifier hs-var">highDensityGroups</span></a></span><span>
 </span><span id="line-126"></span><span>            </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">([(Int, Float, Bool, Bool)] -&gt; HDR)
 -&gt; [[(Int, Float, Bool, Bool)]] -&gt; [HDR]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679066702"><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066702"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679066701"><span class="annot"><span class="annottext">yearRange :: [Int]
-</span><a href="#local-6989586621679066701"><span class="hs-identifier hs-var hs-var">yearRange</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; Int)
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679067028"><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067028"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679067027"><span class="annot"><span class="annottext">yearRange :: [Int]
+</span><a href="#local-6989586621679067027"><span class="hs-identifier hs-var hs-var">yearRange</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, Float, Bool, Bool) -&gt; Int)
 -&gt; [(Int, Float, Bool, Bool)] -&gt; [Int]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(Int, Float, Bool, Bool) -&gt; Int
-</span><a href="#local-6989586621679066710"><span class="hs-identifier hs-var">getYear</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
-</span><a href="#local-6989586621679066702"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; HDR
+</span><a href="#local-6989586621679067036"><span class="hs-identifier hs-var">getYear</span></a></span><span> </span><span class="annot"><span class="annottext">[(Int, Float, Bool, Bool)]
+</span><a href="#local-6989586621679067028"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; HDR
 </span><a href="Currycarbon.Types.html#HDR"><span class="hs-identifier hs-var">HDR</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Int
 forall a. [a] -&gt; a
 </span><span class="hs-identifier hs-var">head</span></span><span> </span><span class="annot"><span class="annottext">[Int]
-</span><a href="#local-6989586621679066701"><span class="hs-identifier hs-var">yearRange</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Int
+</span><a href="#local-6989586621679067027"><span class="hs-identifier hs-var">yearRange</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int] -&gt; Int
 forall a. [a] -&gt; a
 </span><span class="hs-identifier hs-var">last</span></span><span> </span><span class="annot"><span class="annottext">[Int]
-</span><a href="#local-6989586621679066701"><span class="hs-identifier hs-var">yearRange</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[(Int, Float, Bool, Bool)]]
-</span><a href="#local-6989586621679066704"><span class="hs-identifier hs-var">filteredDensityGroups</span></a></span><span>
-</span><span id="line-127"></span><span>        </span><span class="annot"><a href="#local-6989586621679066713"><span class="hs-identifier hs-type">getIn68</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
-</span><span id="line-128"></span><span>        </span><span id="local-6989586621679066713"><span class="annot"><span class="annottext">getIn68 :: (Int, Float, Bool, Bool) -&gt; Bool
-</span><a href="#local-6989586621679066713"><span class="hs-identifier hs-var hs-var">getIn68</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679067027"><span class="hs-identifier hs-var">yearRange</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[[(Int, Float, Bool, Bool)]]
+</span><a href="#local-6989586621679067030"><span class="hs-identifier hs-var">filteredDensityGroups</span></a></span><span>
+</span><span id="line-127"></span><span>        </span><span class="annot"><a href="#local-6989586621679067039"><span class="hs-identifier hs-type">getIn68</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-128"></span><span>        </span><span id="local-6989586621679067039"><span class="annot"><span class="annottext">getIn68 :: (Int, Float, Bool, Bool) -&gt; Bool
+</span><a href="#local-6989586621679067039"><span class="hs-identifier hs-var hs-var">getIn68</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679066700"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066700"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679067026"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067026"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066700"><span class="hs-identifier hs-var">x</span></a></span><span>
-</span><span id="line-129"></span><span>        </span><span class="annot"><a href="#local-6989586621679066703"><span class="hs-identifier hs-type">getIn95</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
-</span><span id="line-130"></span><span>        </span><span id="local-6989586621679066703"><span class="annot"><span class="annottext">getIn95 :: (Int, Float, Bool, Bool) -&gt; Bool
-</span><a href="#local-6989586621679066703"><span class="hs-identifier hs-var hs-var">getIn95</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679067026"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-129"></span><span>        </span><span class="annot"><a href="#local-6989586621679067029"><span class="hs-identifier hs-type">getIn95</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-130"></span><span>        </span><span id="local-6989586621679067029"><span class="annot"><span class="annottext">getIn95 :: (Int, Float, Bool, Bool) -&gt; Bool
+</span><a href="#local-6989586621679067029"><span class="hs-identifier hs-var hs-var">getIn95</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679066699"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066699"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679066699"><span class="hs-identifier hs-var">x</span></a></span><span>
-</span><span id="line-131"></span><span>        </span><span class="annot"><a href="#local-6989586621679066710"><span class="hs-identifier hs-type">getYear</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
-</span><span id="line-132"></span><span>        </span><span id="local-6989586621679066710"><span class="annot"><span class="annottext">getYear :: (Int, Float, Bool, Bool) -&gt; Int
-</span><a href="#local-6989586621679066710"><span class="hs-identifier hs-var hs-var">getYear</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679066698"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679066698"><span class="hs-identifier hs-var">year</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span id="local-6989586621679067025"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067025"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679067025"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-131"></span><span>        </span><span class="annot"><a href="#local-6989586621679067036"><span class="hs-identifier hs-type">getYear</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-132"></span><span>        </span><span id="local-6989586621679067036"><span class="annot"><span class="annottext">getYear :: (Int, Float, Bool, Bool) -&gt; Int
+</span><a href="#local-6989586621679067036"><span class="hs-identifier hs-var hs-var">getYear</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679067024"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679067024"><span class="hs-identifier hs-var">year</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Float
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679066698"><span class="hs-identifier hs-var">year</span></a></span><span>
+</span><a href="#local-6989586621679067024"><span class="hs-identifier hs-var">year</span></a></span><span>
 </span><span id="line-133"></span></pre></body></html>
