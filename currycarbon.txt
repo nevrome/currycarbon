@@ -7,7 +7,7 @@
 --   Radiocarbon calibration with the intercept method optimised for fast
 --   calibration of many dates.
 @package currycarbon
-@version 0.2.0.1
+@version 0.2.1.0
 
 module Currycarbon.Types
 
@@ -733,7 +733,7 @@ module Currycarbon.CLI.RunCalibrate
 -- | A data type to represent the options to the CLI module function
 --   runCalibrate
 data CalibrateOptions
-CalibrateOptions :: [CalExpr] -> [FilePath] -> Maybe FilePath -> CalibrationMethod -> Bool -> Bool -> Bool -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> CalibrateOptions
+CalibrateOptions :: [CalExpr] -> [FilePath] -> Maybe FilePath -> CalibrationMethod -> Bool -> Bool -> Bool -> String -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> CalibrateOptions
 
 -- | String listing the uncalibrated dates that should be calibrated
 [_calibrateExprs] :: CalibrateOptions -> [CalExpr]
@@ -755,6 +755,9 @@ CalibrateOptions :: [CalExpr] -> [FilePath] -> Maybe FilePath -> CalibrationMeth
 
 -- | Suppress the printing of calibration results to the command line
 [_calibrateQuiet] :: CalibrateOptions -> Bool
+
+-- | Encoding of the stdout stream (show TextEncoding)
+[_calibrateStdOutEncoding] :: CalibrateOptions -> String
 
 -- | Path to an output file (see CLI documentation)
 [_calibrateDensityFile] :: CalibrateOptions -> Maybe FilePath
