@@ -12,7 +12,7 @@ import           Currycarbon.Utils
 
 import           Control.Monad      (when, unless)
 import           Data.Maybe         (fromJust, isJust, fromMaybe)
-import           System.IO          (hPutStrLn, stderr)
+import           System.IO          (hPutStrLn, stderr, stdout, hGetEncoding)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
@@ -32,6 +32,11 @@ data CalibrateOptions = CalibrateOptions {
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside noInterpolate quiet densityFile hdrFile calCurveSegmentFile calCurveMatrixFile) = do
+    -- check terminal environment: "ascii" means actually just "not UTF-8"
+    stdOutEncoding <- hGetEncoding stdout
+    let ascii = case stdOutEncoding of
+            Nothing -> True
+            Just enc -> show enc /= "UTF-8"
     -- compile dates
     exprsFromFile <- mapM readCalExprFromFile exprFiles
     let exprsRenamed = replaceEmptyNames $ exprs ++ concat exprsFromFile
@@ -50,52 +55,52 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
         -- run calibration
         hPutStrLn stderr "Calibrating..."
         let errorOrCalPDFs = map (evalCalExpr calConf calCurve) exprsRenamed
-        handleDates True calCurve $ zip exprsRenamed errorOrCalPDFs
-        where
-            -- the bool manages if a date is the first, calibratable date
-            handleDates :: Bool -> CalCurveBP -> [(CalExpr, Either CurrycarbonException CalPDF)] -> IO ()
-            handleDates _ _ [] = hPutStrLn stderr "Done."
-            handleDates True calCurve (firstDate:otherDates) = case firstDate of
-                (_, Left e)           -> printE e                       >> handleDates True  calCurve otherDates
-                (calExpr, Right cPDF) -> firstOut calCurve calExpr cPDF >> handleDates False calCurve otherDates
-            handleDates False calCurve (firstDate:otherDates) = case firstDate of
-                (_, Left e)           -> printE e                       >> handleDates False calCurve otherDates
-                (calExpr, Right cPDF) -> otherOut calExpr cPDF          >> handleDates False calCurve otherDates
-            firstOut :: CalCurveBP -> CalExpr -> CalPDF -> IO ()
-            firstOut calCurve calExpr@(UnCalDate uncal) calPDF = do
-                flexOut calExpr calPDF writeCalPDF writeCalC14
-                when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
-                    hPutStrLn stderr $
-                        "Warning: The calCurveSegment file and the calCurveMatrix file only consider the first date, " ++
-                        renderUncalC14 uncal
-                    let calCurveSegment = prepareCalCurveSegment (not noInterpolate) $ getRelevantCalCurveSegment uncal calCurve
-                    when (isJust calCurveSegmentFile) $
-                        writeCalCurve (fromJust calCurveSegmentFile) calCurveSegment
-                    when (isJust calCurveMatrixFile) $
-                        writeCalCurveMatrix (fromJust calCurveMatrixFile) $
-                        makeCalCurveMatrix (uncalToPDF uncal) calCurveSegment
-            firstOut _ calExpr calPDF = do
-                flexOut calExpr calPDF writeCalPDF writeCalC14
-                when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
-                    hPutStrLn stderr $ "Warning: The calCurveSegment file and the calCurveMatrix file can only be produced for simple dates"
-            otherOut :: CalExpr -> CalPDF -> IO ()
-            otherOut calExpr calPDF =
-                flexOut calExpr calPDF appendCalPDF appendCalC14
-            flexOut :: CalExpr -> CalPDF -> (FilePath -> CalPDF -> IO ()) -> (FilePath -> CalC14 -> IO ()) -> IO ()
-            flexOut calExpr calPDF calPDFToFile calC14ToFile = do
-                case refineCalDate calPDF of
-                    Nothing -> do
-                        unless quiet $ do
-                            putStrLn $ renderCalExpr calExpr
-                            hPutStrLn stderr "Warning: Could not calculate meaningful HDRs for this expression. Check --densityFile."
-                        when (isJust hdrFile)     $ unless quiet $ hPutStrLn stderr "Nothing written to the HDR file"
-                        when (isJust densityFile) $ calPDFToFile (fromJust densityFile) calPDF
-                    Just calC14 -> do
-                        unless quiet              $ putStrLn $ renderCalDatePretty (calExpr, calPDF, calC14)
-                        when (isJust hdrFile)     $ calC14ToFile (fromJust hdrFile) calC14
-                        when (isJust densityFile) $ calPDFToFile (fromJust densityFile) calPDF
-            printE :: CurrycarbonException -> IO ()
-            printE e = hPutStrLn stderr $ renderCurrycarbonException e
+        handleDates ascii True calCurve $ zip exprsRenamed errorOrCalPDFs
+    where
+        -- the bool manages if a date is the first, calibratable date
+        handleDates :: Bool -> Bool -> CalCurveBP -> [(CalExpr, Either CurrycarbonException CalPDF)] -> IO ()
+        handleDates _ _ _ [] = hPutStrLn stderr "Done."
+        handleDates _ascii True calCurve (firstDate:otherDates) = case firstDate of
+            (_, Left e)           -> printE e                              >> handleDates _ascii True  calCurve otherDates
+            (calExpr, Right cPDF) -> firstOut _ascii calCurve calExpr cPDF >> handleDates _ascii False calCurve otherDates
+        handleDates _ascii False calCurve (firstDate:otherDates) = case firstDate of
+            (_, Left e)           -> printE e                              >> handleDates _ascii False calCurve otherDates
+            (calExpr, Right cPDF) -> otherOut _ascii calExpr cPDF          >> handleDates _ascii False calCurve otherDates
+        firstOut :: Bool -> CalCurveBP -> CalExpr -> CalPDF -> IO ()
+        firstOut _ascii calCurve calExpr@(UnCalDate uncal) calPDF = do
+            flexOut _ascii calExpr calPDF writeCalPDF writeCalC14
+            when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
+                hPutStrLn stderr $
+                    "Warning: The calCurveSegment file and the calCurveMatrix file only consider the first date, " ++
+                    renderUncalC14 uncal
+                let calCurveSegment = prepareCalCurveSegment (not noInterpolate) $ getRelevantCalCurveSegment uncal calCurve
+                when (isJust calCurveSegmentFile) $
+                    writeCalCurve (fromJust calCurveSegmentFile) calCurveSegment
+                when (isJust calCurveMatrixFile) $
+                    writeCalCurveMatrix (fromJust calCurveMatrixFile) $
+                    makeCalCurveMatrix (uncalToPDF uncal) calCurveSegment
+        firstOut _ascii _ calExpr calPDF = do
+            flexOut _ascii calExpr calPDF writeCalPDF writeCalC14
+            when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
+                hPutStrLn stderr $ "Warning: The calCurveSegment file and the calCurveMatrix file can only be produced for simple dates"
+        otherOut :: Bool -> CalExpr -> CalPDF -> IO ()
+        otherOut _ascii calExpr calPDF =
+            flexOut _ascii calExpr calPDF appendCalPDF appendCalC14
+        flexOut :: Bool ->  CalExpr -> CalPDF -> (FilePath -> CalPDF -> IO ()) -> (FilePath -> CalC14 -> IO ()) -> IO ()
+        flexOut _ascii calExpr calPDF calPDFToFile calC14ToFile = do
+            case refineCalDate calPDF of
+                Nothing -> do
+                    unless quiet $ do
+                        hPutStrLn stdout $ renderCalExpr calExpr
+                        hPutStrLn stderr "Warning: Could not calculate meaningful HDRs for this expression. Check --densityFile."
+                    when (isJust hdrFile)     $ unless quiet $ hPutStrLn stderr "Nothing written to the HDR file"
+                    when (isJust densityFile) $ calPDFToFile (fromJust densityFile) calPDF
+                Just calC14 -> do
+                    unless quiet              $ hPutStrLn stdout $ renderCalDatePretty _ascii (calExpr, calPDF, calC14)
+                    when (isJust hdrFile)     $ calC14ToFile (fromJust hdrFile) calC14
+                    when (isJust densityFile) $ calPDFToFile (fromJust densityFile) calPDF
+        printE :: CurrycarbonException -> IO ()
+        printE e = hPutStrLn stderr $ renderCurrycarbonException e
 
 -- | Helper function to replace empty input names with a sequence of numbers, 
 -- to get each input date an unique identifier

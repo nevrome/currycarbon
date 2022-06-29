@@ -65,12 +65,15 @@ parseCalibrationMethod = do
 --                    ─     ──────────────────────────
 -- @
 --
-renderCalDatePretty :: (CalExpr, CalPDF, CalC14) -> String
-renderCalDatePretty (calExpr, calPDF, calC14) =
+renderCalDatePretty :: 
+       Bool -- ^ Should the CLI plot be restricted to (boring) ASCII symbols?
+    -> (CalExpr, CalPDF, CalC14)
+    -> String
+renderCalDatePretty ascii (calExpr, calPDF, calC14) =
     "DATE: " ++ intercalate "\n" [
           renderCalExpr calExpr
         , renderCalC14 calC14
-        , renderCLIPlotCalPDF 6 50 calPDF calC14
+        , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
         ]
 
 renderCalExpr :: CalExpr -> String
@@ -263,8 +266,10 @@ renderCalPDF (CalPDF name cals dens) =
     where
       makeRow (x,y) = show name ++ "," ++ show x ++ "," ++ show y ++ "\n"
 
-renderCLIPlotCalPDF :: Int -> Int -> CalPDF -> CalC14 -> String
-renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
+data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine 
+
+renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
+renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
      let startYear = VU.head cals
          stopYear = VU.last cals
          yearsPerCol = case quot (VU.length cals) cols of
@@ -274,7 +279,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
         -- last bin will often be shorter, which renders the whole plot slightly incorrect for the last column
          meanDensPerCol = calculateMeanDens yearsPerCol dens
          effectiveCols = length meanDensPerCol
-         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getPlotSymbol x) meanDensPerCol) $ reverse [0..rows]
+         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getHistSymbol x) meanDensPerCol) $ reverse [0..rows]
          xAxis = constructXAxis startYear stopYear effectiveCols yearsPerCol
      in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
@@ -290,10 +295,23 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
             where (first,rest) = splitAt n list
         padString :: Int -> String -> String
         padString l x = replicate (l - length x) ' ' ++ x
-        getPlotSymbol :: Int -> Int -> Char
-        getPlotSymbol x y
-            | x == y = '▁'
-            | x < y = '▒'
+        getSymbol :: Bool -> PlotSymbol -> Char
+        getSymbol True HistFill  = '*'
+        getSymbol False HistFill = '▒'
+        getSymbol True HistTop   = '_'
+        getSymbol False HistTop  = '▁'
+        getSymbol True AxisEnd   = '+'
+        getSymbol False AxisEnd  = '┄'
+        getSymbol True AxisLine  = '-'
+        getSymbol False AxisLine = '─'
+        getSymbol True AxisTick  = '|'
+        getSymbol False AxisTick = '┬'
+        getSymbol True HDRLine   = '-'
+        getSymbol False HDRLine  = '─'
+        getHistSymbol :: Int -> Int -> Char
+        getHistSymbol x y
+            | x == y = getSymbol ascii HistTop
+            | x < y  = getSymbol ascii HistFill
             | otherwise = ' '
         constructXAxis :: Int -> Int -> Int -> Int -> String
         constructXAxis startYear stopYear effCols yearsPerCol =
@@ -306,7 +324,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                 simpleRange = zipWith (getRangeSymbol (_calC14RangeSummary c14)) colStartYears colStopYears
                 hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14))    colStartYears colStopYears
                 hdrTwo      = zipWith (getHDRSymbol (_calC14HDRTwoSigma c14))    colStartYears colStopYears
-            in  startS ++ " ┄" ++ axis ++ "┄ " ++ stopS ++ "\n" ++
+            in  startS ++ (" " ++ [getSymbol ascii AxisEnd]) ++ axis ++ ([getSymbol ascii AxisEnd] ++ " ") ++ stopS ++ "\n" ++
                 replicate 8 ' ' ++ simpleRange ++ "\n" ++
                 replicate 8 ' ' ++ hdrOne ++ "\n" ++
                 replicate 8 ' ' ++ hdrTwo
@@ -318,8 +336,8 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                     in roundedDec * 10 * signum x
                 getAxisSymbol :: Int -> Int -> Int -> Char
                 getAxisSymbol tickFreq colStartYear colStopYear
-                    | any (\x -> rem x tickFreq == 0) [colStartYear..colStopYear] = '┬'
-                    | otherwise = '─'
+                    | any (\x -> rem x tickFreq == 0) [colStartYear..colStopYear] = getSymbol ascii AxisTick
+                    | otherwise = getSymbol ascii AxisLine
                 getRangeSymbol :: CalRangeSummary -> Int -> Int -> Char
                 getRangeSymbol range colStartYear colStopYear
                     | colStartYear <= _calRangeMedian range        && colStopYear >= _calRangeMedian range        = '^'
@@ -330,7 +348,7 @@ renderCLIPlotCalPDF rows cols (CalPDF _ cals dens) c14 =
                     | otherwise = ' '
                 getHDRSymbol :: [HDR] -> Int -> Int -> Char
                 getHDRSymbol hdr colStartYear colStopYear
-                    | any (doesOverlap colStartYear colStopYear) hdr = '─'
+                    | any (doesOverlap colStartYear colStopYear) hdr = getSymbol ascii HDRLine
                     | otherwise = ' '
                     where
                         doesOverlap :: Int -> Int -> HDR -> Bool
