@@ -1,0 +1,3 @@
+Presentations about currycarbon
+
+- `CAA2022_LittleMinions.ms`: A lightning talk about currycarbon at the CAA2022 conference in a session about small useful software tools. This presentation lives in a simple markdown file and can be presented/executed with the terminal based presentation tool [`slides`](https://github.com/maaslalani/slides). Code blocks can be executed with `CTRL+e` when the presentation is loaded with `slides CAA2022_LittleMinions.ms`.
