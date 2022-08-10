@@ -8,7 +8,7 @@ Radiocarbon calibration module written in and for [Haskell](https://www.haskell.
 
 ### Library
 
-The Haskell library is available on Hackage [here](https://hackage.haskell.org/package/currycarbon).
+The Haskell library is available on Hackage [here](https://hackage.haskell.org/package/currycarbon) and on Stackage [here](https://www.stackage.org/package/currycarbon).
 This repository stores the dev version with up-to-date documentation available [here](https://nevrome.github.io/currycarbon).
 
 ### CLI app
