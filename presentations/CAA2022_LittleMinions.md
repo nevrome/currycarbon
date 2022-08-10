@@ -12,7 +12,7 @@ S05 - Little minions
 
 - A simple radiocarbon calibration software library in and for Haskell
   - Intercept calibration
-  - Sums and products
+  - Sums and products of post-calibration probability distributions
   - Reasonably fast
 
 ---
@@ -21,11 +21,11 @@ S05 - Little minions
 
 - A simple radiocarbon calibration software library in and for Haskell
   - Intercept calibration
-  - Sums and products
+  - Sums and products of post-calibration probability distributions
   - Reasonably fast
 - A didactic exercise
-  - Understanding by implementation
   - Calibration as vector-matrix multiplication
+  - Understanding by implementation
 
 ---
 
@@ -33,11 +33,11 @@ S05 - Little minions
 
 - A simple radiocarbon calibration software library in and for Haskell
   - Intercept calibration
-  - Sums and products
+  - Sums and products of post-calibration probability distributions
   - Reasonably fast
 - A didactic exercise
-  - Understanding by implementation
   - Calibration as vector-matrix multiplication
+  - Understanding by implementation
 - A command line tool for your quick calibration needs
 
 ```bash
@@ -48,8 +48,53 @@ currycarbon "5000,30"
 
 ## Why yet another calibration library?
 
-<!--I wanted to understand intercept calibration -->
-<!--Martin Hinz: https://www.martinhinz.info/jekyll/update/blog/2016/06/03/simple_calibration.html-->
+1. I wanted to understand intercept calibration
+
+---
+
+## Why yet another calibration library?
+
+1. I wanted to understand intercept calibration
+
+```
+uncal date
+┌─┐
+│ │                                                    - The uncalibrated date as a vector
+│.│                                                      of probability densities
+│.│
+│#│
+│#│
+│#│
+│.│
+│ │
+└─┘
+```
+
+---
+
+## Why yet another calibration library?
+
+1. I wanted to understand intercept calibration
+
+```
+uncal date            calibration curve
+┌─┐                   ┌───────────────────────────┐
+│ │                   │.#.                        │    - The uncalibrated date as a vector
+│.│                   │ .#...                     │      of probability densities
+│.│                   │ ..###..        .          │    - The calibration curve as a matrix  
+│#│                   │    ..##..    .###.        │      of probability densities
+│#│         *         │       ..#...##...#.       │
+│#│                   │          #.#.   ..#..     │
+│.│                   │           #        .###.  │
+│ │                   │                       ..##│
+└─┘                   └───────────────────────────┘
+```
+
+---
+
+## Why yet another calibration library?
+
+1. I wanted to understand intercept calibration
 
 ```
 uncal date            calibration curve
@@ -61,7 +106,6 @@ uncal date            calibration curve
 │#│         *         │       ..#...##...#.       │    - Column-wise multiplication to
 │#│                   │          #.#.   ..#..     │      derive the post-calibration
 │.│                   │           #        .###.  │      probability distribution
-│.│                   │                       .#. │
 │ │                   │                       ..##│
 └─┘                   └───────────────────────────┘
                                     =
@@ -76,29 +120,122 @@ uncal date            calibration curve
 
 ## Why yet another calibration library?
 
-I wanted to write a Haskell library
+1. I wanted to understand intercept calibration
+
+```
+uncal date            calibration curve
+┌─┐                   ┌───────────────────────────┐
+│ │                   │.#.                        │    - The uncalibrated date as a vector
+│.│                   │ .#...                     │      of probability densities
+│.│                   │ ..###..        .          │    - The calibration curve as a matrix  
+│#│                   │    ..##..    .###.        │      of probability densities
+│#│         *         │       ..#...##...#.       │    - Column-wise multiplication to
+│#│                   │          #.#.   ..#..     │      derive the post-calibration
+│.│                   │           #        .###.  │      probability distribution
+│ │                   │                       ..##│
+└─┘                   └───────────────────────────┘
+                                    =
+                      ┌───────────────────────────┐ post-calibration
+                      │      ***   ***** ***      │ probability distribution
+                      │    **'''***'''''*'''**    │
+                      │****'''''''''''''''''''****│ 
+                      └───────────────────────────┘
+```
+
+- Martin Hinz: https://www.martinhinz.info/jekyll/update/blog/2016/06/03/simple_calibration.html
+- Andrew Parnell: https://github.com/andrewcparnell/Bchron
+
+---
+
+## Why yet another calibration library?
+
+2. I wanted to write a Haskell library
 
 ```
  .,,,,,,,  *******                      
    ,,,,,,,   *******                        - Haskell is a purely functional, lazy and
      ,,,,,,,  *******                         statically typed programming language
       ,,,,,,,,  *******  ///////////////    - Looks and feels very different from C, R, Java, ...
-        ,,,,,,,   *******  /////////////    - Makes you feel powerful
+        ,,,,,,,   *******  /////////////    
           ,,,,,,,  *******                    - Pure: Side effects are well contained
-        ,,,,,,,   **********  //////////      - Lazy: It evaluates only what it really must
-      .,,,,,,,  **************  ////////      - Types: Most errors are caught at compile time
+        ,,,,,,,   **********  //////////      - Statically typed: Most errors are caught at compile time
+      .,,,,,,,  **************  ////////      - Lazy: It evaluates only what it really must
      ,,,,,,,  *******   *******             
    ,,,,,,,  ,*******      *******           - Well suitable for command line applications      
- .,,,,,,,  *******          *******  
+ .,,,,,,,  *******          *******         - We're developing tools for aDNA in it
 ```
 
-We wrote the tools trident and xerxes of our aDNA genotype data management framework Poseidon with Haskell: https://poseidon-framework.github.io
+---
+
+## Why yet another calibration library?
+
+2. I wanted to write a Haskell library
+
+```
+ .,,,,,,,  *******                      
+   ,,,,,,,   *******                        - Haskell is a purely functional, lazy and
+     ,,,,,,,  *******                         statically typed programming language
+      ,,,,,,,,  *******  ///////////////    - Looks and feels very different from C, R, Java, ...
+        ,,,,,,,   *******  /////////////    
+          ,,,,,,,  *******                    - Pure: Side effects are well contained
+        ,,,,,,,   **********  //////////      - Statically typed: Most errors are caught at compile time
+      .,,,,,,,  **************  ////////      - Lazy: It evaluates only what it really must
+     ,,,,,,,  *******   *******             
+   ,,,,,,,  ,*******      *******           - Well suitable for command line applications      
+ .,,,,,,,  *******          *******         - We're developing tools for aDNA in it
+```
+
+So far there was no calibration library available in Haskell, but I need one
 
 ---
 
 ## How does it work?
 
-dsdads
+Simple calibration
+
+```Haskell
+calibrateDates :: CalibrateDatesConf    -- ^ configuration options
+                  -> CalCurveBP         -- ^ calibration curve
+                  -> UncalC14           -- ^ uncalibrated date
+                  -> Either CurrycarbonException CalPDF
+
+data CalPDF = CalPDF {
+      _calPDFid :: String               -- | Identifier, e.g. a lab number
+    , _calPDFCals :: VU.Vector YearBCAD -- | years calBC/AD
+    , _calPDFDens :: VU.Vector Float    -- | probability for each year
+    }
+```
+
+---
+
+## How does it work?
+
+Simple calibration
+
+```Haskell
+calibrateDates :: CalibrateDatesConf    -- ^ configuration options
+                  -> CalCurveBP         -- ^ calibration curve
+                  -> UncalC14           -- ^ uncalibrated date
+                  -> Either CurrycarbonException CalPDF
+
+data CalPDF = CalPDF {
+      _calPDFid :: String               -- | Identifier, e.g. a lab number
+    , _calPDFCals :: VU.Vector YearBCAD -- | years calBC/AD
+    , _calPDFDens :: VU.Vector Float    -- | probability for each year
+    }
+```
+
+Sum- and Product calibration
+
+```Haskell
+data CalExpr =
+      UnCalDate UncalC14                -- | uncalibrated date
+    | CalDate CalPDF                    -- | calibrated date
+    | SumCal CalExpr CalExpr            -- | sum of two CalExpressions
+    | ProductCal CalExpr CalExpr        -- | product of two CalExpressions
+
+evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
+```
 
 ---
 
@@ -120,7 +257,7 @@ chmod +x currycarbon-Linux
 
 ```bash
 currycarbon "Sample1,5000,30;Sample2,3900,30;Sample3,2700,40" > results.txt
-tail --lines 15 results.txt
+tail --lines 30 results.txt
 ```
 
 ---
@@ -146,7 +283,7 @@ column -s "," -t results.txt
 ## Features: Sum calibration
 
 ```bash
-currycarbon "Sample1,5000,30+Sample2,3900,30+Sample3,2700,40"
+currycarbon "Sample1,5000,30+Sample2,4900,30+Sample3,4800,40"
 ```
 
 ---
@@ -154,7 +291,7 @@ currycarbon "Sample1,5000,30+Sample2,3900,30+Sample3,2700,40"
 ## Features: Sums and products
 
 ```bash
-currycarbon "Sample1,5000,30+Sample2,3900,30*Sample3,2700,40"
+currycarbon "Sample1,5000,30*Sample2,4900,30*Sample3,4800,40"
 ```
 
 ---
