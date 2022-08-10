@@ -12,7 +12,7 @@ S05 - Little minions
 
 - A simple radiocarbon calibration software library in and for Haskell
   - Intercept calibration
-  - Sums and products of post-calibration probability distributions
+  - Sums and products of calibrated dates
   - Reasonably fast
 
 ---
@@ -21,7 +21,7 @@ S05 - Little minions
 
 - A simple radiocarbon calibration software library in and for Haskell
   - Intercept calibration
-  - Sums and products of post-calibration probability distributions
+  - Sums and products of calibrated dates
   - Reasonably fast
 - A didactic exercise
   - Calibration as vector-matrix multiplication
@@ -33,7 +33,7 @@ S05 - Little minions
 
 - A simple radiocarbon calibration software library in and for Haskell
   - Intercept calibration
-  - Sums and products of post-calibration probability distributions
+  - Sums and products of calibrated dates
   - Reasonably fast
 - A didactic exercise
   - Calibration as vector-matrix multiplication
@@ -153,9 +153,9 @@ uncal date            calibration curve
 
 ```
  .,,,,,,,  *******                      
-   ,,,,,,,   *******                        - Haskell is a purely functional, lazy and
-     ,,,,,,,  *******                         statically typed programming language
-      ,,,,,,,,  *******  ///////////////    - Looks and feels very different from C, R, Java, ...
+   ,,,,,,,   *******                        - Haskell is a purely functional programming language
+     ,,,,,,,  *******                       
+      ,,,,,,,,  *******  ///////////////    - Looks and feels different from C, R, Java, ...
         ,,,,,,,   *******  /////////////    
           ,,,,,,,  *******                    - Pure: Side effects are well contained
         ,,,,,,,   **********  //////////      - Statically typed: Most errors are caught at compile time
@@ -173,9 +173,9 @@ uncal date            calibration curve
 
 ```
  .,,,,,,,  *******                      
-   ,,,,,,,   *******                        - Haskell is a purely functional, lazy and
-     ,,,,,,,  *******                         statically typed programming language
-      ,,,,,,,,  *******  ///////////////    - Looks and feels very different from C, R, Java, ...
+   ,,,,,,,   *******                        - Haskell is a purely functional programming language
+     ,,,,,,,  *******                       
+      ,,,,,,,,  *******  ///////////////    - Looks and feels different from C, R, Java, ...
         ,,,,,,,   *******  /////////////    
           ,,,,,,,  *******                    - Pure: Side effects are well contained
         ,,,,,,,   **********  //////////      - Statically typed: Most errors are caught at compile time
@@ -185,7 +185,7 @@ uncal date            calibration curve
  .,,,,,,,  *******          *******         - We're developing tools for aDNA in it
 ```
 
-So far there was no calibration library available in Haskell, but I need one
+I needed a calibration library in Haskell, but there was none
 
 ---
 
@@ -194,10 +194,10 @@ So far there was no calibration library available in Haskell, but I need one
 Simple calibration
 
 ```Haskell
-calibrateDates :: CalibrateDatesConf    -- ^ configuration options
-                  -> CalCurveBP         -- ^ calibration curve
-                  -> UncalC14           -- ^ uncalibrated date
-                  -> Either CurrycarbonException CalPDF
+calibrateDate :: CalibrateDatesConf     -- ^ configuration options
+                 -> CalCurveBP          -- ^ calibration curve
+                 -> UncalC14            -- ^ uncalibrated date
+                 -> Either CurrycarbonException CalPDF
 
 data CalPDF = CalPDF {
       _calPDFid :: String               -- | Identifier, e.g. a lab number
@@ -213,10 +213,10 @@ data CalPDF = CalPDF {
 Simple calibration
 
 ```Haskell
-calibrateDates :: CalibrateDatesConf    -- ^ configuration options
-                  -> CalCurveBP         -- ^ calibration curve
-                  -> UncalC14           -- ^ uncalibrated date
-                  -> Either CurrycarbonException CalPDF
+calibrateDate :: CalibrateDatesConf     -- ^ configuration options
+                 -> CalCurveBP          -- ^ calibration curve
+                 -> UncalC14            -- ^ uncalibrated date
+                 -> Either CurrycarbonException CalPDF
 
 data CalPDF = CalPDF {
       _calPDFid :: String               -- | Identifier, e.g. a lab number
@@ -288,7 +288,7 @@ currycarbon "Sample1,5000,30+Sample2,4900,30+Sample3,4800,40"
 
 ---
 
-## Features: Sums and products
+## Features: Product calibration ("combine")
 
 ```bash
 currycarbon "Sample1,5000,30*Sample2,4900,30*Sample3,4800,40"
