@@ -283,7 +283,7 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
          xAxis = constructXAxis startYear stopYear effectiveCols yearsPerCol
      in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
-        calculateMeanDens :: Int -> VU.Vector Float -> [Int]
+        calculateMeanDens :: Int -> VU.Vector Double -> [Int]
         calculateMeanDens yearsPerCol dens_ =
             let scaling = fromIntegral rows
                 meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList dens_

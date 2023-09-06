@@ -29,7 +29,7 @@ evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
         mapEither _ f (Right x) = Right (f x)
 
 eitherCombinePDFs ::
-    (Float -> Float -> Float) -> Float ->
+    (Double -> Double -> Double) -> Double ->
     Either CurrycarbonException CalPDF ->
     Either CurrycarbonException CalPDF ->
     Either CurrycarbonException CalPDF
@@ -46,7 +46,7 @@ multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
 multiplyPDFs = combinePDFs (*) 1
 
 -- Combine probability densities
-combinePDFs :: (Float -> Float -> Float) -> Float -> CalPDF -> CalPDF -> CalPDF
+combinePDFs :: (Double -> Double -> Double) -> Double -> CalPDF -> CalPDF -> CalPDF
 combinePDFs f initVal (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
         let minC1 = VU.minimum cals1
             minC2 = VU.minimum cals2
@@ -54,8 +54,8 @@ combinePDFs f initVal (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
             maxC2 = VU.maximum cals2
             emptyC1 = getMiss minC1 maxC1 minC2 maxC2
             emptyC2 = getMiss minC2 maxC2 minC1 maxC1
-            c1 = VU.toList (VU.zip cals1 dens1) ++ zip emptyC1 (repeat (0 :: Float))
-            c2 = VU.toList (VU.zip cals2 dens2) ++ zip emptyC2 (repeat (0 :: Float))
+            c1 = VU.toList (VU.zip cals1 dens1) ++ zip emptyC1 (repeat (0 :: Double))
+            c2 = VU.toList (VU.zip cals2 dens2) ++ zip emptyC2 (repeat (0 :: Double))
             pdfSorted = sortBy (comparing fst) (c1 ++ c2)
             pdfGrouped = groupBy (\a b -> fst a == fst b) pdfSorted
             pdfRes = map foldYearGroup pdfGrouped
@@ -67,5 +67,5 @@ combinePDFs f initVal (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
                 | a1 <  b1 && a2 <= b2 = [a1..b1]
                 | a1 >= b1 && a2 >  b2 = [b2..a2]
                 | otherwise = []
-            foldYearGroup :: [(YearBCAD, Float)] -> (YearBCAD, Float)
+            foldYearGroup :: [(YearBCAD, Double)] -> (YearBCAD, Double)
             foldYearGroup oneYear = (fst $ head oneYear, foldl' f initVal $ map snd oneYear)

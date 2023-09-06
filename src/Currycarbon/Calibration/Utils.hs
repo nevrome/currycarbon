@@ -16,7 +16,7 @@ normalizeCalPDF (CalPDF name cals dens) =
       s   -> CalPDF name cals $ VU.map (/s) dens
 
 -- | get the density of a normal distribution at a point x
-dnorm :: Float -> Float -> Float -> Float
+dnorm :: Double -> Double -> Double -> Double
 dnorm mu sigma x =
     let a = recip (sqrt (2 * pi * sigma2))
         b = exp (-c2 / (2 * sigma2))
@@ -26,17 +26,16 @@ dnorm mu sigma x =
     in a*b
     -- alternative implemenation with the statistics package:
     -- import Statistics.Distribution (density)
-    -- realToFrac $ density (normalDistr (realToFrac mu) (realToFrac sigma)) (realToFrac x)
+    -- density (normalDistr mu sigma) x
 
 -- | get the density of student's-t distribution at a point x
-dt :: Double -> Float -> Float
+dt :: Double -> Double -> Double
 dt dof x =
-    let xDouble = realToFrac x
-        logDensityUnscaled = log (dof / (dof + xDouble*xDouble)) * (0.5 * (1 + dof)) - logBeta 0.5 (0.5 * dof)
-    in realToFrac $ exp logDensityUnscaled / sqrt dof
+    let logDensityUnscaled = log (dof / (dof + x*x)) * (0.5 * (1 + dof)) - logBeta 0.5 (0.5 * dof)
+    in exp logDensityUnscaled / sqrt dof
     -- alternative implemenation with the statistics package:
     -- import Statistics.Distribution.StudentT (studentT)
-    -- realToFrac $ density (studentT (realToFrac dof)) (realToFrac x) -- dof: number of degrees of freedom
+    -- density (studentT dof) x -- dof: number of degrees of freedom
 
 isOutsideRangeOfCalCurve :: CalCurveBP -> UncalC14 -> Bool
 isOutsideRangeOfCalCurve (CalCurveBP _ uncals _) (UncalC14 _ age _) =
@@ -87,7 +86,7 @@ interpolateCalCurve (CalCurveBP cals uncals sigmas) =
         getInBetweenPointsInt (x1,y1) (x2,y2) xPred =
             let (_,yPred) = getInBetweenPoints (fromIntegral x1,fromIntegral y1) (fromIntegral x2,fromIntegral y2) $ fromIntegral xPred
             in (xPred, round yPred)
-        getInBetweenPoints :: (Float, Float) -> (Float, Float) -> Float -> (Float, Float)
+        getInBetweenPoints :: (Double, Double) -> (Double, Double) -> Double -> (Double, Double)
         getInBetweenPoints (x1,y1) (x2,y2) xPred =
             let yDiff = y2 - y1
                 xDiff = abs $ x1 - x2

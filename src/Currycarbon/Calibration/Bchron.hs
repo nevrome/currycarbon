@@ -17,14 +17,14 @@ calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 n
     else
         let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
             CalCurveBCAD cals mus tau1s = prepareCalCurveSegment interpolate rawCalCurveSegment
-            ageFloat = -(fromIntegral age)+1950
+            ageDouble = -(fromIntegral age)+1950
             ageSd2 = ageSd*ageSd
-            ageSd2Float = fromIntegral ageSd2
-            musFloat = VU.map fromIntegral mus
-            tau1sFloat = VU.map fromIntegral tau1s
+            ageSd2Double = fromIntegral ageSd2
+            musDouble = VU.map fromIntegral mus
+            tau1sDouble = VU.map fromIntegral tau1s
             dens = case distr of
                 NormalDist ->
-                    VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
+                    VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageDouble - mu) / sqrt (ageSd2Double + tau1 * tau1))) musDouble tau1sDouble
                 StudentTDist degreesOfFreedom ->
-                    VU.zipWith (\mu tau1 -> dt degreesOfFreedom ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
+                    VU.zipWith (\mu tau1 -> dt degreesOfFreedom ((ageDouble - mu) / sqrt (ageSd2Double + tau1 * tau1))) musDouble tau1sDouble
         in Right $ trimLowDensityEdgesCalPDF $ normalizeCalPDF $ CalPDF name cals dens
