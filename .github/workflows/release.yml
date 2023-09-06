@@ -72,7 +72,7 @@ jobs:
       - name: Compress binary
         uses: svenstaro/upx-action@v2
         with:
-          file: ${{ steps.binarypath.outputs.value }}
+          files: ${{ steps.binarypath.outputs.value }}
 
       - name: Upload Release Asset
         id: upload-release-asset

@@ -56,4 +56,4 @@ executable currycarbon
     default-language:
       Haskell2010
     ghc-options: 
-      -threaded -with-rtsopts=-N
+      -threaded -with-rtsopts=-N -optP-Wno-nonportable-include-path
