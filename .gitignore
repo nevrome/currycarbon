@@ -6,3 +6,4 @@ playground/data/
 .Rproj.user
 .Rhistory
 dist-newstyle/
+*.tar.gz
