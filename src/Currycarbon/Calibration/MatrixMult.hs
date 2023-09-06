@@ -6,14 +6,14 @@ module Currycarbon.Calibration.MatrixMult
       , uncalToPDF
     ) where
 
-import Currycarbon.Calibration.Utils
-import Currycarbon.Parsers
-import Currycarbon.Types
-import Currycarbon.Utils
+import           Currycarbon.Calibration.Utils
+import           Currycarbon.Parsers
+import           Currycarbon.Types
+import           Currycarbon.Utils
 
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector as V
-import Data.Vector.Generic (convert)
+import qualified Data.Vector                   as V
+import           Data.Vector.Generic           (convert)
+import qualified Data.Vector.Unboxed           as VU
 
 -- | Intercept calibration implemented with matrix multiplication (see 'MatrixMultiplication')
 calibrateDateMatrixMult :: Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
@@ -40,15 +40,15 @@ makeCalCurveMatrix (UncalPDF _ uncals' _) (CalCurveBCAD cals uncals sigmas) =
     where
         buildMatrix :: VU.Vector Float -> VU.Vector Float -> VU.Vector Float -> V.Vector (VU.Vector Float)
         buildMatrix curveuncal_ sigmas_ uncal_ =
-          V.map (\x -> VU.map (fillCell x) uncal_) $ 
+          V.map (\x -> VU.map (fillCell x) uncal_) $
             V.zip (convert curveuncal_) (convert sigmas_)
         fillCell :: (Float, Float) -> Float -> Float
-        fillCell (mean, sigma) matrixPosBP = 
+        fillCell (mean, sigma) matrixPosBP =
             if abs (mean - matrixPosBP) < 6*sigma
             then dnorm mean sigma matrixPosBP
             else 0
 
--- | Transform an uncalibrated date to an uncalibrated 
+-- | Transform an uncalibrated date to an uncalibrated
 -- probability density table
 uncalToPDF :: UncalC14 -> UncalPDF
 uncalToPDF (UncalC14 name mean std) =

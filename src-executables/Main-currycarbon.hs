@@ -1,17 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import           Currycarbon.CLI.RunCalibrate       (runCalibrate, 
-                                                     CalibrateOptions (..))
+import           Currycarbon.CLI.RunCalibrate (CalibrateOptions (..),
+                                               runCalibrate)
 import           Currycarbon.Parsers
 import           Currycarbon.Types
 import           Currycarbon.Utils
-import           Paths_currycarbon                  (version)
+import           Paths_currycarbon            (version)
 
-import           Control.Exception                  (catch)
-import           Data.Version                       (showVersion)
-import qualified Options.Applicative                as OP
-import           System.Exit                        (exitFailure)
-import           System.IO                          (hPutStrLn, stderr, stdout, hGetEncoding)
+import           Control.Exception            (catch)
+import           Data.Version                 (showVersion)
+import qualified Options.Applicative          as OP
+import           System.Exit                  (exitFailure)
+import           System.IO                    (hGetEncoding, hPutStrLn, stderr,
+                                               stdout)
 -- * CLI interface configuration
 --
 -- $cliInterface
@@ -120,19 +121,19 @@ optParseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
 
 optParseAllowOutside :: OP.Parser (Bool)
 optParseAllowOutside = OP.switch (
-    OP.long "allowOutside" <> 
+    OP.long "allowOutside" <>
     OP.help "Allow calibrations to run outside the range of the calibration curve"
     )
 
 optParseDontInterpolateCalCurve :: OP.Parser (Bool)
 optParseDontInterpolateCalCurve = OP.switch (
-    OP.long "noInterpolation" <> 
+    OP.long "noInterpolation" <>
     OP.help "Don't interpolate the calibration curve"
     )
 
 optParseQuiet :: OP.Parser (Bool)
 optParseQuiet = OP.switch (
-    OP.long "quiet" <> 
+    OP.long "quiet" <>
     OP.short 'q' <>
     OP.help "Suppress the printing of calibration results to the command line"
     )

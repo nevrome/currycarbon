@@ -18,44 +18,45 @@ module Currycarbon.Calibration.Calibration
       , defaultCalConf
     ) where
 
-import Currycarbon.Calibration.Utils
-import Currycarbon.Calibration.Bchron
-import Currycarbon.Calibration.MatrixMult
-import Currycarbon.Types
-import Currycarbon.Utils
+import           Currycarbon.Calibration.Bchron
+import           Currycarbon.Calibration.MatrixMult
+import           Currycarbon.Calibration.Utils
+import           Currycarbon.Types
+import           Currycarbon.Utils
 
-import Data.List (sort, sortBy, groupBy, elemIndex)
-import Data.Maybe (fromJust)
-import qualified Data.Vector.Unboxed as VU
+import           Data.List                          (elemIndex, groupBy, sort,
+                                                     sortBy)
+import           Data.Maybe                         (fromJust)
+import qualified Data.Vector.Unboxed                as VU
 
 -- | A data type to cover the configuration options of the calibrateDates function
 data CalibrateDatesConf = CalibrateDatesConf {
-      -- | The calibration algorithm that should be used  
-        _calConfMethod :: CalibrationMethod
+      -- | The calibration algorithm that should be used
+        _calConfMethod              :: CalibrationMethod
       -- | Allow calibration to run outside of the range of the calibration curve
-      , _calConfAllowOutside :: Bool
+      , _calConfAllowOutside        :: Bool
       -- | Interpolate the calibration curve before calibration.
       -- This is a simple linear interpolation only to increase the output
       -- resolution for earlier time periods, where the typical calibration
       -- curves are less dense by default. With the interpolation, the output
-      -- will be a per-year density. The mechanism is inspired by the 
+      -- will be a per-year density. The mechanism is inspired by the
       -- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)
-      , _calConfInterpolateCalCurve :: Bool 
+      , _calConfInterpolateCalCurve :: Bool
     } deriving (Show, Eq)
 
--- | A default configuration that should yield almost identical calibration results 
+-- | A default configuration that should yield almost identical calibration results
 -- to the [Bchron R package](https://github.com/andrewcparnell/Bchron)
 defaultCalConf :: CalibrateDatesConf
 defaultCalConf = CalibrateDatesConf {
         _calConfMethod = Bchron { distribution = StudentTDist 100 }
-      , _calConfAllowOutside = False 
+      , _calConfAllowOutside = False
       , _calConfInterpolateCalCurve = True
     }
 
 -- | Calibrates a list of dates with the provided calibration curve
 calibrateDates :: CalibrateDatesConf -- ^ Configuration options to consider
                   -> CalCurveBP -- ^ A calibration curve
-                  -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates  
+                  -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates
                   -> [Either CurrycarbonException CalPDF] -- ^ The function returns a list for each input date, with
                                                           -- either an exception if the calibration failed for some
                                                           -- reason, or a 'CalPDF'
@@ -69,7 +70,7 @@ calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside inter
 calibrateDate :: CalibrateDatesConf -- ^ Configuration options to consider
                  -> CalCurveBP -- ^ A calibration curve
                  -> UncalC14 -- ^ An uncalibrated radiocarbon date
-                 -> Either CurrycarbonException CalPDF -- ^ The function returns either an exception if the 
+                 -> Either CurrycarbonException CalPDF -- ^ The function returns either an exception if the
                                                         -- calibration failed for some reason, or a 'CalPDF'
 calibrateDate (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDate =
     calibrateDateMatrixMult allowOutside interpolate calCurve uncalDate
@@ -110,17 +111,17 @@ refineCalDate (CalPDF name cals dens) =
         hdrs68 = densities2HDR68 contextualizedDensities
         hdrs95 = densities2HDR95 contextualizedDensities
         -- helper functions
-        indexVU _ Nothing = Nothing
+        indexVU _ Nothing  = Nothing
         indexVU x (Just i) = x VU.!? i
         cumsumDens :: [(YearBCAD, Float)] -> [Float]
         cumsumDens x = scanl1 (+) $ map snd x
         densities2HDR68 :: [(Int, Float, Bool, Bool)] -> [HDR]
-        densities2HDR68 cDensities = 
+        densities2HDR68 cDensities =
             let highDensityGroups = groupBy (\(_,_,in681,_) (_,_,in682,_) -> in681 == in682) cDensities
                 filteredDensityGroups = filter (all getIn68) highDensityGroups
             in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
         densities2HDR95 :: [(Int, Float, Bool, Bool)] -> [HDR]
-        densities2HDR95 cDensities = 
+        densities2HDR95 cDensities =
             let highDensityGroups = groupBy (\(_,_,_,in951) (_,_,_,in952) -> in951 == in952) cDensities
                 filteredDensityGroups = filter (all getIn95) highDensityGroups
             in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups

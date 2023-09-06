@@ -10,24 +10,25 @@ import           Currycarbon.SumCalibration
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
-import           Control.Monad      (when, unless)
-import           Data.Maybe         (fromJust, isJust, fromMaybe)
-import           System.IO          (hPutStrLn, stderr, stdout)
+import           Control.Monad                       (unless, when)
+import           Data.Maybe                          (fromJust, fromMaybe,
+                                                      isJust)
+import           System.IO                           (hPutStrLn, stderr, stdout)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
-        _calibrateExprs :: [CalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
-      , _calibrateExprFiles :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
-      , _calibrateCalCurveFile :: Maybe FilePath -- ^ Path to a .14c file
-      , _calibrateCalibrationMethod :: CalibrationMethod -- ^ Calibration algorithm that should be used
-      , _calibrateAllowOutside :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve 
+        _calibrateExprs                   :: [CalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
+      , _calibrateExprFiles               :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
+      , _calibrateCalCurveFile            :: Maybe FilePath -- ^ Path to a .14c file
+      , _calibrateCalibrationMethod       :: CalibrationMethod -- ^ Calibration algorithm that should be used
+      , _calibrateAllowOutside            :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
       , _calibrateDontInterpolateCalCurve :: Bool -- ^ Don't interpolate the calibration curve
-      , _calibrateQuiet :: Bool -- ^ Suppress the printing of calibration results to the command line
-      , _calibrateStdOutEncoding :: String -- ^ Encoding of the stdout stream (show TextEncoding)
-      , _calibrateDensityFile :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
-      , _calibrateHDRFile :: Maybe FilePath -- ^ Path to an output file
-      , _calibrateCalCurveSegmentFile :: Maybe FilePath -- ^ Path to an output file 
-      , _calibrateCalCurveMatrixFile :: Maybe FilePath -- ^ Path to an output file 
+      , _calibrateQuiet                   :: Bool -- ^ Suppress the printing of calibration results to the command line
+      , _calibrateStdOutEncoding          :: String -- ^ Encoding of the stdout stream (show TextEncoding)
+      , _calibrateDensityFile             :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
+      , _calibrateHDRFile                 :: Maybe FilePath -- ^ Path to an output file
+      , _calibrateCalCurveSegmentFile     :: Maybe FilePath -- ^ Path to an output file
+      , _calibrateCalCurveMatrixFile      :: Maybe FilePath -- ^ Path to an output file
     }
 
 -- | Interface function to trigger calibration from the command line
@@ -99,7 +100,7 @@ runCalibrate (CalibrateOptions exprs exprFiles calCurveFile method allowOutside 
         printE :: CurrycarbonException -> IO ()
         printE e = hPutStrLn stderr $ renderCurrycarbonException e
 
--- | Helper function to replace empty input names with a sequence of numbers, 
+-- | Helper function to replace empty input names with a sequence of numbers,
 -- to get each input date an unique identifier
 replaceEmptyNames :: [CalExpr] -> [CalExpr]
 replaceEmptyNames = zipWith (replaceName . show) ([1..] :: [Integer])
@@ -109,7 +110,7 @@ replaceEmptyNames = zipWith (replaceName . show) ([1..] :: [Integer])
             if name == "unknownSampleName"
             then UnCalDate $ UncalC14 i x y
             else UnCalDate $ UncalC14 name x y
-        replaceName i (CalDate (CalPDF name x y)) = 
+        replaceName i (CalDate (CalPDF name x y)) =
             if name == "unknownSampleName"
             then CalDate $ CalPDF i x y
             else CalDate $ CalPDF name x y
