@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macOS-latest, windows-latest]
+        os: [ubuntu-20.04, macOS-latest]
 
     steps:
       - name: Check out code
@@ -46,33 +46,18 @@ jobs:
         with:
           stack-arguments: --copy-bins
 
-      - name: Set binary path name (Windows)
-        if: matrix.os == 'windows-latest'
-        id: binarypathWin
-        run: |
-          Rename-Item -Path "${{ steps.stack.outputs.local-bin }}/currycarbon.exe" -NewName "currycarbon-Windows.exe"
-          echo "BINARY_PATH=${{ steps.stack.outputs.local-bin }}/currycarbon-Windows.exe" >> $env:GITHUB_OUTPUT
-
-      - name: Set binary path name (Unix)
-        if: matrix.os != 'windows-latest'
-        id: binarypathUnix
+      - name: Set binary path name
+        id: binarypath
         run: |
           currentEXE="${{ steps.stack.outputs.local-bin }}/currycarbon"
           newEXE="currycarbon-$RUNNER_OS"
           mv $currentEXE $newEXE
           echo "BINARY_PATH=$newEXE" >> $GITHUB_OUTPUT
 
-      - uses: haya14busa/action-cond@v1
-        id: binarypath
-        with:
-          cond: matrix.os == 'windows-latest'
-          if_true:  ${{ steps.binarypathWin.outputs.BINARY_PATH }}
-          if_false: ${{ steps.binarypathUnix.outputs.BINARY_PATH }}
-
       - name: Compress binary
         uses: svenstaro/upx-action@v2
         with:
-          files: ${{ steps.binarypath.outputs.value }}
+          files: ${{ steps.binarypath.outputs.BINARY_PATH }}
 
       - name: Upload Release Asset
         id: upload-release-asset
@@ -82,5 +67,5 @@ jobs:
           draft: true
           allowUpdates: true
           artifactErrorsFailBuild: true
-          artifacts: ${{ steps.binarypath.outputs.value }}
+          artifacts: ${{ steps.binarypath.outputs.BINARY_PATH }}
           artifactContentType: application/octet-stream

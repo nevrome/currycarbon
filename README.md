@@ -14,7 +14,7 @@ The Haskell library is available on Hackage [here](https://hackage.haskell.org/p
 
 For stable release versions we automatically prepare statically built binaries that can be downloaded and run directly.
 
-You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) | [Windows 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Windows.exe) ]. Older release versions are available [here](https://github.com/nevrome/currycarbon/releases).
+You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) ]. Older release versions (some with Windows builds) are available [here](https://github.com/nevrome/currycarbon/releases).
 
 So in Linux you can run the following commands to get started:
 
@@ -112,7 +112,7 @@ Available options:
 
 ### For developers who want to edit the code
 
-To install the latest development version (!) you can follow these steps:
+To install the latest development version you can follow these steps:
 
 1. Install the Haskell build tool [Stack](https://docs.haskellstack.org/en/stable/README/)
 2. Clone the repository
