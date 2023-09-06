@@ -50,14 +50,14 @@ jobs:
         if: matrix.os == 'windows-latest'
         id: binarypathWin
         run: |
-          Rename-Item -Path "${{ steps.stack.outputs.local-bin-path }}/currycarbon.exe" -NewName "currycarbon-Windows.exe"
+          Rename-Item -Path "${{ steps.stack.outputs.local-bin }}/currycarbon.exe" -NewName "currycarbon-Windows.exe"
           echo "BINARY_PATH=./dist/currycarbon-Windows.exe" >> $env:GITHUB_OUTPUT
 
       - name: Set binary path name (Unix)
         if: matrix.os != 'windows-latest'
         id: binarypathUnix
         run: |
-          currentEXE="${{ steps.stack.outputs.local-bin-path }}/currycarbon"
+          currentEXE="${{ steps.stack.outputs.local-bin }}/currycarbon"
           newEXE="currycarbon-$RUNNER_OS"
           mv $currentEXE $newEXE
           echo "BINARY_PATH=$newEXE" >> $GITHUB_OUTPUT
