@@ -1,79 +1,15 @@
 # https://kodimensional.dev/github-actions
 name: normalCheck
 
-# Trigger the workflow on push or pull request, but only for the master branch
+# trigger the workflow on push or pull request, but only for the master branch
 on:
   pull_request:
   push:
     branches: [master]
 
 jobs:
-  stack:
-    name: stack / ghc ${{ matrix.ghc }}
+  test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        stack: ["latest"]
-        ghc: ["8.10.7"]
-
     steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-
-    - name: Setup Haskell
-      uses: haskell/actions/setup@v1
-      with:
-        ghc-version: ${{ matrix.ghc }}
-        enable-stack: true
-        stack-version: ${{ matrix.stack }}
-
-    - name: Cache ~/.stack
-      uses: freckle/stack-cache-action@main
-
-    - name: Build
-      run: |
-        stack build \
-        --system-ghc \
-        --test \
-        --bench \
-        --no-run-tests \
-        --no-run-benchmarks \
-        --pedantic
-
-    - name: Render haddock documentation
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      run: |
-        stack haddock \
-        --no-haddock-deps \
-        --fast
-
-    - name: Get path to haddock documentation
-      id: haddockpath
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      run: |
-        docpathgeneral=`stack path --local-install-root`/doc
-        echo $docpathgeneral
-        docpathcurrycarbon=`find $docpathgeneral -type d -name "currycarbon*" -printf '%T+ %p\n' | sort -r | head -n 1 | cut -d' ' -f2`
-        echo $docpathcurrycarbon
-        echo "::set-output name=DOCPATH::$docpathcurrycarbon"
-    
-    - name: Deploy haddock documentation
-      uses: peaceiris/actions-gh-pages@v3
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ${{ steps.haddockpath.outputs.DOCPATH }}
-
-    #- name: Test
-    #  run: |
-    #    stack test \
-    #    --system-ghc
-    #     --coverage
-
-    # - name: Generate coverage report
-    #   uses: 8c6794b6/hpc-codecov-action@v2
-    #   with:
-    #     target: stack:currycarbon-tests
-
-    # - name: Send coverage report
-    #   uses: codecov/codecov-action@v2
+      - uses: actions/checkout@v4
+      - uses: freckle/stack-action@v4
