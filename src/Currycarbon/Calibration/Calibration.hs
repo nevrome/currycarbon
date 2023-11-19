@@ -16,6 +16,7 @@ module Currycarbon.Calibration.Calibration
       , refineCalDate
       , CalibrateDatesConf (..)
       , defaultCalConf
+      , sampleAgesFromCalPDF
     ) where
 
 import           Currycarbon.Calibration.Bchron
@@ -28,6 +29,7 @@ import           Data.List                          (elemIndex, groupBy, sort,
                                                      sortBy)
 import           Data.Maybe                         (fromJust)
 import qualified Data.Vector.Unboxed                as VU
+import qualified Control.Monad.Random as CMR
 
 -- | A data type to cover the configuration options of the calibrateDates function
 data CalibrateDatesConf = CalibrateDatesConf {
@@ -131,3 +133,13 @@ refineCalDate (CalPDF name cals dens) =
         getIn95 (_,_,_,x) = x
         getYear :: (Int, Float, Bool, Bool) -> Int
         getYear (year,_,_,_) = year
+
+sampleAgesFromCalPDF :: CMR.StdGen -> Int -> CalPDF -> [YearBCAD]
+sampleAgesFromCalPDF randomNumberGenerator n (CalPDF _ cals dens) =
+    let weightedList = zip (VU.toList cals) (map toRational $ VU.toList dens)
+        samples = sampleWeightedList randomNumberGenerator weightedList
+    in take n samples
+    where
+        sampleWeightedList :: CMR.RandomGen g => g -> [(a, Rational)] -> [a]
+        sampleWeightedList gen weights = CMR.evalRand m gen
+            where m = sequence . repeat . CMR.fromList $ weights
