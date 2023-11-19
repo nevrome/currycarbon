@@ -19,6 +19,8 @@ evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
     where
         evalE :: CalExpr -> Either CurrycarbonException CalPDF
         evalE (UnCalDate a)    = calibrateDate conf curve a
+        evalE (WindowBP a)     = Right $ windowBP2CalPDF a
+        evalE (WindowBCAD a)   = Right $ windowBCAD2CalPDF a
         evalE (CalDate a)      = Right a
         evalE (SumCal a b)     = eitherCombinePDFs (+) 0 (evalE a) (evalE b)
         evalE (ProductCal a b) = mapEither id normalizeCalPDF $ eitherCombinePDFs (*) 1
@@ -69,3 +71,14 @@ combinePDFs f initVal (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
                 | otherwise = []
             foldYearGroup :: [(YearBCAD, Float)] -> (YearBCAD, Float)
             foldYearGroup oneYear = (fst $ head oneYear, foldl' f initVal $ map snd oneYear)
+
+-- | Create pseudo-CalPDF from RangeBCAD
+windowBCAD2CalPDF :: TimeWindowBCAD -> CalPDF
+windowBCAD2CalPDF (TimeWindowBCAD name start stop) =
+    let years = VU.fromList $ [start..stop]
+        dens = VU.replicate (VU.length years) 1
+    in CalPDF name years dens
+
+windowBP2CalPDF :: TimeWindowBP -> CalPDF
+windowBP2CalPDF (TimeWindowBP name start stop) =
+    windowBCAD2CalPDF (TimeWindowBCAD name (bp2BCAD start) (bp2BCAD stop))

@@ -63,7 +63,10 @@ makeBCADCalCurve :: CalCurveBP -> CalCurveBCAD
 makeBCADCalCurve (CalCurveBP cals uncals sigmas) = CalCurveBCAD (vectorBPToBCAD cals) (vectorBPToBCAD uncals) sigmas
 
 vectorBPToBCAD :: VU.Vector YearBP -> VU.Vector YearBCAD
-vectorBPToBCAD = VU.map (\x -> -(fromIntegral x) + 1950)
+vectorBPToBCAD = VU.map bp2BCAD
+
+bp2BCAD :: YearBP -> YearBCAD
+bp2BCAD x = -(fromIntegral x) + 1950
 
 interpolateCalCurve :: CalCurveBP -> CalCurveBP
 interpolateCalCurve (CalCurveBP cals uncals sigmas) =

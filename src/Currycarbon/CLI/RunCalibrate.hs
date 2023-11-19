@@ -110,6 +110,14 @@ replaceEmptyNames = zipWith (replaceName . show) ([1..] :: [Integer])
             if name == "unknownSampleName"
             then UnCalDate $ UncalC14 i x y
             else UnCalDate $ UncalC14 name x y
+        replaceName i (WindowBP (TimeWindowBP name start stop)) =
+            if name == "unknownSampleName"
+            then WindowBP $ TimeWindowBP i start stop
+            else WindowBP $ TimeWindowBP name start stop
+        replaceName i (WindowBCAD (TimeWindowBCAD name start stop)) =
+            if name == "unknownSampleName"
+            then WindowBCAD $ TimeWindowBCAD i start stop
+            else WindowBCAD $ TimeWindowBCAD name start stop
         replaceName i (CalDate (CalPDF name x y)) =
             if name == "unknownSampleName"
             then CalDate $ CalPDF i x y

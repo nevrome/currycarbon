@@ -78,14 +78,56 @@ renderCalDatePretty ascii (calExpr, calPDF, calC14) =
 
 renderCalExpr :: CalExpr -> String
 renderCalExpr (UnCalDate a)               = renderUncalC14 a
+renderCalExpr (WindowBP a)                = renderTimeWindowBP a
+renderCalExpr (WindowBCAD a)              = renderTimeWindowBCAD a
 renderCalExpr (CalDate (CalPDF name _ _)) = name
 renderCalExpr (SumCal a b)                = "(" ++ renderCalExpr a ++ " + " ++ renderCalExpr b ++ ")"
 renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ renderCalExpr b ++ ")"
 
+renderTimeWindowBP :: TimeWindowBP -> String
+renderTimeWindowBP (TimeWindowBP name start stop) = name ++ ":" ++ show start ++ " - " ++ show stop ++ "BP"
+
+renderTimeWindowBCAD :: TimeWindowBCAD -> String
+renderTimeWindowBCAD (TimeWindowBCAD name start stop) = name ++ ":" ++ show start ++ " - " ++ show stop ++ "BC/AD"
+
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 spaceChar :: Char -> P.Parser Char
 spaceChar c = P.between P.spaces P.spaces (P.char c)
---spaceChar = P.char
+
+parseInteger :: P.Parser Int
+parseInteger = do
+    P.try parseNegativeInteger P.<|> (fromIntegral <$> parsePositiveInteger)
+
+parseNegativeInteger :: P.Parser Int
+parseNegativeInteger = do
+    _ <- P.oneOf "-"
+    i <- fromIntegral <$> parsePositiveInteger
+    return (-i)
+
+parsePositiveInteger :: P.Parser Word
+parsePositiveInteger = do
+    read <$> parseNumber
+
+parseNumber :: P.Parser [Char]
+parseNumber = P.many1 P.digit
+
+parseTimeWindowBP :: P.Parser TimeWindowBP
+parseTimeWindowBP = do
+    name <- P.many (P.noneOf ",")
+    _ <- spaceChar ','
+    start <- parsePositiveInteger
+    _ <- P.spaces *> P.string "<-|" <* P.spaces
+    stop <- parsePositiveInteger
+    return (TimeWindowBP name start stop)
+
+parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
+parseTimeWindowBCAD = do
+    name <- P.many (P.noneOf ",")
+    _ <- spaceChar ','
+    start <- parseInteger
+    _ <- P.spaces *> P.string "<+>" <* P.spaces
+    stop <- parseInteger
+    return (TimeWindowBCAD name start stop)
 
 add :: P.Parser CalExpr
 add = SumCal <$> term <*> (spaceChar '+' *> expr)
@@ -97,7 +139,10 @@ parens :: P.Parser CalExpr
 parens = P.between (spaceChar '(') (spaceChar ')') expr
 
 factor :: P.Parser CalExpr
-factor = parens P.<|> (UnCalDate <$> parseUncalC14)
+factor =      P.try parens
+        P.<|> P.try (WindowBP <$> parseTimeWindowBP)
+        P.<|> P.try (WindowBCAD <$> parseTimeWindowBCAD)
+        P.<|> (UnCalDate <$> parseUncalC14)
 
 term :: P.Parser CalExpr
 term = P.try mul P.<|> factor
