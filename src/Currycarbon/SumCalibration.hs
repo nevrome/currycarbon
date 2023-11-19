@@ -2,17 +2,17 @@
 
 module Currycarbon.SumCalibration where
 
-import Currycarbon.Types
-import Currycarbon.Utils
-import Currycarbon.Calibration.Calibration
-import Currycarbon.Calibration.Utils
+import           Currycarbon.Calibration.Calibration
+import           Currycarbon.Calibration.Utils
+import           Currycarbon.Types
+import           Currycarbon.Utils
 
-import           Data.Foldable                  (foldl')
-import qualified Data.Vector.Unboxed            as VU
-import Data.List (sortBy, groupBy)
-import Data.Ord (comparing)
+import           Data.Foldable                       (foldl')
+import           Data.List                           (groupBy, sortBy)
+import           Data.Ord                            (comparing)
+import qualified Data.Vector.Unboxed                 as VU
 
--- | Evaluate a dating expression by calibrating the individual dates and forming the respective 
+-- | Evaluate a dating expression by calibrating the individual dates and forming the respective
 --   sums and products of post-calibration density distributions
 evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
 evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
@@ -21,17 +21,17 @@ evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
         evalE (UnCalDate a)    = calibrateDate conf curve a
         evalE (CalDate a)      = Right a
         evalE (SumCal a b)     = eitherCombinePDFs (+) 0 (evalE a) (evalE b)
-        evalE (ProductCal a b) = mapEither id normalizeCalPDF $ eitherCombinePDFs (*) 1 
+        evalE (ProductCal a b) = mapEither id normalizeCalPDF $ eitherCombinePDFs (*) 1
             (mapEither id normalizeCalPDF $ evalE a) (mapEither id normalizeCalPDF $ evalE b) -- product needs extra normalization
         -- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
         mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
         mapEither f _ (Left x)  = Left (f x)
         mapEither _ f (Right x) = Right (f x)
 
-eitherCombinePDFs :: 
-    (Float -> Float -> Float) -> Float -> 
-    Either CurrycarbonException CalPDF -> 
-    Either CurrycarbonException CalPDF -> 
+eitherCombinePDFs ::
+    (Float -> Float -> Float) -> Float ->
+    Either CurrycarbonException CalPDF ->
+    Either CurrycarbonException CalPDF ->
     Either CurrycarbonException CalPDF
 eitherCombinePDFs _ _ (Left e) _ = Left e
 eitherCombinePDFs _ _ _ (Left e) = Left e
@@ -60,7 +60,7 @@ combinePDFs f initVal (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
             pdfGrouped = groupBy (\a b -> fst a == fst b) pdfSorted
             pdfRes = map foldYearGroup pdfGrouped
         in CalPDF (name1 ++ ":" ++ name2) (VU.fromList $ map fst pdfRes) (VU.fromList $ map snd pdfRes)
-        where 
+        where
             getMiss :: YearBCAD -> YearBCAD -> YearBCAD -> YearBCAD -> [YearBCAD]
             getMiss a1 a2 b1 b2
                 | a1 <  b1 && a2 >  b2 = [a1..b1] ++ [b2..a2]

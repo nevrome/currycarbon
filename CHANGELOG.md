@@ -1,3 +1,4 @@
+- V 0.2.1.2: Maintenance: Switched to a newer compiler/resolver version, lifted some dependency restrictions, ran stylish-haskell on the entire codebase, updated the github actions, deprecated the haddock documentation for the dev version on GitHub
 - V 0.2.1.1: Lifted some restrictions regarding the upper version bounds of dependencies
 - V 0.2.1.0: Added a mechanism to detect terminal encoding and fall back on a simpler CLI plot if it is not UTF-8
 - V 0.2.0.1: Brought sample names back to default CLI output

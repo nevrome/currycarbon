@@ -1,5 +1,3 @@
-# taken from https://vrom911.github.io/blog/github-actions-releases
-
 name: Release
 
 on:
@@ -11,43 +9,29 @@ on:
 jobs:
   create_release:
     name: Create Github Release
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
           draft: true
-          prerelease: false
-
-      - name: Output Release URL File
-        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
-      - name: Save Release URL File for publish
-        uses: actions/upload-artifact@v1
-        with:
-          name: release_url
-          path: release_url.txt
 
   build_artifact:
     needs: [create_release]
-    name: ${{ matrix.os }}/GHC ${{ matrix.ghc }}/${{ github.ref }}
+    name: ${{ matrix.os }}/${{ github.ref }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macOS-latest, windows-latest]
-        cabal: ["3.2"]
-        ghc: ["8.10.7"]
+        os: [ubuntu-20.04, macOS-latest]
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set tag name
         uses: olegtarasov/get-tag@v2.1
@@ -56,53 +40,32 @@ jobs:
           tagRegex: "v(.*)"
           tagRegexGroup: 1
 
-      - name: Setup Haskell
-        uses: haskell/actions/setup@v1
-        id: setup-haskell-cabal
+      - name: Build executable
+        uses: freckle/stack-action@v4
+        id: stack
         with:
-          ghc-version: ${{ matrix.ghc }}
-          cabal-version: ${{ matrix.cabal }}
-
-      - name: Freeze
-        run: |
-          cabal freeze
-
-      - name: Build
-        run: |
-          mkdir dist
-          cabal install exe:currycarbon --install-method=copy --overwrite-policy=always --installdir=dist -fembed_data_files
-
-      - name: Set extension to .exe on Windows
-        if: matrix.os == 'windows-latest'
-        id: ifwin
-        run: echo "::set-output name=EXT::.exe"
+          stack-arguments: --copy-bins
 
       - name: Set binary path name
         id: binarypath
-        run: echo "::set-output name=BINARY_PATH::./dist/currycarbon${{ steps.ifwin.outputs.EXT }}"
+        run: |
+          currentEXE="${{ steps.stack.outputs.local-bin }}/currycarbon"
+          newEXE="currycarbon-$RUNNER_OS"
+          mv $currentEXE $newEXE
+          echo "BINARY_PATH=$newEXE" >> $GITHUB_OUTPUT
 
       - name: Compress binary
         uses: svenstaro/upx-action@v2
         with:
-          file: ${{ steps.binarypath.outputs.BINARY_PATH }}
-
-      - name: Load Release URL File from release job
-        uses: actions/download-artifact@v1
-        with:
-          name: release_url
-
-      - name: Get Release File Name & Upload URL
-        id: get_release_info
-        run: |
-          echo "::set-output name=upload_url::$(cat release_url/release_url.txt)"
+          files: ${{ steps.binarypath.outputs.BINARY_PATH }}
 
       - name: Upload Release Asset
         id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ${{ steps.binarypath.outputs.BINARY_PATH }}
-          asset_name: currycarbon-${{ runner.os }}${{ steps.ifwin.outputs.EXT }}
-          asset_content_type: application/octet-stream
+          name: Release ${{ github.ref_name }}
+          draft: true
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: ${{ steps.binarypath.outputs.BINARY_PATH }}
+          artifactContentType: application/octet-stream

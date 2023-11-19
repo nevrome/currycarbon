@@ -2,22 +2,22 @@
 
 module Currycarbon.Calibration.Utils where
 
-import Currycarbon.Types
+import           Currycarbon.Types
 
-import qualified Data.Vector.Unboxed as VU
-import Data.Maybe (fromMaybe)
-import Numeric.SpecFunctions (logBeta)
+import           Data.Maybe            (fromMaybe)
+import qualified Data.Vector.Unboxed   as VU
+import           Numeric.SpecFunctions (logBeta)
 
 -- | Rescale a CalPDF so that the sum of the densities is approx. 1.0
 normalizeCalPDF :: CalPDF -> CalPDF
-normalizeCalPDF (CalPDF name cals dens) = 
+normalizeCalPDF (CalPDF name cals dens) =
     case VU.sum dens of
       0.0 -> CalPDF name cals dens -- product calibration can yield empty calPDFs
       s   -> CalPDF name cals $ VU.map (/s) dens
 
 -- | get the density of a normal distribution at a point x
-dnorm :: Float -> Float -> Float -> Float 
-dnorm mu sigma x = 
+dnorm :: Float -> Float -> Float -> Float
+dnorm mu sigma x =
     let a = recip (sqrt (2 * pi * sigma2))
         b = exp (-c2 / (2 * sigma2))
         c = x - mu
@@ -39,7 +39,7 @@ dt dof x =
     -- realToFrac $ density (studentT (realToFrac dof)) (realToFrac x) -- dof: number of degrees of freedom
 
 isOutsideRangeOfCalCurve :: CalCurveBP -> UncalC14 -> Bool
-isOutsideRangeOfCalCurve (CalCurveBP _ uncals _) (UncalC14 _ age _) = 
+isOutsideRangeOfCalCurve (CalCurveBP _ uncals _) (UncalC14 _ age _) =
     age < VU.minimum uncals || age > VU.maximum uncals
 
 -- | Take an uncalibrated date and a raw calibration curve and return
@@ -53,7 +53,7 @@ getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurveBP cals uncals sigmas)
         toIndex = stopIndex - startIndex
     in CalCurveBP (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex uncals) (VU.slice startIndex toIndex sigmas)
 
--- | Modify a calibration curve (segment) with multiple optional steps, 
+-- | Modify a calibration curve (segment) with multiple optional steps,
 -- including interpolation and transforming dates to BC/AD format
 prepareCalCurveSegment :: Bool -> CalCurveBP -> CalCurveBCAD
 prepareCalCurveSegment interpolate calCurve =
@@ -76,9 +76,9 @@ interpolateCalCurve (CalCurveBP cals uncals sigmas) =
         getTimeWindows xs = VU.zipWith (,) (VU.init xs) (VU.tail xs)
         fillTimeWindows :: ((YearBP,YearBP,YearRange),(YearBP,YearBP,YearRange)) -> VU.Vector (YearBP,YearBP,YearRange)
         fillTimeWindows ((calbp1,bp1,sigma1),(calbp2,bp2,sigma2)) =
-            if calbp1 == calbp2 || calbp1+1 == calbp2 || calbp1-1 == calbp2 
+            if calbp1 == calbp2 || calbp1+1 == calbp2 || calbp1-1 == calbp2
             then VU.singleton (calbp1,bp1,sigma1)
-            else 
+            else
                 let newCals = VU.fromList [calbp1,calbp1-1..calbp2+1] -- range definition like this to trigger counting down
                     newBPs = VU.map (snd . getInBetweenPointsInt (calbp1,bp1) (calbp2,bp2)) newCals
                     newSigmas = VU.map (snd . getInBetweenPointsInt (calbp1,sigma1) (calbp2,sigma2)) newCals

@@ -2,21 +2,21 @@
 
 module Currycarbon.Parsers where
 
-import Currycarbon.Types
-import Currycarbon.Utils
+import           Currycarbon.Types
+import           Currycarbon.Utils
 
-import           Control.Exception              (throwIO)
-import           Data.List                      (intercalate, transpose)
-import qualified Text.Parsec                    as P
-import qualified Text.Parsec.String             as P
-import qualified Data.Vector.Unboxed            as VU
-import qualified Data.Vector                    as V
+import           Control.Exception   (throwIO)
+import           Data.List           (intercalate, transpose)
+import qualified Data.Vector         as V
+import qualified Data.Vector.Unboxed as VU
+import qualified Text.Parsec         as P
+import qualified Text.Parsec.String  as P
 
 -- * Parsing, rendering and writing functions
 --
 -- $importExport
 --
--- This module contains a number of functions to manage data input and 
+-- This module contains a number of functions to manage data input and
 -- output plumbing for different datatypes
 
 -- CalibrationMethod
@@ -46,26 +46,26 @@ parseCalibrationMethod = do
 
 -- | Combine 'CalExpr', 'CalPDF' and 'CalC14' to render pretty command line output
 -- like this:
--- 
+--
 -- @
 -- DATE: (5000±30BP + 5100±100BP)
 -- Calibrated: 4150BC \>\> 3941BC \> 3814BC \< 3660BC \<\< 3651BC
 -- 1-sigma: 3941-3864BC, 3810-3707BC, 3667-3660BC
 -- 2-sigma: 4150-4148BC, 4048-3651BC
---                                           ▁                
---                                           ▒▁ ▁▁            
---                                   ▁▁▁    ▁▒▒▁▒▒            
---                                 ▁▁▒▒▒    ▒▒▒▒▒▒            
---                               ▁▁▒▒▒▒▒▁▁▁▁▒▒▒▒▒▒▁ ▁         
---                           ▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▒▁        
+--                                           ▁
+--                                           ▒▁ ▁▁
+--                                   ▁▁▁    ▁▒▒▁▒▒
+--                                 ▁▁▒▒▒    ▒▒▒▒▒▒
+--                               ▁▁▒▒▒▒▒▁▁▁▁▒▒▒▒▒▒▁ ▁
+--                           ▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▒▁
 --         ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁
 --  -4330 ┄──┬─────┬─────┬─────┬──────┬─────┬─────┬─────┬─────┄ -3530
---                    \>            \>       \^         \<        
---                                 ──────  ──────── ──        
+--                    \>            \>       \^         \<
+--                                 ──────  ──────── ──
 --                    ─     ──────────────────────────
 -- @
 --
-renderCalDatePretty :: 
+renderCalDatePretty ::
        Bool -- ^ Should the CLI plot be restricted to (boring) ASCII symbols?
     -> (CalExpr, CalPDF, CalC14)
     -> String
@@ -125,14 +125,14 @@ readCalExprFromFile uncalFile = do
     s <- readFile uncalFile
     case P.runParser parseCalExprSepByNewline () "" s of
         Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
-        Right x -> return x
+        Right x  -> return x
     where
         parseCalExprSepByNewline :: P.Parser [CalExpr]
         parseCalExprSepByNewline = P.endBy expr (P.newline <* P.spaces) <* P.eof
 
 -- CalC14
 -- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:
--- 
+--
 -- @
 -- sample,hdrSigma,hdrStartBCAD,hdrStopBCAD
 -- Sample1,1,-3797,-3709
@@ -148,15 +148,15 @@ readCalExprFromFile uncalFile = do
 -- Sample2,2,-1323,-1112
 -- Sample2,2,-1393,-1334
 -- @
--- 
+--
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
-writeCalC14s path calC14s = writeFile path $ 
-    "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n" 
+writeCalC14s path calC14s = writeFile path $
+    "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n"
     ++ intercalate "\n" (map renderCalC14ForFile calC14s)
 
 writeCalC14 :: FilePath -> CalC14 -> IO ()
-writeCalC14 path calC14 = writeFile path $ 
-    "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n" 
+writeCalC14 path calC14 = writeFile path $
+    "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n"
     ++ renderCalC14ForFile calC14
 
 appendCalC14 :: FilePath -> CalC14 -> IO ()
@@ -165,7 +165,7 @@ appendCalC14 path calC14 =
 
 renderCalC14ForFile :: CalC14 -> String
 renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
-    intercalate "\n" $ 
+    intercalate "\n" $
         map renderRow $
         zip3 (repeat name) (repeat "1") (renderHDRsForFile hdrs68) ++
         zip3 (repeat name) (repeat "2") (renderHDRsForFile hdrs95)
@@ -174,8 +174,8 @@ renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
         renderRow (a, b, (c, d)) = intercalate "," [a,b,c,d]
 
 renderCalC14s :: [CalC14] -> String
-renderCalC14s xs = 
-    "Calibrated high density ranges (HDR):\n" 
+renderCalC14s xs =
+    "Calibrated high density ranges (HDR):\n"
     ++ intercalate "\n" (map renderCalC14 xs)
 
 renderCalC14 :: CalC14 -> String
@@ -218,7 +218,7 @@ renderHDR (HDR start stop)
 
 -- CalCurveMatrix
 writeCalCurveMatrix :: FilePath -> CalCurveMatrix -> IO ()
-writeCalCurveMatrix path calCurveMatrix = 
+writeCalCurveMatrix path calCurveMatrix =
     writeFile path $ renderCalCurveMatrix calCurveMatrix
 
 renderCalCurveMatrix :: CalCurveMatrix -> String
@@ -226,12 +226,12 @@ renderCalCurveMatrix (CalCurveMatrix uncals cals curveDensities) =
     let header = "," ++ intercalate "," (map show $ VU.toList cals) ++ "\n"
         body = zipWith makeRow (VU.toList uncals) (transpose $ V.toList (V.map VU.toList curveDensities))
     in header ++ intercalate "\n" body
-    where 
+    where
       makeRow uncal dens = show uncal ++ "," ++ intercalate "," (map show dens)
 
 -- CalPDF
 -- | Write 'CalPDF's to the file system. The output file is a long .csv file with the following structure:
--- 
+--
 -- @
 -- sample,calBCAD,density
 -- ...
@@ -246,7 +246,7 @@ renderCalCurveMatrix (CalCurveMatrix uncals cals curveDensities) =
 -- Sample2,-3675,2.095691e-3
 -- ...
 -- @
--- 
+--
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 writeCalPDFs path calPDFs =
     writeFile path $
@@ -272,7 +272,7 @@ renderCalPDF (CalPDF name cals dens) =
     where
       makeRow (x,y) = show name ++ "," ++ show x ++ "," ++ show y ++ "\n"
 
-data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine 
+data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
@@ -370,31 +370,31 @@ renderUncalC14 :: UncalC14 -> String
 renderUncalC14 (UncalC14 name bp sigma) = name ++ ":" ++ show bp ++ "±" ++ show sigma ++ "BP"
 
 -- | Read uncalibrated radiocarbon dates from a file. The file should feature one radiocarbon date
--- per line in the form "\<sample name\>,\<mean age BP\>,\<one sigma standard deviation\>", where 
+-- per line in the form "\<sample name\>,\<mean age BP\>,\<one sigma standard deviation\>", where
 -- \<sample name\> is optional. A valid file could look like this:
--- 
+--
 -- @
 -- Sample1,5000,30
 -- 6000,50
 -- Sample3,4000,25
 -- @
--- 
+--
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
     s <- readFile uncalFile
     case P.runParser uncalC14SepByNewline () "" s of
         Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
-        Right x -> return x
+        Right x  -> return x
     where
         uncalC14SepByNewline :: P.Parser [UncalC14]
         uncalC14SepByNewline = P.endBy parseUncalC14 (P.newline <* P.spaces) <* P.eof
 
 readUncalC14 :: String -> Either String [UncalC14]
-readUncalC14 s = 
+readUncalC14 s =
     case P.runParser uncalC14SepBySemicolon () "" s of
         Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
         Right x -> Right x
-    where 
+    where
         uncalC14SepBySemicolon :: P.Parser [UncalC14]
         uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof
 
@@ -417,7 +417,7 @@ parseUncalC14 = do
 
 -- CalCurve
 writeCalCurve :: FilePath -> CalCurveBCAD -> IO ()
-writeCalCurve path calCurve = 
+writeCalCurve path calCurve =
     writeFile path $ renderCalCurve calCurve
 
 renderCalCurve :: CalCurveBCAD -> String
@@ -428,7 +428,7 @@ renderCalCurve (CalCurveBCAD cals uncals sigmas) =
     where
       makeRow (x,y,z) = show x ++ "," ++ show y ++ "," ++ show z
 
--- | Read a calibration curve file. The file must adhere to the current version of the 
+-- | Read a calibration curve file. The file must adhere to the current version of the
 -- .c14 file format (e.g. [here](http://intcal.org/curves/intcal20.14c)). Look
 -- [here](http://intcal.org/blurb.html) for other calibration curves
 readCalCurveFromFile :: FilePath -> IO CalCurveBP
@@ -440,7 +440,7 @@ readCalCurve :: String -> CalCurveBP
 readCalCurve calCurveString = do
     case P.runParser parseCalCurve () "" calCurveString of
         Left p  -> error $ "This should never happen." ++ show p
-        Right x -> CalCurveBP 
+        Right x -> CalCurveBP
             (VU.fromList $ map (\(a,_,_) -> a) x)
             (VU.fromList $ map (\(_,b,_) -> b) x)
             (VU.fromList $ map (\(_,_,c) -> c) x)
@@ -450,7 +450,7 @@ parseCalCurve = do
     P.skipMany comments
     P.sepEndBy parseCalCurveLine (P.manyTill P.anyToken (P.try P.newline))
 
-parseCalCurveLine :: P.Parser (YearBP, YearBP, YearRange) 
+parseCalCurveLine :: P.Parser (YearBP, YearBP, YearRange)
 parseCalCurveLine = do
   calBP <- read <$> P.many1 P.digit
   _ <- P.oneOf ","
@@ -460,7 +460,7 @@ parseCalCurveLine = do
   return (calBP, bp, sigma)
 
 comments :: P.Parser String
-comments = do 
+comments = do
     _ <- P.string "#"
     _ <- P.manyTill P.anyChar P.newline
     return ""

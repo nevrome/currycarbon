@@ -2,8 +2,8 @@
 
 module Currycarbon.Types where
 
+import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector as V
 
 -- * Data types
 --
@@ -11,18 +11,18 @@ import qualified Data.Vector as V
 --
 -- This module defines the relevant data types for handling radiocarbon dates
 
--- | Different calibration algorithms implemented in currycarbon. Currently two distinct 
+-- | Different calibration algorithms implemented in currycarbon. Currently two distinct
 -- implementations are available, although both of them are similar [Intercept calibration](https://en.wikipedia.org/wiki/Radiocarbon_calibration#Intercept)
 -- algorithms. Maybe more algorithms will be added in the future
 data CalibrationMethod =
   -- | A matrix multiplication method generally following [this blog post by Martin Hinz](https://www.martinhinz.info/jekyll/update/blog/2016/06/03/simple_calibration.html).
-  -- This method is slower and the underlying code more verbose than 'Bchron', but it 
+  -- This method is slower and the underlying code more verbose than 'Bchron', but it
   -- has some advantages regarding didactics and the inspection of intermediate data
   -- products for debugging.
   -- Using this method is thus generally not advisable, except for specific applications,
   -- where a more technical insight into C14 calibration is needed
     MatrixMultiplication
-  -- | A fast and reliable calibration algorithm very similar to the implementation in the 
+  -- | A fast and reliable calibration algorithm very similar to the implementation in the
   -- [R package Bchron by Andrew Parnell](https://github.com/andrewcparnell/Bchron/blob/master/R/BchronCalibrate.R).
   -- This algorithm can be run with a simple normal distribution ('NormalDist') or
   -- Student's t-distribution ('StudentTDist'), which is recommended
@@ -30,12 +30,12 @@ data CalibrationMethod =
   deriving (Show, Eq)
 
 -- | Statistical distributions to be used with the 'CalibrationMethod' 'Bchron'
-data CalibrationDistribution = 
+data CalibrationDistribution =
   -- | Normal distribution
     NormalDist
   -- | Student's t-distribution.
   | StudentTDist {
-      ndf :: Double -- ^ number of degrees of freedom 
+      ndf :: Double -- ^ number of degrees of freedom
     }
   deriving (Show, Eq)
 
@@ -49,9 +49,9 @@ type YearBCAD = Int
 type YearRange = Word
 
 -- | A data type to represent an uncalibrated radiocarbon date
-data UncalC14 = UncalC14 { 
-    -- | Sample identifier, e.g. a lab number  
-      _uncalC14Id :: String
+data UncalC14 = UncalC14 {
+    -- | Sample identifier, e.g. a lab number
+      _uncalC14Id    :: String
     -- | C14 age in years BP
     , _uncalC14UnCal :: YearBP
     -- | C14 standard deviation (one sigma in years)
@@ -62,17 +62,17 @@ data UncalC14 = UncalC14 {
 -- Although technically not correct, we still call this a probability density function (PDF)
 data UncalPDF = UncalPDF {
     -- | Sample identifier, e.g. a lab number
-      _uncalPDFid :: String
+      _uncalPDFid     :: String
     -- | Years BP
     , _uncalPDFUnCals :: VU.Vector YearBP
     -- | Probability densities
-    , _uncalPDFDens :: VU.Vector Float
+    , _uncalPDFDens   :: VU.Vector Float
     } deriving Show
 
 -- | A data type to represent a calibration curve with 'YearBP'
 data CalCurveBP = CalCurveBP {
     -- | Years calBP
-      _calCurveBPCals :: VU.Vector YearBP
+      _calCurveBPCals   :: VU.Vector YearBP
     -- | Years BP
     , _calCurveBPUnCals :: VU.Vector YearBP
     -- | Standard deviation (one sigma in years)
@@ -82,7 +82,7 @@ data CalCurveBP = CalCurveBP {
 -- | A second data type to represent a calibration curve, here now with 'YearBCAD'
 data CalCurveBCAD = CalCurveBCAD {
     -- | Years calBCAD
-      _calCurveBCADCals :: VU.Vector YearBCAD
+      _calCurveBCADCals   :: VU.Vector YearBCAD
     -- | Years BCAD
     , _calCurveBCADUnCals :: VU.Vector YearBCAD
     -- | Standard deviation (one sigma in years)
@@ -94,16 +94,16 @@ data CalCurveMatrix = CalCurveMatrix {
     -- | Row names of the calibration curve matrix: Years BCAD
       _calCurveMatrixUnCals :: VU.Vector YearBCAD
     -- | Column names of the calibration curve matrix: Years calBCAD
-    , _calCurveMatrixCals :: VU.Vector YearBCAD
+    , _calCurveMatrixCals   :: VU.Vector YearBCAD
     -- | Matrix (as a list of columns) with the probability densities
-    , _calCurveMatrixDens :: V.Vector (VU.Vector Float)
+    , _calCurveMatrixDens   :: V.Vector (VU.Vector Float)
     } deriving Show
 
 -- | A data type to represent a year-wise probability density for calibrated dates.
 -- Although technically not correct, we still call this a probability density function (PDF)
 data CalPDF = CalPDF {
     -- | Sample identifier, e.g. a lab number
-      _calPDFid :: String
+      _calPDFid   :: String
     -- | Years calBCAD
     , _calPDFCals :: VU.Vector YearBCAD
     -- | Probability densities for each year in '_calPDFCals'
@@ -122,16 +122,16 @@ data CalExpr =
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {
     -- | Identifier, e.g. a lab number
-      _calC14id :: String
+      _calC14id           :: String
     -- | Summary of the range of the calibrated date
     , _calC14RangeSummary :: CalRangeSummary
     -- | One-sigma high density regions
-    , _calC14HDROneSigma :: [HDR]
+    , _calC14HDROneSigma  :: [HDR]
     -- | Two-sigma high density regions
-    , _calC14HDRTwoSigma :: [HDR]
+    , _calC14HDRTwoSigma  :: [HDR]
     } deriving Show
 
--- | A data type to store a simple range summary of the calibrated date, including 
+-- | A data type to store a simple range summary of the calibrated date, including
 -- the median age
 data CalRangeSummary = CalRangeSummary {
     -- | Start of the two-sigma age range
@@ -147,12 +147,12 @@ data CalRangeSummary = CalRangeSummary {
 } deriving Show
 
 -- | A data type to represent a high density region of a probability distribution.
--- A high density region is here defined as an age range, within which the respective 
--- cummulative probability (e.g. of an calibrated radiocarbon date density curve) 
+-- A high density region is here defined as an age range, within which the respective
+-- cummulative probability (e.g. of an calibrated radiocarbon date density curve)
 -- is above a certain threshold
 data HDR = HDR {
     -- | Start of the high density region in years calBCAD
       _hdrstart :: YearBCAD
     -- | End of the high density region in years calBCAD
-    , _hdrstop :: YearBCAD
+    , _hdrstop  :: YearBCAD
     } deriving (Show, Eq)

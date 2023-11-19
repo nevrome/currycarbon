@@ -1,10 +1,10 @@
--- | This module implements an algorithm for the calibration of 
+-- | This module implements an algorithm for the calibration of
 -- [radiocarbon dates](https://en.wikipedia.org/wiki/Radiocarbon_dating).
 -- This is a standard procedure in Archaeology and other fields working
 -- with radiocarbon dating.
 
 module Currycarbon (
-    
+
     -- * Calibration
     -- $calibration
     calibrateDates,
@@ -48,18 +48,18 @@ module Currycarbon (
     normalizeCalPDF
     ) where
 
-import Currycarbon.Calibration.Calibration
-import Currycarbon.Parsers
-import Currycarbon.SumCalibration
-import Currycarbon.Types
-import Currycarbon.CalCurves.Intcal20
-import Currycarbon.Calibration.Utils (normalizeCalPDF)
+import           Currycarbon.CalCurves.Intcal20
+import           Currycarbon.Calibration.Calibration
+import           Currycarbon.Calibration.Utils       (normalizeCalPDF)
+import           Currycarbon.Parsers
+import           Currycarbon.SumCalibration
+import           Currycarbon.Types
 
 {- $calibration
 
-The main function in this module 'calibrateDates' calibrates 
-radiocarbon dates, given the uncalibrated input dates, a calibration 
-curve and some configuration options. 
+The main function in this module 'calibrateDates' calibrates
+radiocarbon dates, given the uncalibrated input dates, a calibration
+curve and some configuration options.
 
 * For the input dates there is a dedicated data type 'UncalC14'.
 These can be read from a .csv file with 'readUncalC14FromFile'.
@@ -111,7 +111,7 @@ dates to according to the post calibration probability distribution.
 
 These can also be written to a file with 'writeCalC14s'.
 
-'renderCalDatesPretty' finally combines 'UncalC14', 'CalPDF' and 
+'renderCalDatesPretty' finally combines 'UncalC14', 'CalPDF' and
 'CalC14' to produce nice command line output summarising the calibration
 result for a given sample.
 -}
