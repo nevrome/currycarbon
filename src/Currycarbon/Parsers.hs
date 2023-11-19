@@ -114,6 +114,12 @@ readCalExpr s =
         parseCalExprSepBySemicolon :: P.Parser [CalExpr]
         parseCalExprSepBySemicolon = P.sepBy expr (P.char ';' <* P.spaces) <* P.eof
 
+readOneCalExpr :: String -> Either String CalExpr
+readOneCalExpr s =
+    case P.runParser expr () "" s of
+        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
+        Right x -> Right x
+
 readCalExprFromFile :: FilePath -> IO [CalExpr]
 readCalExprFromFile uncalFile = do
     s <- readFile uncalFile
