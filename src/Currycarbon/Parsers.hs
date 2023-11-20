@@ -118,7 +118,9 @@ parseTimeWindowBP = do
     start <- parsePositiveInteger
     _ <- P.spaces *> P.string "<-|" <* P.spaces
     stop <- parsePositiveInteger
-    return (TimeWindowBP name start stop)
+    if start >= stop
+    then return (TimeWindowBP name start stop)
+    else fail "the BP stop date can not be larger then the start date"
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
 parseTimeWindowBCAD = do
@@ -127,7 +129,9 @@ parseTimeWindowBCAD = do
     start <- parseInteger
     _ <- P.spaces *> P.string "<+>" <* P.spaces
     stop <- parseInteger
-    return (TimeWindowBCAD name start stop)
+    if start <= stop
+    then return (TimeWindowBCAD name start stop)
+    else fail "the BC/AD stop date can not be smaller then the start date"
 
 add :: P.Parser CalExpr
 add = SumCal <$> term <*> (spaceChar '+' *> expr)
