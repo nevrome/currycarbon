@@ -6,6 +6,7 @@ import           Currycarbon.Parsers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import           Paths_currycarbon            (version)
+import Currycarbon.Calibration.Calibration
 
 import           Control.Exception            (catch)
 import           Data.Version                 (showVersion)
@@ -66,6 +67,7 @@ calibrateOptParser = CalibrateOptions <$> optParseCalExprString
                                       <*> pure "unknown"
                                       <*> optParseDensityFile
                                       <*> optParseHDRFile
+                                      <*> optParseAgeSamplingSettings
                                       <*> optParseCalCurveSegmentFile
                                       <*> optParseCalCurveMatrixFile
 
@@ -151,6 +153,36 @@ optParseHDRFile = OP.option (Just <$> OP.str) (
     OP.help "Path to an output file which stores the high probability density regions for each \
             \sample" <>
     OP.value Nothing
+    )
+
+optParseAgeSamplingSettings :: OP.Parser (Maybe (AgeSamplingConf, FilePath))
+optParseAgeSamplingSettings =
+    OP.optional $ (,) <$> optParseAgeSamplingConf <*> optParseAgeSamplingFile
+
+optParseAgeSamplingConf :: OP.Parser AgeSamplingConf
+optParseAgeSamplingConf =
+    AgeSamplingConf
+    <$> optParseAgeSamplingConfSeed
+    <*> optParseAgeSamplingConfNrOfSamples
+
+optParseAgeSamplingConfSeed :: OP.Parser Word
+optParseAgeSamplingConfSeed = OP.option OP.auto (
+       OP.long  "seed"
+    <> OP.help  "Seed for the random number generator"
+    <> OP.value 123
+    )
+
+optParseAgeSamplingConfNrOfSamples :: OP.Parser Word
+optParseAgeSamplingConfNrOfSamples = OP.option OP.auto (
+       OP.short 'n'
+    <> OP.long "nrSamples"
+    <> OP.help "Number of age samples to draw per sample"
+    )
+
+optParseAgeSamplingFile :: OP.Parser FilePath
+optParseAgeSamplingFile = OP.strOption (
+    OP.long "samplesFile" <>
+    OP.help "Path to an output file which stores age samples drawn for each sample"
     )
 
 optParseCalCurveSegmentFile :: OP.Parser (Maybe FilePath)

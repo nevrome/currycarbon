@@ -156,7 +156,7 @@ data CalRangeSummary = CalRangeSummary {
 
 -- | A data type to represent a high density region of a probability distribution.
 -- A high density region is here defined as an age range, within which the respective
--- cummulative probability (e.g. of an calibrated radiocarbon date density curve)
+-- cumulative probability (e.g. of an calibrated radiocarbon date density curve)
 -- is above a certain threshold
 data HDR = HDR {
     -- | Start of the high density region in years calBCAD
@@ -164,3 +164,11 @@ data HDR = HDR {
     -- | End of the high density region in years calBCAD
     , _hdrstop  :: YearBCAD
     } deriving (Show, Eq)
+
+-- | A data type to store random samples drawn from a calPDF
+data RandomAgeSample = RandomAgeSample {
+    -- | Identifier
+      _rasId      :: String
+    -- | Random samples
+    , _rasSamples :: VU.Vector YearBCAD
+    } deriving Show

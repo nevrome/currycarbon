@@ -4,6 +4,7 @@ module Currycarbon.Parsers where
 
 import           Currycarbon.Types
 import           Currycarbon.Utils
+import Currycarbon.Calibration.Utils
 
 import           Control.Exception   (throwIO)
 import           Data.List           (intercalate, transpose)
@@ -19,7 +20,33 @@ import qualified Text.Parsec.String  as P
 -- This module contains a number of functions to manage data input and
 -- output plumbing for different datatypes
 
--- CalibrationMethod
+-- parsing helper functions
+spaceChar :: Char -> P.Parser Char
+spaceChar c = P.between P.spaces P.spaces (P.char c)
+
+parseInteger :: P.Parser Int
+parseInteger = do
+    P.try parseNegativeInteger P.<|> (fromIntegral <$> parsePositiveInteger)
+
+parseNegativeInteger :: P.Parser Int
+parseNegativeInteger = do
+    _ <- P.oneOf "-"
+    i <- fromIntegral <$> parsePositiveInteger
+    return (-i)
+
+parsePositiveInteger :: P.Parser Word
+parsePositiveInteger = do
+    read <$> parseNumber
+
+parsePositiveDouble :: P.Parser Double
+parsePositiveDouble = do
+    read <$> parseNumber
+
+parseNumber :: P.Parser [Char]
+parseNumber = P.many1 P.digit
+
+-- read the calibration method
+
 readCalibrationMethod :: String -> Either String CalibrationMethod
 readCalibrationMethod s =
     case P.runParser parseCalibrationMethod () "" s of
@@ -35,7 +62,7 @@ parseCalibrationMethod = do
             P.try studentT P.<|> normal
         studentT = do
             _ <- P.string "StudentT,"
-            dof <- read <$> P.many1 P.digit
+            dof <- parsePositiveDouble
             return (Bchron $ StudentTDist dof)
         normal = do
             _ <- P.string "Normal"
@@ -43,6 +70,8 @@ parseCalibrationMethod = do
         matrixMultiplication = do
             _ <- P.string "MatrixMult"
             return MatrixMultiplication
+
+-- pretty printing
 
 -- | Combine 'CalExpr', 'CalPDF' and 'CalC14' to render pretty command line output
 -- like this:
@@ -76,6 +105,8 @@ renderCalDatePretty ascii (calExpr, calPDF, calC14) =
         , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
         ]
 
+-- write and read calibration expressions
+
 renderCalExpr :: CalExpr -> String
 renderCalExpr (UnCalDate a)               = renderUncalC14 a
 renderCalExpr (WindowBP a)                = renderTimeWindowBP a
@@ -85,32 +116,14 @@ renderCalExpr (SumCal a b)                = "(" ++ renderCalExpr a ++ " + " ++ r
 renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ renderCalExpr b ++ ")"
 
 renderTimeWindowBP :: TimeWindowBP -> String
-renderTimeWindowBP (TimeWindowBP name start stop) = name ++ ":" ++ show start ++ " - " ++ show stop ++ "BP"
+renderTimeWindowBP (TimeWindowBP name start stop) =
+    name ++ ":" ++ renderYearBP start ++ " - " ++ renderYearBP stop
 
 renderTimeWindowBCAD :: TimeWindowBCAD -> String
-renderTimeWindowBCAD (TimeWindowBCAD name start stop) = name ++ ":" ++ show start ++ " - " ++ show stop ++ "BC/AD"
+renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
+    name ++ ":" ++ renderYearBCAD start ++ " - " ++ renderYearBCAD stop
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
-spaceChar :: Char -> P.Parser Char
-spaceChar c = P.between P.spaces P.spaces (P.char c)
-
-parseInteger :: P.Parser Int
-parseInteger = do
-    P.try parseNegativeInteger P.<|> (fromIntegral <$> parsePositiveInteger)
-
-parseNegativeInteger :: P.Parser Int
-parseNegativeInteger = do
-    _ <- P.oneOf "-"
-    i <- fromIntegral <$> parsePositiveInteger
-    return (-i)
-
-parsePositiveInteger :: P.Parser Word
-parsePositiveInteger = do
-    read <$> parseNumber
-
-parseNumber :: P.Parser [Char]
-parseNumber = P.many1 P.digit
-
 parseTimeWindowBP :: P.Parser TimeWindowBP
 parseTimeWindowBP = do
     name <- P.many (P.noneOf ",")
@@ -241,6 +254,11 @@ renderCalRangeSummary s =
     ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " << "
     ++ renderYearBCAD (_calRangeStopTwoSigma s)
 
+-- BP
+renderYearBP :: YearBP -> String
+renderYearBP x =
+    show x ++ "BP" ++ " (" ++ (renderYearBCAD $ bp2BCAD x) ++ ")"
+
 -- BCAD
 renderYearBCAD :: YearBCAD -> String
 renderYearBCAD x
@@ -321,6 +339,7 @@ renderCalPDF (CalPDF name cals dens) =
     where
       makeRow (x,y) = show name ++ "," ++ show x ++ "," ++ show y ++ "\n"
 
+-- cli plot
 data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
@@ -454,14 +473,14 @@ parseUncalC14 = do
         long = do
             name <- P.many (P.noneOf ",")
             _ <- P.oneOf ","
-            mean <- read <$> P.many1 P.digit
+            mean <- parsePositiveInteger
             _ <- P.oneOf ","
-            std <- read <$> P.many1 P.digit
+            std <- parsePositiveInteger
             return (UncalC14 name mean std)
         short = do
-            mean <- read <$> P.many1 P.digit
+            mean <- parsePositiveInteger
             _ <- P.oneOf ","
-            std <- read <$> P.many1 P.digit
+            std <- parsePositiveInteger
             return (UncalC14 "unknownSampleName" mean std)
 
 -- CalCurve
@@ -501,11 +520,11 @@ parseCalCurve = do
 
 parseCalCurveLine :: P.Parser (YearBP, YearBP, YearRange)
 parseCalCurveLine = do
-  calBP <- read <$> P.many1 P.digit
+  calBP <- parsePositiveInteger
   _ <- P.oneOf ","
-  bp <- read <$> P.many1 P.digit
+  bp <- parsePositiveInteger
   _ <- P.oneOf ","
-  sigma <- read <$> P.many1 P.digit
+  sigma <- parsePositiveInteger
   return (calBP, bp, sigma)
 
 comments :: P.Parser String
@@ -513,3 +532,46 @@ comments = do
     _ <- P.string "#"
     _ <- P.manyTill P.anyChar P.newline
     return ""
+
+-- RandomAgeSamples
+-- | Write 'RandomAgeSamples's to the file system. The output file is a long .csv file with the following structure:
+--
+-- @
+-- sample,calBCAD
+-- ...
+-- Sample1,-1221
+-- Sample1,-1211
+-- Sample1,-1230
+-- Sample1,-1225
+-- ...
+-- Sample2,-3763
+-- Sample2,-3788
+-- Sample2,-3767
+-- Sample2,-3774
+-- ...
+-- @
+--
+writeRandomAgeSamples :: FilePath -> [RandomAgeSample] -> IO ()
+writeRandomAgeSamples path calPDFs =
+    writeFile path $
+        "sample,calBCAD,density\n"
+        ++ renderRandomAgeSamples calPDFs
+
+writeRandomAgeSample :: FilePath -> RandomAgeSample -> IO ()
+writeRandomAgeSample path calPDF =
+    writeFile path $
+        "sample,calBCAD,density\n"
+        ++ renderRandomAgeSample calPDF
+
+appendRandomAgeSample :: FilePath -> RandomAgeSample -> IO ()
+appendRandomAgeSample path calPDF =
+    appendFile path $ renderRandomAgeSample calPDF
+
+renderRandomAgeSamples :: [RandomAgeSample] -> String
+renderRandomAgeSamples = concatMap renderRandomAgeSample
+
+renderRandomAgeSample :: RandomAgeSample -> String
+renderRandomAgeSample (RandomAgeSample name samples) =
+    concatMap makeRow $ VU.toList samples
+    where
+      makeRow x = show name ++ "," ++ show x ++ "\n"

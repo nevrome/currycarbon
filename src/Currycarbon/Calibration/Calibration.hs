@@ -16,6 +16,7 @@ module Currycarbon.Calibration.Calibration
       , refineCalDate
       , CalibrateDatesConf (..)
       , defaultCalConf
+      , AgeSamplingConf (..)
       , sampleAgesFromCalPDF
     ) where
 
@@ -30,6 +31,7 @@ import           Data.List                          (elemIndex, groupBy, sort,
 import           Data.Maybe                         (fromJust)
 import qualified Data.Vector.Unboxed                as VU
 import qualified Control.Monad.Random as CMR
+import qualified System.Random as R
 
 -- | A data type to cover the configuration options of the calibrateDates function
 data CalibrateDatesConf = CalibrateDatesConf {
@@ -153,11 +155,24 @@ refineCalDate (CalPDF name cals dens)
         getYear :: (Int, Float, Bool, Bool) -> Int
         getYear (year,_,_,_) = year
 
-sampleAgesFromCalPDF :: CMR.StdGen -> Int -> CalPDF -> [YearBCAD]
-sampleAgesFromCalPDF randomNumberGenerator n (CalPDF _ cals dens) =
-    let weightedList = zip (VU.toList cals) (map toRational $ VU.toList dens)
-        samples = sampleWeightedList randomNumberGenerator weightedList
-    in take n samples
+-- age sampling
+
+-- | A data type to define the settings for age sampling
+data AgeSamplingConf = AgeSamplingConf {
+    -- | Seed for the random number generator
+      _assSeed :: Word
+    -- | Number of samples that should be drawn per sample
+    , _assNumberOfSamples :: Word
+    } deriving (Show, Eq)
+
+-- | Draw random samples from a probability density table
+sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample
+sampleAgesFromCalPDF (AgeSamplingConf seed n) (CalPDF calPDFid cals dens) =
+    let rng = R.mkStdGen (fromIntegral seed)
+        weightedList = zip (VU.toList cals) (map toRational $ VU.toList dens)
+        infSamplesList = sampleWeightedList rng weightedList
+        samples = take (fromIntegral n) infSamplesList
+    in RandomAgeSample calPDFid (VU.fromList samples)
     where
         sampleWeightedList :: CMR.RandomGen g => g -> [(a, Rational)] -> [a]
         sampleWeightedList gen weights = CMR.evalRand m gen
