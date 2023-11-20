@@ -110,6 +110,14 @@ data CalPDF = CalPDF {
     , _calPDFDens :: VU.Vector Float
     } deriving (Show, Eq)
 
+-- | A data type for named calibration expressions
+data NamedCalExpr = NamedCalExpr {
+    -- | Expression identifier
+      _exprID :: Maybe String
+    -- | Expression
+    , _expr   :: CalExpr
+    }
+
 -- | A data type to represent an expression for sum- or product calibration
 data CalExpr =
       UnCalDate UncalC14

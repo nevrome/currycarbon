@@ -12,6 +12,9 @@ import           Data.List                           (groupBy, sortBy)
 import           Data.Ord                            (comparing)
 import qualified Data.Vector.Unboxed                 as VU
 
+evalNamedCalExpr :: CalibrateDatesConf -> CalCurveBP -> NamedCalExpr -> Either CurrycarbonException CalPDF
+evalNamedCalExpr conf curve (NamedCalExpr _ expr) = evalCalExpr conf curve expr
+
 -- | Evaluate a dating expression by calibrating the individual dates and forming the respective
 --   sums and products of post-calibration density distributions
 evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
@@ -39,11 +42,11 @@ eitherCombinePDFs _ _ (Left e) _ = Left e
 eitherCombinePDFs _ _ _ (Left e) = Left e
 eitherCombinePDFs f initVal (Right a) (Right b) = Right $ combinePDFs f initVal a b
 
--- | Add two probabilty densities
+-- | Add two probability densities
 addPDFs :: CalPDF -> CalPDF -> CalPDF
 addPDFs = combinePDFs (+) 0
 
--- | Multiply two probabilty densities
+-- | Multiply two probability densities
 multiplyPDFs :: CalPDF -> CalPDF -> CalPDF
 multiplyPDFs = combinePDFs (*) 1
 

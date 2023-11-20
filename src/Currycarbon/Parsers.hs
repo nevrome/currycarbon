@@ -96,16 +96,19 @@ parseCalibrationMethod = do
 --
 renderCalDatePretty ::
        Bool -- ^ Should the CLI plot be restricted to (boring) ASCII symbols?
-    -> (CalExpr, CalPDF, CalC14)
+    -> (NamedCalExpr, CalPDF, CalC14)
     -> String
 renderCalDatePretty ascii (calExpr, calPDF, calC14) =
     "DATE: " ++ intercalate "\n" [
-          renderCalExpr calExpr
+          renderNamedCalExpr calExpr
         , renderCalC14 calC14
         , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
         ]
 
 -- write and read calibration expressions
+
+renderNamedCalExpr :: NamedCalExpr -> String
+renderNamedCalExpr (NamedCalExpr _ calExpr) = renderCalExpr calExpr
 
 renderCalExpr :: CalExpr -> String
 renderCalExpr (UnCalDate a)               = renderUncalC14 a
@@ -167,30 +170,36 @@ term = P.try mul P.<|> factor
 expr :: P.Parser CalExpr
 expr = P.try add P.<|> term -- <* P.eof
 
-readCalExpr :: String -> Either String [CalExpr]
-readCalExpr s =
+namedExpr :: P.Parser NamedCalExpr
+namedExpr = do
+    name <- P.optionMaybe $
+        P.between (spaceChar '{') (spaceChar '}') (P.many1 $ P.noneOf "}")
+    NamedCalExpr name <$> expr
+
+readNamedCalExprs :: String -> Either String [NamedCalExpr]
+readNamedCalExprs s =
     case P.runParser parseCalExprSepBySemicolon () "" s of
         Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
         Right x -> Right x
         where
-        parseCalExprSepBySemicolon :: P.Parser [CalExpr]
-        parseCalExprSepBySemicolon = P.sepBy expr (P.char ';' <* P.spaces) <* P.eof
+        parseCalExprSepBySemicolon :: P.Parser [NamedCalExpr]
+        parseCalExprSepBySemicolon = P.sepBy namedExpr (P.char ';' <* P.spaces) <* P.eof
 
-readOneCalExpr :: String -> Either String CalExpr
-readOneCalExpr s =
-    case P.runParser expr () "" s of
+readOneNamedCalExpr :: String -> Either String NamedCalExpr
+readOneNamedCalExpr s =
+    case P.runParser namedExpr () "" s of
         Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
         Right x -> Right x
 
-readCalExprFromFile :: FilePath -> IO [CalExpr]
-readCalExprFromFile uncalFile = do
+readNamedCalExprsFromFile :: FilePath -> IO [NamedCalExpr]
+readNamedCalExprsFromFile uncalFile = do
     s <- readFile uncalFile
     case P.runParser parseCalExprSepByNewline () "" s of
         Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
         Right x  -> return x
     where
-        parseCalExprSepByNewline :: P.Parser [CalExpr]
-        parseCalExprSepByNewline = P.endBy expr (P.newline <* P.spaces) <* P.eof
+        parseCalExprSepByNewline :: P.Parser [NamedCalExpr]
+        parseCalExprSepByNewline = P.endBy namedExpr (P.newline <* P.spaces) <* P.eof
 
 -- CalC14
 -- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:

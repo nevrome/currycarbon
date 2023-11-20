@@ -56,8 +56,8 @@ optParser :: OP.Parser Options
 optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> optParseCalExprString
-                                      <*> optParseCalExprFromFile
+calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
+                                      <*> optParseNamedCalExprFromFile
                                       <*> optParseCalCurveFromFile
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -76,8 +76,8 @@ calibrateOptParser = CalibrateOptions <$> optParseCalExprString
 --
 -- These functions define and handle the CLI input arguments
 
-optParseCalExprString :: OP.Parser [CalExpr]
-optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCalExpr) (
+optParseNamedCalExprString :: OP.Parser [NamedCalExpr]
+optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readNamedCalExprs) (
     OP.metavar "DATE" <>
     OP.help "A string with one or multiple uncalibrated dates of \
             \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>\" \
@@ -89,8 +89,8 @@ optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCal
             \of operations (e.g. \"(4000,50 + 4100,100) * 3800,50\")"
     ))
 
-optParseCalExprFromFile :: OP.Parser [FilePath]
-optParseCalExprFromFile = OP.many (OP.strOption (
+optParseNamedCalExprFromFile :: OP.Parser [FilePath]
+optParseNamedCalExprFromFile = OP.many (OP.strOption (
     OP.long "inputFile" <>
     OP.short 'i' <>
     OP.help "A file with a list of calibration expressions. \

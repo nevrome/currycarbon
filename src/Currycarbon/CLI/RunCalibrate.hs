@@ -18,7 +18,7 @@ import qualified System.Random as R
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
-        _calibrateExprs                   :: [CalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
+        _calibrateExprs                   :: [NamedCalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
       , _calibrateExprFiles               :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
       , _calibrateCalCurveFile            :: Maybe FilePath -- ^ Path to a .14c file
       , _calibrateCalibrationMethod       :: CalibrationMethod -- ^ Calibration algorithm that should be used
@@ -46,7 +46,7 @@ runCalibrate (
         ) = do
     let ascii = encoding /= "UTF-8"
     -- compile dates
-    exprsFromFile <- mapM readCalExprFromFile exprFiles
+    exprsFromFile <- mapM readNamedCalExprsFromFile exprFiles
     let exprsRenamed = replaceEmptyNames $ exprs ++ concat exprsFromFile
     if null exprsRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"
@@ -62,7 +62,7 @@ runCalibrate (
             }
         -- run calibration
         hPutStrLn stderr "Calibrating..."
-        let errorOrCalPDFs = map (evalCalExpr calConf calCurve) exprsRenamed
+        let errorOrCalPDFs = map (evalNamedCalExpr calConf calCurve) exprsRenamed
         -- prepare the output depending on many settings
         handleDates ascii True calCurve $ zip exprsRenamed errorOrCalPDFs
     where
@@ -72,7 +72,7 @@ runCalibrate (
                Bool -- encoding
             -> Bool -- is this expression the first in the list of expressions?
             -> CalCurveBP
-            -> [(CalExpr, Either CurrycarbonException CalPDF)]
+            -> [(NamedCalExpr, Either CurrycarbonException CalPDF)]
             -> IO ()
         handleDates _ _ _ [] = hPutStrLn stderr "Done."
         -- first expression
@@ -80,24 +80,24 @@ runCalibrate (
             case firstDate of
                 (_,       Left e)     -> printE e
                                          >> handleDates _ascii True  calCurve otherDates
-                (calExpr, Right cPDF) -> firstOut _ascii calCurve calExpr cPDF
+                (namedCalExpr, Right cPDF) -> firstOut _ascii calCurve namedCalExpr cPDF
                                          >> handleDates _ascii False calCurve otherDates
         -- subsequent expression
         handleDates _ascii False calCurve (firstDate:otherDates) =
             case firstDate of
                 (_,       Left e)     -> printE e
                                          >> handleDates _ascii False calCurve otherDates
-                (calExpr, Right cPDF) -> otherOut _ascii calExpr cPDF
+                (namedCalExpr, Right cPDF) -> otherOut _ascii namedCalExpr cPDF
                                          >> handleDates _ascii False calCurve otherDates
 
         printE :: CurrycarbonException -> IO ()
         printE e = hPutStrLn stderr $ renderCurrycarbonException e
 
         -- handle the first expression
-        firstOut :: Bool -> CalCurveBP -> CalExpr -> CalPDF -> IO ()
+        firstOut :: Bool -> CalCurveBP -> NamedCalExpr -> CalPDF -> IO ()
         -- is the first expression a simple, single date?
-        firstOut _ascii calCurve calExpr@(UnCalDate uncal) calPDF = do
-            flexOut _ascii calExpr calPDF writeCalPDF writeCalC14 writeRandomAgeSample
+        firstOut _ascii calCurve namedCalExpr@(NamedCalExpr _ (UnCalDate uncal)) calPDF = do
+            flexOut _ascii namedCalExpr calPDF writeCalPDF writeCalC14 writeRandomAgeSample
             -- this is what makes the first sample special:
             when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
                 hPutStrLn stderr $
@@ -109,31 +109,31 @@ runCalibrate (
                 when (isJust calCurveMatrixFile) $
                     writeCalCurveMatrix (fromJust calCurveMatrixFile) $
                     makeCalCurveMatrix (uncalToPDF uncal) calCurveSegment
-        firstOut _ascii _ calExpr calPDF = do
-            flexOut _ascii calExpr calPDF writeCalPDF writeCalC14 writeRandomAgeSample
+        firstOut _ascii _ namedCalExpr calPDF = do
+            flexOut _ascii namedCalExpr calPDF writeCalPDF writeCalC14 writeRandomAgeSample
             when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
                 hPutStrLn stderr "Warning: The calCurveSegment file and the calCurveMatrix file can only be produced for simple dates"
         
         -- handle subsequent expressions
-        otherOut :: Bool -> CalExpr -> CalPDF -> IO ()
-        otherOut _ascii calExpr calPDF =
-            flexOut _ascii calExpr calPDF appendCalPDF appendCalC14 appendRandomAgeSample
+        otherOut :: Bool -> NamedCalExpr -> CalPDF -> IO ()
+        otherOut _ascii namedCalExpr calPDF =
+            flexOut _ascii namedCalExpr calPDF appendCalPDF appendCalC14 appendRandomAgeSample
 
         -- flexible expression handler    
         flexOut ::
                Bool
-            -> CalExpr -> CalPDF
+            -> NamedCalExpr -> CalPDF
             -> (FilePath -> CalPDF -> IO ())
             -> (FilePath -> CalC14 -> IO ())
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        flexOut _ascii calExpr calPDF calPDFToFile calC14ToFile randomAgeSampleToFile = do
+        flexOut _ascii namedCalExpr calPDF calPDFToFile calC14ToFile randomAgeSampleToFile = do
             -- try to refine calPDF
             case refineCalDate calPDF of
                 -- refining did not work
                 Nothing -> do
                     unless quiet $ do
-                        hPutStrLn stdout (renderCalExpr calExpr)
+                        hPutStrLn stdout (renderNamedCalExpr namedCalExpr)
                         hPutStrLn stderr "Warning: Could not calculate meaningful HDRs for this expression. \
                                           \Check --densityFile."
                     when (isJust hdrFile) $
@@ -145,7 +145,7 @@ runCalibrate (
                 -- refining did work
                 Just calC14 -> do
                     unless quiet $ do
-                        hPutStrLn stdout (renderCalDatePretty _ascii (calExpr, calPDF, calC14))
+                        hPutStrLn stdout (renderCalDatePretty _ascii (namedCalExpr, calPDF, calC14))
                     when (isJust hdrFile) $
                         calC14ToFile (fromJust hdrFile) calC14
                     when (isJust densityFile) $
@@ -169,9 +169,11 @@ runCalibrate (
 
 -- | Helper function to replace empty input names with a sequence of numbers,
 -- to get each input date an unique identifier
-replaceEmptyNames :: [CalExpr] -> [CalExpr]
-replaceEmptyNames = zipWith (replaceName . show) ([1..] :: [Integer])
+replaceEmptyNames :: [NamedCalExpr] -> [NamedCalExpr]
+replaceEmptyNames = zipWith (modifyExpr . show) ([1..] :: [Integer])
     where
+        modifyExpr :: String -> NamedCalExpr -> NamedCalExpr
+        modifyExpr i nexpr = nexpr { _expr = replaceName i (_expr nexpr) }
         replaceName :: String -> CalExpr -> CalExpr
         replaceName i (UnCalDate (UncalC14 name x y)) =
             if name == "unknownSampleName"
