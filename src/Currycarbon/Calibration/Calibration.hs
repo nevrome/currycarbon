@@ -159,17 +159,16 @@ refineCalDate (CalPDF name cals dens)
 
 -- | A data type to define the settings for age sampling
 data AgeSamplingConf = AgeSamplingConf {
-    -- | Seed for the random number generator
-      _assSeed :: Word
+    -- | Random number generator
+      _assRNG :: R.StdGen
     -- | Number of samples that should be drawn per sample
     , _assNumberOfSamples :: Word
     } deriving (Show, Eq)
 
 -- | Draw random samples from a probability density table
 sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample
-sampleAgesFromCalPDF (AgeSamplingConf seed n) (CalPDF calPDFid cals dens) =
-    let rng = R.mkStdGen (fromIntegral seed)
-        weightedList = zip (VU.toList cals) (map toRational $ VU.toList dens)
+sampleAgesFromCalPDF (AgeSamplingConf rng n) (CalPDF calPDFid cals dens) =
+    let weightedList = zip (VU.toList cals) (map toRational $ VU.toList dens)
         infSamplesList = sampleWeightedList rng weightedList
         samples = take (fromIntegral n) infSamplesList
     in RandomAgeSample calPDFid (VU.fromList samples)

@@ -14,6 +14,7 @@ import           Control.Monad                       (unless, when)
 import           Data.Maybe                          (fromJust, fromMaybe,
                                                       isJust)
 import           System.IO                           (hPutStrLn, stderr, stdout)
+import qualified System.Random as R
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
@@ -27,7 +28,7 @@ data CalibrateOptions = CalibrateOptions {
       , _calibrateStdOutEncoding          :: String -- ^ Encoding of the stdout stream (show TextEncoding)
       , _calibrateDensityFile             :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
       , _calibrateHDRFile                 :: Maybe FilePath -- ^ Path to an output file
-      , _calibrateAgeSampling             :: Maybe (AgeSamplingConf, FilePath) -- ^ Settings for the age sampling
+      , _calibrateAgeSampling             :: Maybe (Maybe Word, Word, FilePath) -- ^ Settings for the age sampling
       , _calibrateCalCurveSegmentFile     :: Maybe FilePath -- ^ Path to an output file
       , _calibrateCalCurveMatrixFile      :: Maybe FilePath -- ^ Path to an output file
     }
@@ -153,12 +154,16 @@ runCalibrate (
                         runAgeSampling (fromJust ageSampling) calPDF randomAgeSampleToFile
 
         runAgeSampling ::
-               (AgeSamplingConf, FilePath)
+               (Maybe Word, Word, FilePath)
             -> CalPDF
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        runAgeSampling (conf, path) calPDF randomAgeSampleToFile = do
-            let samplingResult = sampleAgesFromCalPDF conf calPDF
+        runAgeSampling (maybeSeed, nrOfSamples, path) calPDF randomAgeSampleToFile = do
+            rng <- case maybeSeed of
+                Just s  -> pure $ R.mkStdGen (fromIntegral s)
+                Nothing -> R.initStdGen
+            let conf = AgeSamplingConf rng nrOfSamples
+                samplingResult = sampleAgesFromCalPDF conf calPDF
             randomAgeSampleToFile path samplingResult
 
 

@@ -6,7 +6,6 @@ import           Currycarbon.Parsers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import           Paths_currycarbon            (version)
-import Currycarbon.Calibration.Calibration
 
 import           Control.Exception            (catch)
 import           Data.Version                 (showVersion)
@@ -155,21 +154,18 @@ optParseHDRFile = OP.option (Just <$> OP.str) (
     OP.value Nothing
     )
 
-optParseAgeSamplingSettings :: OP.Parser (Maybe (AgeSamplingConf, FilePath))
+optParseAgeSamplingSettings :: OP.Parser (Maybe (Maybe Word, Word, FilePath))
 optParseAgeSamplingSettings =
-    OP.optional $ (,) <$> optParseAgeSamplingConf <*> optParseAgeSamplingFile
+    OP.optional $ (,,) <$>
+            optParseAgeSamplingConfSeed
+        <*> optParseAgeSamplingConfNrOfSamples
+        <*> optParseAgeSamplingFile
 
-optParseAgeSamplingConf :: OP.Parser AgeSamplingConf
-optParseAgeSamplingConf =
-    AgeSamplingConf
-    <$> optParseAgeSamplingConfSeed
-    <*> optParseAgeSamplingConfNrOfSamples
-
-optParseAgeSamplingConfSeed :: OP.Parser Word
-optParseAgeSamplingConfSeed = OP.option OP.auto (
+optParseAgeSamplingConfSeed :: OP.Parser (Maybe Word)
+optParseAgeSamplingConfSeed = OP.option (Just <$> OP.auto) (
        OP.long  "seed"
     <> OP.help  "Seed for the random number generator"
-    <> OP.value 123
+    <> OP.value Nothing
     )
 
 optParseAgeSamplingConfNrOfSamples :: OP.Parser Word
