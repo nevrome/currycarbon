@@ -108,7 +108,11 @@ renderCalDatePretty ascii (calExpr, calPDF, calC14) =
 -- write and read calibration expressions
 
 renderNamedCalExpr :: NamedCalExpr -> String
-renderNamedCalExpr (NamedCalExpr _ calExpr) = renderCalExpr calExpr
+renderNamedCalExpr (NamedCalExpr exprID calExpr) = renderExprID exprID ++ " " ++ renderCalExpr calExpr
+
+renderExprID :: Maybe String -> String
+renderExprID Nothing  = ""
+renderExprID (Just s) = "{" ++ s ++ "}"
 
 renderCalExpr :: CalExpr -> String
 renderCalExpr (UnCalDate a)               = renderUncalC14 a
@@ -346,7 +350,7 @@ renderCalPDF :: CalPDF -> String
 renderCalPDF (CalPDF name cals dens) =
     concatMap makeRow $ VU.toList $ VU.zip cals dens
     where
-      makeRow (x,y) = show name ++ "," ++ show x ++ "," ++ show y ++ "\n"
+      makeRow (x,y) = name ++ "," ++ show x ++ "," ++ show y ++ "\n"
 
 -- cli plot
 data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
@@ -583,4 +587,4 @@ renderRandomAgeSample :: RandomAgeSample -> String
 renderRandomAgeSample (RandomAgeSample name samples) =
     concatMap makeRow $ VU.toList samples
     where
-      makeRow x = show name ++ "," ++ show x ++ "\n"
+      makeRow x = name ++ "," ++ show x ++ "\n"
