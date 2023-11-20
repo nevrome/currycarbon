@@ -13,7 +13,12 @@ import           Data.Ord                            (comparing)
 import qualified Data.Vector.Unboxed                 as VU
 
 evalNamedCalExpr :: CalibrateDatesConf -> CalCurveBP -> NamedCalExpr -> Either CurrycarbonException CalPDF
-evalNamedCalExpr conf curve (NamedCalExpr _ expr) = evalCalExpr conf curve expr
+evalNamedCalExpr conf curve (NamedCalExpr exprID expr) = 
+    case evalCalExpr conf curve expr of
+        Left err     -> Left err
+        Right calPDF -> case exprID of
+            Nothing -> Right calPDF
+            Just x  -> Right $ calPDF { _calPDFid = x }
 
 -- | Evaluate a dating expression by calibrating the individual dates and forming the respective
 --   sums and products of post-calibration density distributions
