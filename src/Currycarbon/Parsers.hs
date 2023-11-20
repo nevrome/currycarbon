@@ -124,11 +124,11 @@ renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ r
 
 renderTimeWindowBP :: TimeWindowBP -> String
 renderTimeWindowBP (TimeWindowBP name start stop) =
-    name ++ ":" ++ renderYearBP start ++ " - " ++ renderYearBP stop
+    name ++ ":" ++ renderYearBP start ++ " --- " ++ renderYearBP stop
 
 renderTimeWindowBCAD :: TimeWindowBCAD -> String
 renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
-    name ++ ":" ++ renderYearBCAD start ++ " - " ++ renderYearBCAD stop
+    name ++ ":" ++ renderYearBCAD start ++ " -+- " ++ renderYearBCAD stop
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 parseTimeWindowBP :: P.Parser TimeWindowBP
@@ -136,7 +136,7 @@ parseTimeWindowBP = do
     name <- P.many (P.noneOf ",")
     _ <- spaceChar ','
     start <- parsePositiveInteger
-    _ <- P.spaces *> P.string "<-|" <* P.spaces
+    _ <- P.spaces *> P.string "---" <* P.spaces
     stop <- parsePositiveInteger
     if start >= stop
     then return (TimeWindowBP name start stop)
@@ -147,7 +147,7 @@ parseTimeWindowBCAD = do
     name <- P.many (P.noneOf ",")
     _ <- spaceChar ','
     start <- parseInteger
-    _ <- P.spaces *> P.string "<+>" <* P.spaces
+    _ <- P.spaces *> P.string "-+-" <* P.spaces
     stop <- parseInteger
     if start <= stop
     then return (TimeWindowBCAD name start stop)
