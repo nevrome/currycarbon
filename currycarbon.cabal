@@ -26,6 +26,7 @@ library
       Currycarbon.Calibration.Bchron
       Currycarbon.Calibration.Calibration
       Currycarbon.CLI.RunCalibrate
+      Currycarbon.ParserHelpers
       Currycarbon.Parsers
       Currycarbon.SumCalibration
       Currycarbon.Types

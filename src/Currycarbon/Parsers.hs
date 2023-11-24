@@ -5,6 +5,7 @@ module Currycarbon.Parsers where
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import Currycarbon.Calibration.Utils
+import Currycarbon.ParserHelpers
 
 import           Control.Exception   (throwIO)
 import           Data.List           (intercalate, transpose)
@@ -20,37 +21,12 @@ import qualified Text.Parsec.String  as P
 -- This module contains a number of functions to manage data input and
 -- output plumbing for different datatypes
 
--- parsing helper functions
-spaceChar :: Char -> P.Parser Char
-spaceChar c = P.between P.spaces P.spaces (P.char c)
-
-parseInteger :: P.Parser Int
-parseInteger = do
-    P.try parseNegativeInteger P.<|> (fromIntegral <$> parsePositiveInteger)
-
-parseNegativeInteger :: P.Parser Int
-parseNegativeInteger = do
-    _ <- P.oneOf "-"
-    i <- fromIntegral <$> parsePositiveInteger
-    return (-i)
-
-parsePositiveInteger :: P.Parser Word
-parsePositiveInteger = do
-    read <$> parseNumber
-
-parsePositiveDouble :: P.Parser Double
-parsePositiveDouble = do
-    read <$> parseNumber
-
-parseNumber :: P.Parser [Char]
-parseNumber = P.many1 P.digit
-
 -- read the calibration method
 
 readCalibrationMethod :: String -> Either String CalibrationMethod
 readCalibrationMethod s =
     case P.runParser parseCalibrationMethod () "" s of
-        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
+        Left err -> Left $ showParsecErr err
         Right x -> Right x
 
 parseCalibrationMethod :: P.Parser CalibrationMethod
@@ -135,9 +111,9 @@ parseTimeWindowBP :: P.Parser TimeWindowBP
 parseTimeWindowBP = do
     name <- P.many (P.noneOf ",")
     _ <- spaceChar ','
-    start <- parsePositiveInteger
+    start <- parseWord
     _ <- P.spaces *> P.string "---" <* P.spaces
-    stop <- parsePositiveInteger
+    stop <- parseWord
     if start >= stop
     then return (TimeWindowBP name start stop)
     else fail "the BP stop date can not be larger then the start date"
@@ -183,7 +159,7 @@ namedExpr = do
 readNamedCalExprs :: String -> Either String [NamedCalExpr]
 readNamedCalExprs s =
     case P.runParser parseCalExprSepBySemicolon () "" s of
-        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
+        Left err -> Left $ showParsecErr err
         Right x -> Right x
         where
         parseCalExprSepBySemicolon :: P.Parser [NamedCalExpr]
@@ -192,18 +168,71 @@ readNamedCalExprs s =
 readOneNamedCalExpr :: String -> Either String NamedCalExpr
 readOneNamedCalExpr s =
     case P.runParser namedExpr () "" s of
-        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
+        Left err -> Left $ showParsecErr err
         Right x -> Right x
 
 readNamedCalExprsFromFile :: FilePath -> IO [NamedCalExpr]
 readNamedCalExprsFromFile uncalFile = do
     s <- readFile uncalFile
     case P.runParser parseCalExprSepByNewline () "" s of
-        Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
+        Left err -> throwIO $ CurrycarbonCLIParsingException $ showParsecErr err
         Right x  -> return x
     where
         parseCalExprSepByNewline :: P.Parser [NamedCalExpr]
         parseCalExprSepByNewline = P.endBy namedExpr (P.newline <* P.spaces) <* P.eof
+
+-- UncalC14
+renderUncalC14WithoutName :: UncalC14 -> String
+renderUncalC14WithoutName (UncalC14 _ bp sigma) = show bp ++ "±" ++ show sigma ++ "BP"
+
+renderUncalC14 :: UncalC14 -> String
+renderUncalC14 (UncalC14 name bp sigma) = name ++ ":" ++ show bp ++ "±" ++ show sigma ++ "BP"
+
+-- | Read uncalibrated radiocarbon dates from a file. The file should feature one radiocarbon date
+-- per line in the form "\<sample name\>,\<mean age BP\>,\<one sigma standard deviation\>", where
+-- \<sample name\> is optional. A valid file could look like this:
+--
+-- @
+-- Sample1,5000,30
+-- 6000,50
+-- Sample3,4000,25
+-- @
+--
+readUncalC14FromFile :: FilePath -> IO [UncalC14]
+readUncalC14FromFile uncalFile = do
+    s <- readFile uncalFile
+    case P.runParser uncalC14SepByNewline () "" s of
+        Left err -> throwIO $ CurrycarbonCLIParsingException $ showParsecErr err
+        Right x  -> return x
+    where
+        uncalC14SepByNewline :: P.Parser [UncalC14]
+        uncalC14SepByNewline = P.endBy parseUncalC14 (P.newline <* P.spaces) <* P.eof
+
+readUncalC14 :: String -> Either String [UncalC14]
+readUncalC14 s =
+    case P.runParser uncalC14SepBySemicolon () "" s of
+        Left err -> Left $ showParsecErr err
+        Right x -> Right x
+    where
+        uncalC14SepBySemicolon :: P.Parser [UncalC14]
+        uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof
+
+parseUncalC14 :: P.Parser UncalC14
+parseUncalC14 = do
+    P.try long P.<|> short
+    where
+        long = do
+            name <- P.many (P.noneOf ",")
+            _ <- P.oneOf ","
+            mean <- parseWord
+            _ <- P.oneOf ","
+            std <- parseWord
+            return (UncalC14 name mean std)
+        short = do
+            mean <- parseWord
+            _ <- P.oneOf ","
+            std <- parseWord
+            return (UncalC14 "unknownSampleName" mean std)
 
 -- CalC14
 -- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:
@@ -443,59 +472,6 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                             let ha = _hdrstart h; hb = _hdrstop h
                             in (a >= ha && a <= hb) || (b >= ha && b <= hb) || (a <= ha && b >= hb)
 
--- UncalC14
-renderUncalC14WithoutName :: UncalC14 -> String
-renderUncalC14WithoutName (UncalC14 _ bp sigma) = show bp ++ "±" ++ show sigma ++ "BP"
-
-renderUncalC14 :: UncalC14 -> String
-renderUncalC14 (UncalC14 name bp sigma) = name ++ ":" ++ show bp ++ "±" ++ show sigma ++ "BP"
-
--- | Read uncalibrated radiocarbon dates from a file. The file should feature one radiocarbon date
--- per line in the form "\<sample name\>,\<mean age BP\>,\<one sigma standard deviation\>", where
--- \<sample name\> is optional. A valid file could look like this:
---
--- @
--- Sample1,5000,30
--- 6000,50
--- Sample3,4000,25
--- @
---
-readUncalC14FromFile :: FilePath -> IO [UncalC14]
-readUncalC14FromFile uncalFile = do
-    s <- readFile uncalFile
-    case P.runParser uncalC14SepByNewline () "" s of
-        Left err -> throwIO $ CurrycarbonCLIParsingException $ show err
-        Right x  -> return x
-    where
-        uncalC14SepByNewline :: P.Parser [UncalC14]
-        uncalC14SepByNewline = P.endBy parseUncalC14 (P.newline <* P.spaces) <* P.eof
-
-readUncalC14 :: String -> Either String [UncalC14]
-readUncalC14 s =
-    case P.runParser uncalC14SepBySemicolon () "" s of
-        Left err -> Left $ renderCurrycarbonException $ CurrycarbonCLIParsingException $ show err
-        Right x -> Right x
-    where
-        uncalC14SepBySemicolon :: P.Parser [UncalC14]
-        uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof
-
-parseUncalC14 :: P.Parser UncalC14
-parseUncalC14 = do
-    P.try long P.<|> short
-    where
-        long = do
-            name <- P.many (P.noneOf ",")
-            _ <- P.oneOf ","
-            mean <- parsePositiveInteger
-            _ <- P.oneOf ","
-            std <- parsePositiveInteger
-            return (UncalC14 name mean std)
-        short = do
-            mean <- parsePositiveInteger
-            _ <- P.oneOf ","
-            std <- parsePositiveInteger
-            return (UncalC14 "unknownSampleName" mean std)
-
 -- CalCurve
 writeCalCurve :: FilePath -> CalCurveBCAD -> IO ()
 writeCalCurve path calCurve =
@@ -533,11 +509,11 @@ parseCalCurve = do
 
 parseCalCurveLine :: P.Parser (YearBP, YearBP, YearRange)
 parseCalCurveLine = do
-  calBP <- parsePositiveInteger
+  calBP <- parseWord
   _ <- P.oneOf ","
-  bp <- parsePositiveInteger
+  bp <- parseWord
   _ <- P.oneOf ","
-  sigma <- parsePositiveInteger
+  sigma <- parseWord
   return (calBP, bp, sigma)
 
 comments :: P.Parser String
