@@ -110,11 +110,12 @@ renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
 parseTimeWindowBP :: P.Parser TimeWindowBP
 parseTimeWindowBP = do
     parseRecordType "rangeBP" $ do
-        name  <- parseArgument "name" parseAnyString
-        consumeCommaSep
-        start <- parseArgument "start" parseWord
-        consumeCommaSep
-        stop  <- parseArgument "stop" parseWord
+        -- name <- P.optional $ P.try $ do
+        --     parseArgument "name" parseAnyString
+        --     consumeCommaSepname
+        name <- parseArgumentComma "name" parseAnyString
+        start <- parseArgumentComma "start" parseWord
+        stop  <- parseArgumentComma "stop" parseWord
         if start >= stop
         then return (TimeWindowBP name start stop)
         else fail "the BP stop date can not be larger than the start date"
