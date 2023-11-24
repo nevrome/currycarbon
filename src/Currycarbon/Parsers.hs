@@ -13,6 +13,7 @@ import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as VU
 import qualified Text.Parsec         as P
 import qualified Text.Parsec.String  as P
+import qualified Text.Parsec.Perm    as P
 
 -- * Parsing, rendering and writing functions
 --
@@ -106,18 +107,20 @@ renderTimeWindowBCAD :: TimeWindowBCAD -> String
 renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
     name ++ ":" ++ renderYearBCAD start ++ " -+- " ++ renderYearBCAD stop
 
--- https://gist.github.com/abhin4v/017a36477204a1d57745
+
 parseTimeWindowBP :: P.Parser TimeWindowBP
 parseTimeWindowBP = do
     parseRecordType "rangeBP" $ do
-        -- name <- P.optional $ P.try $ do
-        --     parseArgument "name" parseAnyString
-        --     consumeCommaSepname
-        name <- parseArgumentComma "name" parseAnyString
-        start <- parseArgumentComma "start" parseWord
-        stop  <- parseArgumentComma "stop" parseWord
+        res@(TimeWindowBP _ start stop) <- P.permute $
+            TimeWindowBP
+                P.<$$> parseArgumentComma "name" parseAnyString
+                P.<||> parseArgumentComma "start" parseWord
+                P.<||> parseArgumentComma "stop" parseWord
+        --name <- parseArgumentComma "name" parseAnyString
+        --start <- parseArgumentComma "start" parseWord
+        --stop  <- parseArgumentComma "stop" parseWord
         if start >= stop
-        then return (TimeWindowBP name start stop)
+        then return res
         else fail "the BP stop date can not be larger than the start date"
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
@@ -131,6 +134,7 @@ parseTimeWindowBCAD = do
     then return (TimeWindowBCAD name start stop)
     else fail "the BC/AD stop date can not be smaller than the start date"
 
+-- https://gist.github.com/abhin4v/017a36477204a1d57745
 add :: P.Parser CalExpr
 add = SumCal <$> term <*> (parseCharInSpace '+' *> expr)
 
