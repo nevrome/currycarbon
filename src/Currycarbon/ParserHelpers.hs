@@ -59,6 +59,14 @@ consumeCommaSep = do
 parseCharInSpace :: Char -> P.Parser Char
 parseCharInSpace c = P.between P.spaces P.spaces (P.char c)
 
+parseAnyString :: P.Parser String
+parseAnyString =
+    P.try inDoubleQuotes P.<|> P.try inSingleQuotes P.<|> inNoQuotes
+    where
+        inDoubleQuotes = P.between (P.char '"') (P.char '"') (P.many P.anyChar)
+        inSingleQuotes = P.between (P.char '\'') (P.char '\'') (P.many P.anyChar)
+        inNoQuotes = P.many (P.noneOf ",")
+
 -- * Sequence parsers
 
 parseDoubleSequence :: P.Parser [Double]
