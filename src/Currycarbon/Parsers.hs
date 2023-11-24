@@ -109,34 +109,46 @@ renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 parseTimeWindowBP :: P.Parser TimeWindowBP
 parseTimeWindowBP = do
-    name <- P.many (P.noneOf ",")
-    _ <- spaceChar ','
-    start <- parseWord
-    _ <- P.spaces *> P.string "---" <* P.spaces
-    stop <- parseWord
-    if start >= stop
-    then return (TimeWindowBP name start stop)
-    else fail "the BP stop date can not be larger then the start date"
+    parseRecordType "rangeBP" $ do
+        name <- P.many (P.noneOf ",")
+        consumeCommaSep
+        start <- parseArgument "start" parseWord
+        consumeCommaSep
+        stop <- parseArgument "stop" parseWord
+        if start >= stop
+        then return (TimeWindowBP name start stop)
+        else fail "the BP stop date can not be larger than the start date"
+
+-- parseTimeWindowBP :: P.Parser TimeWindowBP
+-- parseTimeWindowBP = do
+--     name <- P.many (P.noneOf ",")
+--     _ <- parseCharInSpace ','
+--     start <- parseWord
+--     _ <- P.spaces *> P.string "---" <* P.spaces
+--     stop <- parseWord
+--     if start >= stop
+--     then return (TimeWindowBP name start stop)
+--     else fail "the BP stop date can not be larger then the start date"
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
 parseTimeWindowBCAD = do
     name <- P.many (P.noneOf ",")
-    _ <- spaceChar ','
+    _ <- parseCharInSpace ','
     start <- parseInteger
     _ <- P.spaces *> P.string "-+-" <* P.spaces
     stop <- parseInteger
     if start <= stop
     then return (TimeWindowBCAD name start stop)
-    else fail "the BC/AD stop date can not be smaller then the start date"
+    else fail "the BC/AD stop date can not be smaller than the start date"
 
 add :: P.Parser CalExpr
-add = SumCal <$> term <*> (spaceChar '+' *> expr)
+add = SumCal <$> term <*> (parseCharInSpace '+' *> expr)
 
 mul :: P.Parser CalExpr
-mul = ProductCal <$> factor <*> (spaceChar '*' *> term)
+mul = ProductCal <$> factor <*> (parseCharInSpace '*' *> term)
 
 parens :: P.Parser CalExpr
-parens = P.between (spaceChar '(') (spaceChar ')') expr
+parens = P.between (parseCharInSpace '(') (parseCharInSpace ')') expr
 
 factor :: P.Parser CalExpr
 factor =      P.try parens
@@ -153,7 +165,7 @@ expr = P.try add P.<|> term -- <* P.eof
 namedExpr :: P.Parser NamedCalExpr
 namedExpr = do
     name <- P.optionMaybe $
-        P.between (spaceChar '{') (spaceChar '}') (P.many1 $ P.noneOf "}")
+        P.between (parseCharInSpace '{') (parseCharInSpace '}') (P.many1 $ P.noneOf "}")
     NamedCalExpr name <$> expr
 
 readNamedCalExprs :: String -> Either String [NamedCalExpr]

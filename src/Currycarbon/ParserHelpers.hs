@@ -4,11 +4,32 @@ import qualified Text.Parsec              as P
 import qualified Text.Parsec.Error        as P
 import qualified Text.Parsec.String       as P
 
--- parsing helper functions
+-- * High level building blocks
+
+parseRecordType :: String -> P.Parser a -> P.Parser a
+parseRecordType typeName parser = do
+    _ <- P.string typeName
+    parseInParens parser
 
 parseNamedVector :: P.Parser a -> P.Parser b -> P.Parser [(a,b)]
 parseNamedVector parseKey parseValue =
     parseVector $ parseKeyValuePair parseKey parseValue
+
+parseVector :: P.Parser a -> P.Parser [a]
+parseVector parser = do
+    _ <- P.char 'c'
+    parseInParens (P.sepBy parser consumeCommaSep)
+
+-- * Low level blocks
+
+parseArgument :: String -> P.Parser b -> P.Parser b
+parseArgument argumentName parseValue =
+    P.try parseNamedArgument P.<|> parseUnnamedArgument
+    where
+        parseNamedArgument = do
+            (_,b) <- parseKeyValuePair (P.string argumentName) parseValue
+            return b
+        parseUnnamedArgument = parseValue
 
 parseKeyValuePair :: P.Parser a -> P.Parser b -> P.Parser (a,b)
 parseKeyValuePair parseKey parseValue = do
@@ -17,12 +38,11 @@ parseKeyValuePair parseKey parseValue = do
     value <- parseValue
     return (key, value)
 
-parseVector :: P.Parser a -> P.Parser [a]
-parseVector parseValue = do
-    _ <- P.string "c"
+parseInParens :: P.Parser b -> P.Parser b
+parseInParens parser = do
     _ <- P.char '('
     _ <- P.spaces
-    res <- P.sepBy parseValue consumeCommaSep
+    res <- parser
     _ <- P.spaces
     _ <- P.char ')'
     return res
@@ -36,6 +56,11 @@ consumeCommaSep = do
     _ <- P.spaces *> P.char ',' <* P.spaces
     return ()
 
+parseCharInSpace :: Char -> P.Parser Char
+parseCharInSpace c = P.between P.spaces P.spaces (P.char c)
+
+-- * Sequence parsers
+
 parseDoubleSequence :: P.Parser [Double]
 parseDoubleSequence = do
     start <- parseDouble
@@ -44,6 +69,8 @@ parseDoubleSequence = do
     _ <- P.oneOf ":"
     by <- parsePositiveFloatNumber
     return [start,(start+by)..stop]
+
+-- * Number parsers
 
 parseDouble :: P.Parser Double
 parseDouble = do
@@ -77,9 +104,6 @@ parseIntegerSequence = do
     by <- fromIntegral <$> parsePositiveInt
     return [start,(start+by)..stop]
 
-spaceChar :: Char -> P.Parser Char
-spaceChar c = P.between P.spaces P.spaces (P.char c)
-
 parseInteger :: P.Parser Int
 parseInteger = do
     P.try parseNegativeInt P.<|> parsePositiveInt
@@ -105,7 +129,7 @@ parsePositiveDouble = do
 parseNumber :: P.Parser [Char]
 parseNumber = P.many1 P.digit
 
--- better handling of parser errors
+-- * Error helpers
 
 showParsecErr :: P.ParseError -> String
 showParsecErr err =
