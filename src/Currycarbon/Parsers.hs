@@ -125,7 +125,7 @@ parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ do
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 addFun :: P.Parser CalExpr
-addFun = parseRecordType "add" $ do
+addFun = parseRecordType "sum" $ do
     a <- parseArgument "a" term
     b <- parseArgument "b" expr
     return $ SumCal a b
@@ -134,7 +134,7 @@ addOperator :: P.Parser CalExpr
 addOperator = SumCal <$> term <*> (parseCharInSpace '+' *> expr)
 
 mulFun :: P.Parser CalExpr
-mulFun = parseRecordType "mul" $ do
+mulFun = parseRecordType "product" $ do
     a <- parseArgument "a" factor
     b <- parseArgument "b" term
     return $ ProductCal a b
@@ -160,10 +160,16 @@ expr :: P.Parser CalExpr
 expr = P.try addOperator P.<|> term -- <* P.eof
 
 namedExpr :: P.Parser NamedCalExpr
-namedExpr = do
-    name <- P.optionMaybe $
-        P.between (parseCharInSpace '{') (parseCharInSpace '}') (P.many1 $ P.noneOf "}")
-    NamedCalExpr name <$> expr
+namedExpr = P.try record P.<|> (NamedCalExpr Nothing <$> expr)
+    where
+        record = parseRecordType "calExpr" $ P.try long P.<|> short
+        long = do
+            name <- parseArgument "name" parseAnyString
+            ex   <- parseArgument "expr" expr
+            return (NamedCalExpr (Just name) ex)
+        short = do
+            ex   <- parseArgument "expr" expr
+            return (NamedCalExpr Nothing ex)
 
 readNamedCalExprs :: String -> Either String [NamedCalExpr]
 readNamedCalExprs s =

@@ -34,16 +34,23 @@ parseArgument argumentName parseValue = do
     P.optional consumeCommaSep
     return res
 
+parseNamedArgumentOptional :: String -> P.Parser b -> P.Parser (Maybe b)
+parseNamedArgumentOptional argumentName parseValue =
+    P.optionMaybe $ P.try (parseNamedArgument argumentName parseValue)
+
 -- * Low level blocks
 
 parseArgumentWithoutComma :: String -> P.Parser b -> P.Parser b
 parseArgumentWithoutComma argumentName parseValue =
-    P.try parseNamedArgument P.<|> parseUnnamedArgument
-    where
-        parseNamedArgument = do
-            (_,b) <- parseKeyValuePair (P.string argumentName) parseValue
-            return b
-        parseUnnamedArgument = parseValue
+    P.try (parseNamedArgument argumentName parseValue) P.<|> parseUnnamedArgument parseValue
+
+parseNamedArgument :: String -> P.Parser b -> P.Parser b
+parseNamedArgument argumentName parseValue = do
+    (_,b) <- parseKeyValuePair (P.string argumentName) parseValue
+    return b
+
+parseUnnamedArgument :: P.Parser b -> P.Parser b
+parseUnnamedArgument parseValue = parseValue
 
 parseKeyValuePair :: P.Parser a -> P.Parser b -> P.Parser (a,b)
 parseKeyValuePair parseKey parseValue = do
