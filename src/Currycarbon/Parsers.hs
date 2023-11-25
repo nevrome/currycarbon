@@ -85,9 +85,8 @@ renderCalDatePretty ascii (calExpr, calPDF, calC14) =
 renderNamedCalExpr :: NamedCalExpr -> String
 renderNamedCalExpr (NamedCalExpr exprID calExpr) = renderExprID exprID ++ " " ++ renderCalExpr calExpr
 
-renderExprID :: Maybe String -> String
-renderExprID Nothing  = ""
-renderExprID (Just s) = "{" ++ s ++ "}"
+renderExprID :: String -> String
+renderExprID s = "[" ++ s ++ "]"
 
 renderCalExpr :: CalExpr -> String
 renderCalExpr (UnCalDate a)               = renderUncalC14 a
@@ -160,16 +159,16 @@ expr :: P.Parser CalExpr
 expr = P.try addOperator P.<|> term -- <* P.eof
 
 namedExpr :: P.Parser NamedCalExpr
-namedExpr = P.try record P.<|> (NamedCalExpr Nothing <$> expr)
+namedExpr = P.try record P.<|> (NamedCalExpr "" <$> expr)
     where
         record = parseRecordType "calExpr" $ P.try long P.<|> short
         long = do
             name <- parseArgument "name" parseAnyString
             ex   <- parseArgument "expr" expr
-            return (NamedCalExpr (Just name) ex)
+            return (NamedCalExpr name ex)
         short = do
             ex   <- parseArgument "expr" expr
-            return (NamedCalExpr Nothing ex)
+            return (NamedCalExpr "" ex)
 
 readNamedCalExprs :: String -> Either String [NamedCalExpr]
 readNamedCalExprs s =
@@ -243,7 +242,7 @@ parseUncalC14 = parseRecordType "uncalC14" $ P.try long P.<|> short
         short = do
             age   <- parseArgument "age" parseWord
             sigma <- parseArgument "sigma" parseWord
-            return (UncalC14 "unknownSampleName" age sigma)
+            return (UncalC14 "" age sigma)
 
 -- CalC14
 -- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:

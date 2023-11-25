@@ -113,7 +113,7 @@ data CalPDF = CalPDF {
 -- | A data type for named calibration expressions
 data NamedCalExpr = NamedCalExpr {
     -- | Expression identifier
-      _exprID :: Maybe String
+      _exprID :: String
     -- | Expression
     , _expr   :: CalExpr
     }
