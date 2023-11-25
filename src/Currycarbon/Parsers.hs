@@ -119,14 +119,13 @@ parseTimeWindowBP = do
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
 parseTimeWindowBCAD = do
-    name <- P.many (P.noneOf ",")
-    _ <- parseCharInSpace ','
-    start <- parseInteger
-    _ <- P.spaces *> P.string "-+-" <* P.spaces
-    stop <- parseInteger
-    if start <= stop
-    then return (TimeWindowBCAD name start stop)
-    else fail "the BC/AD stop date can not be smaller than the start date"
+    parseRecordType "rangeBCAD" $ do
+        name  <- parseArgument "name" parseAnyString
+        start <- parseArgument "start" parseInt
+        stop  <- parseArgument "stop" parseInt
+        if start <= stop
+        then return (TimeWindowBCAD name start stop)
+        else fail "the BC/AD stop date can not be smaller than the start date"
 
 add :: P.Parser CalExpr
 add = SumCal <$> term <*> (parseCharInSpace '+' *> expr)
@@ -218,20 +217,17 @@ readUncalC14 s =
 
 parseUncalC14 :: P.Parser UncalC14
 parseUncalC14 = do
-    P.try long P.<|> short
+    parseRecordType "uncalC14" $ P.try long P.<|> short
     where
         long = do
-            name <- P.many (P.noneOf ",")
-            _ <- P.oneOf ","
-            mean <- parseWord
-            _ <- P.oneOf ","
-            std <- parseWord
-            return (UncalC14 name mean std)
+            name  <- parseArgument "name" parseAnyString
+            age   <- parseArgument "age" parseWord
+            sigma <- parseArgument "sigma" parseWord
+            return (UncalC14 name age sigma)
         short = do
-            mean <- parseWord
-            _ <- P.oneOf ","
-            std <- parseWord
-            return (UncalC14 "unknownSampleName" mean std)
+            age   <- parseArgument "age" parseWord
+            sigma <- parseArgument "sigma" parseWord
+            return (UncalC14 "unknownSampleName" age sigma)
 
 -- CalC14
 -- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:
