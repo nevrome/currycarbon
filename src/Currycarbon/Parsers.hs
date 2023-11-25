@@ -108,45 +108,57 @@ renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 parseTimeWindowBP :: P.Parser TimeWindowBP
-parseTimeWindowBP = do
-    parseRecordType "rangeBP" $ do
-        name  <- parseArgument "name" parseAnyString
-        start <- parseArgument "start" parseWord
-        stop  <- parseArgument "stop" parseWord
-        if start >= stop
-        then return (TimeWindowBP name start stop)
-        else fail "the BP stop date can not be larger than the start date"
+parseTimeWindowBP = parseRecordType "rangeBP" $ do
+    name  <- parseArgument "name" parseAnyString
+    start <- parseArgument "start" parseWord
+    stop  <- parseArgument "stop" parseWord
+    if start >= stop
+    then return (TimeWindowBP name start stop)
+    else fail "the BP stop date can not be larger than the start date"
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
-parseTimeWindowBCAD = do
-    parseRecordType "rangeBCAD" $ do
-        name  <- parseArgument "name" parseAnyString
-        start <- parseArgument "start" parseInt
-        stop  <- parseArgument "stop" parseInt
-        if start <= stop
-        then return (TimeWindowBCAD name start stop)
-        else fail "the BC/AD stop date can not be smaller than the start date"
+parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ do
+    name  <- parseArgument "name" parseAnyString
+    start <- parseArgument "start" parseInt
+    stop  <- parseArgument "stop" parseInt
+    if start <= stop
+    then return (TimeWindowBCAD name start stop)
+    else fail "the BC/AD stop date can not be smaller than the start date"
 
-add :: P.Parser CalExpr
-add = SumCal <$> term <*> (parseCharInSpace '+' *> expr)
+addFun :: P.Parser CalExpr
+addFun = parseRecordType "add" $ do
+    a <- parseArgument "a" term
+    b <- parseArgument "b" expr
+    return $ SumCal a b
 
-mul :: P.Parser CalExpr
-mul = ProductCal <$> factor <*> (parseCharInSpace '*' *> term)
+addOperator :: P.Parser CalExpr
+addOperator = SumCal <$> term <*> (parseCharInSpace '+' *> expr)
+
+mulFun :: P.Parser CalExpr
+mulFun = parseRecordType "mul" $ do
+    a <- parseArgument "a" factor
+    b <- parseArgument "b" term
+    return $ ProductCal a b
+
+mulOperator :: P.Parser CalExpr
+mulOperator = ProductCal <$> factor <*> (parseCharInSpace '*' *> term)
 
 parens :: P.Parser CalExpr
 parens = P.between (parseCharInSpace '(') (parseCharInSpace ')') expr
 
 factor :: P.Parser CalExpr
 factor =      P.try parens
+        P.<|> P.try addFun
+        P.<|> P.try mulFun
         P.<|> P.try (WindowBP <$> parseTimeWindowBP)
         P.<|> P.try (WindowBCAD <$> parseTimeWindowBCAD)
         P.<|> (UnCalDate <$> parseUncalC14)
 
 term :: P.Parser CalExpr
-term = P.try mul P.<|> factor
+term = P.try mulOperator P.<|> factor
 
 expr :: P.Parser CalExpr
-expr = P.try add P.<|> term -- <* P.eof
+expr = P.try addOperator P.<|> term -- <* P.eof
 
 namedExpr :: P.Parser NamedCalExpr
 namedExpr = do
@@ -216,8 +228,7 @@ readUncalC14 s =
         uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof
 
 parseUncalC14 :: P.Parser UncalC14
-parseUncalC14 = do
-    parseRecordType "uncalC14" $ P.try long P.<|> short
+parseUncalC14 = parseRecordType "uncalC14" $ P.try long P.<|> short
     where
         long = do
             name  <- parseArgument "name" parseAnyString
