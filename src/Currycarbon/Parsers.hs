@@ -232,8 +232,9 @@ readUncalC14 s =
         uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof
 
 parseUncalC14 :: P.Parser UncalC14
-parseUncalC14 = parseRecordType "uncalC14" $ P.try long P.<|> short
+parseUncalC14 = P.try record P.<|> short
     where
+        record = parseRecordType "uncalC14" $ P.try long P.<|> short
         long = do
             name  <- parseArgument "name" parseAnyString
             age   <- parseArgument "age" parseWord
