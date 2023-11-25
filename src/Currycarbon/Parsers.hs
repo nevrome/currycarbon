@@ -232,7 +232,7 @@ readUncalC14 s =
         uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof
 
 parseUncalC14 :: P.Parser UncalC14
-parseUncalC14 = P.try record P.<|> short
+parseUncalC14 = P.try record P.<|> P.try long P.<|> short
     where
         record = parseRecordType "uncalC14" $ P.try long P.<|> short
         long = do
