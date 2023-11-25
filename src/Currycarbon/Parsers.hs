@@ -4,7 +4,6 @@ module Currycarbon.Parsers where
 
 import           Currycarbon.Types
 import           Currycarbon.Utils
-import Currycarbon.Calibration.Utils
 import Currycarbon.ParserHelpers
 
 import           Control.Exception   (throwIO)
@@ -13,7 +12,6 @@ import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as VU
 import qualified Text.Parsec         as P
 import qualified Text.Parsec.String  as P
-import qualified Text.Parsec.Perm    as P
 
 -- * Parsing, rendering and writing functions
 --
@@ -87,9 +85,8 @@ renderCalDatePretty ascii (calExpr, calPDF, calC14) =
 renderNamedCalExpr :: NamedCalExpr -> String
 renderNamedCalExpr (NamedCalExpr exprID calExpr) = renderExprID exprID ++ " " ++ renderCalExpr calExpr
 
-renderExprID :: Maybe String -> String
-renderExprID Nothing  = ""
-renderExprID (Just s) = "{" ++ s ++ "}"
+renderExprID :: String -> String
+renderExprID s = "[" ++ s ++ "]"
 
 renderCalExpr :: CalExpr -> String
 renderCalExpr (UnCalDate a)               = renderUncalC14 a
@@ -101,66 +98,77 @@ renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ r
 
 renderTimeWindowBP :: TimeWindowBP -> String
 renderTimeWindowBP (TimeWindowBP name start stop) =
-    name ++ ":" ++ renderYearBP start ++ " --- " ++ renderYearBP stop
+    name ++ ":" ++ renderYearBP start ++ "-" ++ renderYearBP stop
 
 renderTimeWindowBCAD :: TimeWindowBCAD -> String
 renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
-    name ++ ":" ++ renderYearBCAD start ++ " -+- " ++ renderYearBCAD stop
-
+    name ++ ":" ++ renderYearBCAD start ++ "-" ++ renderYearBCAD stop
 
 parseTimeWindowBP :: P.Parser TimeWindowBP
-parseTimeWindowBP = do
-    parseRecordType "rangeBP" $ do
-        res@(TimeWindowBP _ start stop) <- P.permute $
-            TimeWindowBP
-                P.<$$> parseArgumentComma "name" parseAnyString
-                P.<||> parseArgumentComma "start" parseWord
-                P.<||> parseArgumentComma "stop" parseWord
-        --name <- parseArgumentComma "name" parseAnyString
-        --start <- parseArgumentComma "start" parseWord
-        --stop  <- parseArgumentComma "stop" parseWord
-        if start >= stop
-        then return res
-        else fail "the BP stop date can not be larger than the start date"
+parseTimeWindowBP = parseRecordType "rangeBP" $ do
+    name  <- parseArgument "name" parseAnyString
+    start <- parseArgument "start" parseWord
+    stop  <- parseArgument "stop" parseWord
+    if start >= stop
+    then return (TimeWindowBP name start stop)
+    else fail "the BP stop date can not be larger than the start date"
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
-parseTimeWindowBCAD = do
-    name <- P.many (P.noneOf ",")
-    _ <- parseCharInSpace ','
-    start <- parseInteger
-    _ <- P.spaces *> P.string "-+-" <* P.spaces
-    stop <- parseInteger
+parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ do
+    name  <- parseArgument "name" parseAnyString
+    start <- parseArgument "start" parseInt
+    stop  <- parseArgument "stop" parseInt
     if start <= stop
     then return (TimeWindowBCAD name start stop)
     else fail "the BC/AD stop date can not be smaller than the start date"
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
-add :: P.Parser CalExpr
-add = SumCal <$> term <*> (parseCharInSpace '+' *> expr)
+addFun :: P.Parser CalExpr
+addFun = parseRecordType "sum" $ do
+    a <- parseArgument "a" term
+    b <- parseArgument "b" expr
+    return $ SumCal a b
 
-mul :: P.Parser CalExpr
-mul = ProductCal <$> factor <*> (parseCharInSpace '*' *> term)
+addOperator :: P.Parser CalExpr
+addOperator = SumCal <$> term <*> (parseCharInSpace '+' *> expr)
+
+mulFun :: P.Parser CalExpr
+mulFun = parseRecordType "product" $ do
+    a <- parseArgument "a" factor
+    b <- parseArgument "b" term
+    return $ ProductCal a b
+
+mulOperator :: P.Parser CalExpr
+mulOperator = ProductCal <$> factor <*> (parseCharInSpace '*' *> term)
 
 parens :: P.Parser CalExpr
 parens = P.between (parseCharInSpace '(') (parseCharInSpace ')') expr
 
 factor :: P.Parser CalExpr
 factor =      P.try parens
+        P.<|> P.try addFun
+        P.<|> P.try mulFun
         P.<|> P.try (WindowBP <$> parseTimeWindowBP)
         P.<|> P.try (WindowBCAD <$> parseTimeWindowBCAD)
         P.<|> (UnCalDate <$> parseUncalC14)
 
 term :: P.Parser CalExpr
-term = P.try mul P.<|> factor
+term = P.try mulOperator P.<|> factor
 
 expr :: P.Parser CalExpr
-expr = P.try add P.<|> term -- <* P.eof
+expr = P.try addOperator P.<|> term -- <* P.eof
 
 namedExpr :: P.Parser NamedCalExpr
-namedExpr = do
-    name <- P.optionMaybe $
-        P.between (parseCharInSpace '{') (parseCharInSpace '}') (P.many1 $ P.noneOf "}")
-    NamedCalExpr name <$> expr
+namedExpr = P.try record P.<|> (NamedCalExpr "" <$> expr)
+    where
+        record = parseRecordType "calExpr" $ P.try long P.<|> short
+        long = do
+            name <- parseArgument "name" parseAnyString
+            ex   <- parseArgument "expr" expr
+            return (NamedCalExpr name ex)
+        short = do
+            ex   <- parseArgument "expr" expr
+            return (NamedCalExpr "" ex)
 
 readNamedCalExprs :: String -> Either String [NamedCalExpr]
 readNamedCalExprs s =
@@ -224,21 +232,17 @@ readUncalC14 s =
         uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof
 
 parseUncalC14 :: P.Parser UncalC14
-parseUncalC14 = do
-    P.try long P.<|> short
+parseUncalC14 = parseRecordType "uncalC14" $ P.try long P.<|> short
     where
         long = do
-            name <- P.many (P.noneOf ",")
-            _ <- P.oneOf ","
-            mean <- parseWord
-            _ <- P.oneOf ","
-            std <- parseWord
-            return (UncalC14 name mean std)
+            name  <- parseArgument "name" parseAnyString
+            age   <- parseArgument "age" parseWord
+            sigma <- parseArgument "sigma" parseWord
+            return (UncalC14 name age sigma)
         short = do
-            mean <- parseWord
-            _ <- P.oneOf ","
-            std <- parseWord
-            return (UncalC14 "unknownSampleName" mean std)
+            age   <- parseArgument "age" parseWord
+            sigma <- parseArgument "sigma" parseWord
+            return (UncalC14 "" age sigma)
 
 -- CalC14
 -- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:
@@ -305,7 +309,7 @@ renderCalRangeSummary s =
 -- BP
 renderYearBP :: YearBP -> String
 renderYearBP x =
-    show x ++ "BP" ++ " (" ++ (renderYearBCAD $ bp2BCAD x) ++ ")"
+    show x ++ "BP" -- ++ " (" ++ (renderYearBCAD $ bp2BCAD x) ++ ")"
 
 -- BCAD
 renderYearBCAD :: YearBCAD -> String

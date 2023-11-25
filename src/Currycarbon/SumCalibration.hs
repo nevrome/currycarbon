@@ -16,9 +16,7 @@ evalNamedCalExpr :: CalibrateDatesConf -> CalCurveBP -> NamedCalExpr -> Either C
 evalNamedCalExpr conf curve (NamedCalExpr exprID expr) = 
     case evalCalExpr conf curve expr of
         Left err     -> Left err
-        Right calPDF -> case exprID of
-            Nothing -> Right calPDF
-            Just x  -> Right $ calPDF { _calPDFid = x }
+        Right calPDF -> Right calPDF { _calPDFid = exprID }
 
 -- | Evaluate a dating expression by calibrating the individual dates and forming the respective
 --   sums and products of post-calibration density distributions

@@ -20,26 +20,37 @@ parseVector parser = do
     _ <- P.char 'c'
     parseInParens (P.sepBy parser consumeCommaSep)
 
--- * Low level blocks
+parseArgumentWithDefault :: String -> P.Parser b -> b -> P.Parser b
+parseArgumentWithDefault argumentName parseValue defaultValue =
+    P.option defaultValue (parseArgument argumentName parseValue)
 
-parseOptionalArgumentComma :: String -> P.Parser b -> P.Parser (Maybe b)
-parseOptionalArgumentComma argumentName parseValue =
-    P.optionMaybe $ P.try (parseArgumentComma argumentName parseValue)
+parseArgumentOptional :: String -> P.Parser b -> P.Parser (Maybe b)
+parseArgumentOptional argumentName parseValue =
+    P.optionMaybe $ P.try (parseArgument argumentName parseValue)
 
-parseArgumentComma :: String -> P.Parser b -> P.Parser b
-parseArgumentComma argumentName parseValue = do
-    res <- parseArgument argumentName parseValue
+parseArgument :: String -> P.Parser b -> P.Parser b
+parseArgument argumentName parseValue = do
+    res <- parseArgumentWithoutComma argumentName parseValue
     P.optional consumeCommaSep
     return res
 
-parseArgument :: String -> P.Parser b -> P.Parser b
-parseArgument argumentName parseValue =
-    P.try parseNamedArgument P.<|> parseUnnamedArgument
-    where
-        parseNamedArgument = do
-            (_,b) <- parseKeyValuePair (P.string argumentName) parseValue
-            return b
-        parseUnnamedArgument = parseValue
+parseNamedArgumentOptional :: String -> P.Parser b -> P.Parser (Maybe b)
+parseNamedArgumentOptional argumentName parseValue =
+    P.optionMaybe $ P.try (parseNamedArgument argumentName parseValue)
+
+-- * Low level blocks
+
+parseArgumentWithoutComma :: String -> P.Parser b -> P.Parser b
+parseArgumentWithoutComma argumentName parseValue =
+    P.try (parseNamedArgument argumentName parseValue) P.<|> parseUnnamedArgument parseValue
+
+parseNamedArgument :: String -> P.Parser b -> P.Parser b
+parseNamedArgument argumentName parseValue = do
+    (_,b) <- parseKeyValuePair (P.string argumentName) parseValue
+    return b
+
+parseUnnamedArgument :: P.Parser b -> P.Parser b
+parseUnnamedArgument parseValue = parseValue
 
 parseKeyValuePair :: P.Parser a -> P.Parser b -> P.Parser (a,b)
 parseKeyValuePair parseKey parseValue = do
@@ -75,7 +86,7 @@ parseAnyString =
     where
         inDoubleQuotes = P.between (P.char '"') (P.char '"') (P.many P.anyChar)
         inSingleQuotes = P.between (P.char '\'') (P.char '\'') (P.many P.anyChar)
-        inNoQuotes = P.many (P.noneOf ",")
+        inNoQuotes = P.many (P.noneOf ",)")
 
 -- * Sequence parsers
 
@@ -115,15 +126,15 @@ parsePositiveFloatNumber = do
 
 parseIntegerSequence :: P.Parser [Int]
 parseIntegerSequence = do
-    start <- parseInteger
+    start <- parseInt
     _ <- P.oneOf ":"
-    stop <- parseInteger
+    stop <- parseInt
     _ <- P.oneOf ":"
     by <- fromIntegral <$> parsePositiveInt
     return [start,(start+by)..stop]
 
-parseInteger :: P.Parser Int
-parseInteger = do
+parseInt :: P.Parser Int
+parseInt = do
     P.try parseNegativeInt P.<|> parsePositiveInt
 
 parseNegativeInt :: P.Parser Int

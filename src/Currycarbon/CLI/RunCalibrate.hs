@@ -170,25 +170,28 @@ runCalibrate (
 -- | Helper function to replace empty input names with a sequence of numbers,
 -- to get each input date an unique identifier
 replaceEmptyNames :: [NamedCalExpr] -> [NamedCalExpr]
-replaceEmptyNames = zipWith (modifyExpr . show) ([1..] :: [Integer])
+replaceEmptyNames = zipWith (modifyNamedExpr . show) ([1..] :: [Integer])
     where
-        modifyExpr :: String -> NamedCalExpr -> NamedCalExpr
-        modifyExpr i nexpr = nexpr { _expr = replaceName i (_expr nexpr) }
+        modifyNamedExpr :: String -> NamedCalExpr -> NamedCalExpr
+        modifyNamedExpr i nexpr =
+            if _exprID nexpr == ""
+            then nexpr { _exprID = i, _expr = replaceName i (_expr nexpr) }
+            else nexpr {              _expr = replaceName i (_expr nexpr) }
         replaceName :: String -> CalExpr -> CalExpr
         replaceName i (UnCalDate (UncalC14 name x y)) =
-            if name == "unknownSampleName"
+            if name == ""
             then UnCalDate $ UncalC14 i x y
             else UnCalDate $ UncalC14 name x y
         replaceName i (WindowBP (TimeWindowBP name start stop)) =
-            if name == "unknownSampleName"
+            if name == ""
             then WindowBP $ TimeWindowBP i start stop
             else WindowBP $ TimeWindowBP name start stop
         replaceName i (WindowBCAD (TimeWindowBCAD name start stop)) =
-            if name == "unknownSampleName"
+            if name == ""
             then WindowBCAD $ TimeWindowBCAD i start stop
             else WindowBCAD $ TimeWindowBCAD name start stop
         replaceName i (CalDate (CalPDF name x y)) =
-            if name == "unknownSampleName"
+            if name == ""
             then CalDate $ CalPDF i x y
             else CalDate $ CalPDF name x y
         replaceName i (SumCal a b)     = SumCal (replaceName (i ++ "s") a) (replaceName (i ++ "S") b)
