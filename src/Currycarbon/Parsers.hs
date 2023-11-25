@@ -4,7 +4,6 @@ module Currycarbon.Parsers where
 
 import           Currycarbon.Types
 import           Currycarbon.Utils
-import Currycarbon.Calibration.Utils
 import Currycarbon.ParserHelpers
 
 import           Control.Exception   (throwIO)
@@ -100,13 +99,12 @@ renderCalExpr (ProductCal a b)            = "(" ++ renderCalExpr a ++ " * " ++ r
 
 renderTimeWindowBP :: TimeWindowBP -> String
 renderTimeWindowBP (TimeWindowBP name start stop) =
-    name ++ ":" ++ renderYearBP start ++ " --- " ++ renderYearBP stop
+    name ++ ":" ++ renderYearBP start ++ "-" ++ renderYearBP stop
 
 renderTimeWindowBCAD :: TimeWindowBCAD -> String
 renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
-    name ++ ":" ++ renderYearBCAD start ++ " -+- " ++ renderYearBCAD stop
+    name ++ ":" ++ renderYearBCAD start ++ "-" ++ renderYearBCAD stop
 
--- https://gist.github.com/abhin4v/017a36477204a1d57745
 parseTimeWindowBP :: P.Parser TimeWindowBP
 parseTimeWindowBP = parseRecordType "rangeBP" $ do
     name  <- parseArgument "name" parseAnyString
@@ -125,6 +123,7 @@ parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ do
     then return (TimeWindowBCAD name start stop)
     else fail "the BC/AD stop date can not be smaller than the start date"
 
+-- https://gist.github.com/abhin4v/017a36477204a1d57745
 addFun :: P.Parser CalExpr
 addFun = parseRecordType "add" $ do
     a <- parseArgument "a" term
@@ -305,7 +304,7 @@ renderCalRangeSummary s =
 -- BP
 renderYearBP :: YearBP -> String
 renderYearBP x =
-    show x ++ "BP" ++ " (" ++ (renderYearBCAD $ bp2BCAD x) ++ ")"
+    show x ++ "BP" -- ++ " (" ++ (renderYearBCAD $ bp2BCAD x) ++ ")"
 
 -- BCAD
 renderYearBCAD :: YearBCAD -> String
