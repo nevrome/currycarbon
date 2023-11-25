@@ -22,18 +22,18 @@ parseVector parser = do
 
 -- * Low level blocks
 
-parseOptionalArgumentComma :: String -> P.Parser b -> P.Parser (Maybe b)
-parseOptionalArgumentComma argumentName parseValue =
-    P.optionMaybe $ P.try (parseArgumentComma argumentName parseValue)
+parseArgumentOptional :: String -> P.Parser b -> P.Parser (Maybe b)
+parseArgumentOptional argumentName parseValue =
+    P.optionMaybe $ P.try (parseArgument argumentName parseValue)
 
-parseArgumentComma :: String -> P.Parser b -> P.Parser b
-parseArgumentComma argumentName parseValue = do
-    res <- parseArgument argumentName parseValue
+parseArgument :: String -> P.Parser b -> P.Parser b
+parseArgument argumentName parseValue = do
+    res <- parseArgumentWithoutComma argumentName parseValue
     P.optional consumeCommaSep
     return res
 
-parseArgument :: String -> P.Parser b -> P.Parser b
-parseArgument argumentName parseValue =
+parseArgumentWithoutComma :: String -> P.Parser b -> P.Parser b
+parseArgumentWithoutComma argumentName parseValue =
     P.try parseNamedArgument P.<|> parseUnnamedArgument
     where
         parseNamedArgument = do
