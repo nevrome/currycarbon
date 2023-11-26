@@ -105,22 +105,38 @@ renderTimeWindowBCAD (TimeWindowBCAD name start stop) =
     name ++ ":" ++ renderYearBCAD start ++ "-" ++ renderYearBCAD stop
 
 parseTimeWindowBP :: P.Parser TimeWindowBP
-parseTimeWindowBP = parseRecordType "rangeBP" $ do
-    name  <- parseArgument "name" parseAnyString
-    start <- parseArgument "start" parseWord
-    stop  <- parseArgument "stop" parseWord
-    if start >= stop
-    then return (TimeWindowBP name start stop)
-    else fail "the BP stop date can not be larger than the start date"
+parseTimeWindowBP = parseRecordType "rangeBP" $ P.try long P.<|> short
+    where
+        long = do
+            name  <- parseArgument "name" parseAnyString
+            start <- parseArgument "start" parseWord
+            stop  <- parseArgument "stop" parseWord
+            construct name start stop
+        short = do
+            start <- parseArgument "start" parseWord
+            stop  <- parseArgument "stop" parseWord
+            construct "" start stop
+        construct name start stop = do
+            if start >= stop
+            then return (TimeWindowBP name start stop)
+            else fail "the BP stop date can not be larger than the start date"
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
-parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ do
-    name  <- parseArgument "name" parseAnyString
-    start <- parseArgument "start" parseInt
-    stop  <- parseArgument "stop" parseInt
-    if start <= stop
-    then return (TimeWindowBCAD name start stop)
-    else fail "the BC/AD stop date can not be smaller than the start date"
+parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ P.try long P.<|> short
+    where
+        long = do
+            name  <- parseArgument "name" parseAnyString
+            start <- parseArgument "start" parseInt
+            stop  <- parseArgument "stop" parseInt
+            construct name start stop
+        short = do
+            start <- parseArgument "start" parseInt
+            stop  <- parseArgument "stop" parseInt
+            construct "" start stop
+        construct name start stop = do
+            if start <= stop
+            then return (TimeWindowBCAD name start stop)
+            else fail "the BC/AD stop date can not be smaller than the start date"
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 addFun :: P.Parser CalExpr
