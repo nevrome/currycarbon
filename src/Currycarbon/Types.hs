@@ -116,7 +116,7 @@ data NamedCalExpr = NamedCalExpr {
       _exprID :: String
     -- | Expression
     , _expr   :: CalExpr
-    }
+    } deriving (Show, Eq)
 
 -- | A data type to represent an expression for sum- or product calibration
 data CalExpr =
@@ -126,14 +126,14 @@ data CalExpr =
     | CalDate CalPDF
     | SumCal CalExpr CalExpr
     | ProductCal CalExpr CalExpr
-    deriving Show
+    deriving (Show, Eq)
 -- http://www.cse.chalmers.se/edu/year/2018/course/TDA452/lectures/RecursiveDataTypes.html
 
 data TimeWindowBP = TimeWindowBP String YearBP YearBP
-    deriving Show
+    deriving (Show, Eq)
 
 data TimeWindowBCAD = TimeWindowBCAD String YearBCAD YearBCAD
-    deriving Show
+    deriving (Show, Eq)
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {
