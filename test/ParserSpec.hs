@@ -88,6 +88,10 @@ testReadNamedExpression =
             readOneNamedCalExpr "uncalC14(3000,30) * product(rangeBP(3000,2000), rangeBCAD(-1050,-50)) * uncalC14(3000,30)"
                 `shouldBe`
                 Right (NamedCalExpr "" $ ProductCal uncalC14 (ProductCal (ProductCal windowBP windowBCAD) uncalC14))
+        it "should understand parenthesis correctly" $ do
+            readOneNamedCalExpr "(uncalC14(3000,30) + rangeBP(3000,2000)) * rangeBCAD(-1050,-50)"
+                `shouldBe`
+                Right (NamedCalExpr "" $ ProductCal (SumCal uncalC14 windowBP) windowBCAD)
         it "should read unnamed and named calibration expressions correctly" $ do
             readOneNamedCalExpr "test: 3000,30"
                 `shouldBe`
@@ -102,3 +106,4 @@ testReadNamedExpression =
             readOneNamedCalExpr "calExpr(test, sum(uncalC14(3000,30), product(rangeBP(3000,2000), rangeBCAD(-1050,-50))) * uncalC14(3000,30))"
                 `shouldBe`
                 Right (NamedCalExpr "test" $ ProductCal (SumCal uncalC14 (ProductCal windowBP windowBCAD)) uncalC14)
+
