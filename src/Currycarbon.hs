@@ -137,7 +137,7 @@ to normalize the output density distributions.
 
 {- $randsamp
 
-A common requirement for archaeological data analysis is temporal resampling,
+Another common requirement for archaeological data analysis is temporal resampling,
 where random age samples are drawn from 'CalPDF's according to the probability
 density distribution.
 
