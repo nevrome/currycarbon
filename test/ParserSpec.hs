@@ -89,12 +89,15 @@ testReadNamedExpression =
                 `shouldBe`
                 Right (NamedCalExpr "" $ ProductCal uncalC14 (ProductCal (ProductCal windowBP windowBCAD) uncalC14))
         it "should read unnamed and named calibration expressions correctly" $ do
-            readOneNamedCalExpr "calExpr(3000,30)"
+            readOneNamedCalExpr "test: 3000,30"
                 `shouldBe`
-                Right (NamedCalExpr "" uncalC14)
+                Right (NamedCalExpr "test" uncalC14)
             readOneNamedCalExpr "calExpr(test,3000,30)"
                 `shouldBe`
                 Right (NamedCalExpr "test" uncalC14)
+            readOneNamedCalExpr "calExpr(3000,30)"
+                `shouldBe`
+                Right (NamedCalExpr "" uncalC14)
         it "should be able to handle complex, nested queries" $ do
             readOneNamedCalExpr "calExpr(test, sum(uncalC14(3000,30), product(rangeBP(3000,2000), rangeBCAD(-1050,-50))) * uncalC14(3000,30))"
                 `shouldBe`

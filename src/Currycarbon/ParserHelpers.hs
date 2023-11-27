@@ -86,7 +86,7 @@ parseAnyString =
     where
         inDoubleQuotes = P.between (P.char '"') (P.char '"') (P.many P.anyChar)
         inSingleQuotes = P.between (P.char '\'') (P.char '\'') (P.many P.anyChar)
-        inNoQuotes = P.many (P.noneOf ",)")
+        inNoQuotes = P.many (P.noneOf ",):")
 
 -- * Sequence parsers
 

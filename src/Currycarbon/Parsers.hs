@@ -175,8 +175,14 @@ expr :: P.Parser CalExpr
 expr = P.try addOperator P.<|> term -- <* P.eof
 
 namedExpr :: P.Parser NamedCalExpr
-namedExpr = P.try record P.<|> (NamedCalExpr "" <$> expr)
+namedExpr = P.try nameBeforeColon P.<|> P.try record P.<|> onlyExpr
     where
+        nameBeforeColon = do
+            name <- parseAnyString
+            _ <- P.char ':'
+            _ <- P.spaces
+            ex <- expr
+            return (NamedCalExpr name ex)
         record = parseRecordType "calExpr" $ P.try long P.<|> short
         long = do
             name <- parseArgument "name" parseAnyString
@@ -185,6 +191,7 @@ namedExpr = P.try record P.<|> (NamedCalExpr "" <$> expr)
         short = do
             ex   <- parseArgument "expr" expr
             return (NamedCalExpr "" ex)
+        onlyExpr = NamedCalExpr "" <$> expr
 
 readNamedCalExprs :: String -> Either String [NamedCalExpr]
 readNamedCalExprs s =
