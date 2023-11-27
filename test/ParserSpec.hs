@@ -35,6 +35,14 @@ testReadNamedExpression =
         readOneNamedCalExpr "uncalC14(test,3000,30)"
             `shouldBe`
             Right (NamedCalExpr "" (uncalC14N "test"))
+    it "should read named function arguments correctly" $ do
+        readOneNamedCalExpr "uncalC14(name = test, age = 3000, sigma = 30)"
+            `shouldBe`
+            Right (NamedCalExpr "" (uncalC14N "test"))
+    it "should read partially named function arguments correctly" $ do
+        readOneNamedCalExpr "uncalC14(3000,sigma=30)"
+            `shouldBe`
+            Right (NamedCalExpr "" uncalC14)
     it "should read time windows correctly" $ do
         readOneNamedCalExpr "rangeBP(3000,2000)"
             `shouldBe`
