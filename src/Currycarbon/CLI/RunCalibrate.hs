@@ -14,7 +14,7 @@ import           Control.Monad                       (unless, when)
 import           Data.Maybe                          (fromJust, fromMaybe,
                                                       isJust)
 import           System.IO                           (hPutStrLn, stderr, stdout)
-import qualified System.Random as R
+import qualified System.Random                       as R
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
@@ -113,13 +113,13 @@ runCalibrate (
             flexOut _ascii namedCalExpr calPDF writeCalPDF writeCalC14 writeRandomAgeSample
             when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
                 hPutStrLn stderr "Warning: The calCurveSegment file and the calCurveMatrix file can only be produced for simple dates"
-        
+
         -- handle subsequent expressions
         otherOut :: Bool -> NamedCalExpr -> CalPDF -> IO ()
         otherOut _ascii namedCalExpr calPDF =
             flexOut _ascii namedCalExpr calPDF appendCalPDF appendCalC14 appendRandomAgeSample
 
-        -- flexible expression handler    
+        -- flexible expression handler
         flexOut ::
                Bool
             -> NamedCalExpr -> CalPDF

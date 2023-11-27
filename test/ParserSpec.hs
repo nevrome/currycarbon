@@ -1,9 +1,9 @@
 module ParserSpec (spec) where
 
-import Currycarbon.Parsers
-import Currycarbon.Types
+import           Currycarbon.Parsers
+import           Currycarbon.Types
 
-import           Test.Hspec    (Spec, describe, it, shouldBe)
+import           Test.Hspec          (Spec, describe, it, shouldBe)
 
 spec :: Spec
 spec = do
@@ -58,7 +58,7 @@ testReadNamedExpression =
             readOneNamedCalExpr "uncalC14(3000,30) + rangeBP(3000,2000) + rangeBCAD(-1050,-50) + uncalC14(3000,30)"
                 `shouldBe`
                 Right (NamedCalExpr "" $ SumCal uncalC14 (SumCal windowBP (SumCal windowBCAD uncalC14)))
-        it "should read sums with sum() function and + operator correctly " $ do    
+        it "should read sums with sum() function and + operator correctly " $ do
             readOneNamedCalExpr "sum(uncalC14(3000,30), rangeBP(3000,2000))"
                 `shouldBe`
                 Right (NamedCalExpr "" $ SumCal uncalC14 windowBP)
@@ -78,7 +78,7 @@ testReadNamedExpression =
             readOneNamedCalExpr "uncalC14(3000,30) * rangeBP(3000,2000) * rangeBCAD(-1050,-50) * uncalC14(3000,30)"
                 `shouldBe`
                 Right (NamedCalExpr "" $ ProductCal uncalC14 (ProductCal windowBP (ProductCal windowBCAD uncalC14)))
-        it "should read products with product() function and * operator correctly " $ do    
+        it "should read products with product() function and * operator correctly " $ do
             readOneNamedCalExpr "product(uncalC14(3000,30), rangeBP(3000,2000))"
                 `shouldBe`
                 Right (NamedCalExpr "" $ ProductCal uncalC14 windowBP)

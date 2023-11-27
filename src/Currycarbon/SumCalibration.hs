@@ -13,7 +13,7 @@ import           Data.Ord                            (comparing)
 import qualified Data.Vector.Unboxed                 as VU
 
 evalNamedCalExpr :: CalibrateDatesConf -> CalCurveBP -> NamedCalExpr -> Either CurrycarbonException CalPDF
-evalNamedCalExpr conf curve (NamedCalExpr exprID expr) = 
+evalNamedCalExpr conf curve (NamedCalExpr exprID expr) =
     case evalCalExpr conf curve expr of
         Left err     -> Left err
         Right calPDF -> Right calPDF { _calPDFid = exprID }

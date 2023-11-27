@@ -2,16 +2,16 @@
 
 module Currycarbon.Parsers where
 
+import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
 import           Currycarbon.Utils
-import Currycarbon.ParserHelpers
 
-import           Control.Exception   (throwIO)
-import           Data.List           (intercalate, transpose)
-import qualified Data.Vector         as V
-import qualified Data.Vector.Unboxed as VU
-import qualified Text.Parsec         as P
-import qualified Text.Parsec.String  as P
+import           Control.Exception         (throwIO)
+import           Data.List                 (intercalate, transpose)
+import qualified Data.Vector               as V
+import qualified Data.Vector.Unboxed       as VU
+import qualified Text.Parsec               as P
+import qualified Text.Parsec.String        as P
 
 -- * Parsing, rendering and writing functions
 --
@@ -26,7 +26,7 @@ readCalibrationMethod :: String -> Either String CalibrationMethod
 readCalibrationMethod s =
     case P.runParser parseCalibrationMethod () "" s of
         Left err -> Left $ showParsecErr err
-        Right x -> Right x
+        Right x  -> Right x
 
 parseCalibrationMethod :: P.Parser CalibrationMethod
 parseCalibrationMethod = do
@@ -190,7 +190,7 @@ readNamedCalExprs :: String -> Either String [NamedCalExpr]
 readNamedCalExprs s =
     case P.runParser parseCalExprSepBySemicolon () "" s of
         Left err -> Left $ showParsecErr err
-        Right x -> Right x
+        Right x  -> Right x
         where
         parseCalExprSepBySemicolon :: P.Parser [NamedCalExpr]
         parseCalExprSepBySemicolon = P.sepBy namedExpr (P.char ';' <* P.spaces) <* P.eof
@@ -199,7 +199,7 @@ readOneNamedCalExpr :: String -> Either String NamedCalExpr
 readOneNamedCalExpr s =
     case P.runParser namedExpr () "" s of
         Left err -> Left $ showParsecErr err
-        Right x -> Right x
+        Right x  -> Right x
 
 readNamedCalExprsFromFile :: FilePath -> IO [NamedCalExpr]
 readNamedCalExprsFromFile uncalFile = do
@@ -242,7 +242,7 @@ readUncalC14 :: String -> Either String [UncalC14]
 readUncalC14 s =
     case P.runParser uncalC14SepBySemicolon () "" s of
         Left err -> Left $ showParsecErr err
-        Right x -> Right x
+        Right x  -> Right x
     where
         uncalC14SepBySemicolon :: P.Parser [UncalC14]
         uncalC14SepBySemicolon = P.sepBy parseUncalC14 (P.char ';' <* P.spaces) <* P.eof

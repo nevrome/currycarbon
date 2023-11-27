@@ -26,12 +26,12 @@ import           Currycarbon.Calibration.Utils
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
+import qualified Control.Monad.Random               as CMR
 import           Data.List                          (elemIndex, groupBy, sort,
                                                      sortBy)
 import           Data.Maybe                         (fromJust)
 import qualified Data.Vector.Unboxed                as VU
-import qualified Control.Monad.Random as CMR
-import qualified System.Random as R
+import qualified System.Random                      as R
 
 -- | A data type to cover the configuration options of the calibrateDates function
 data CalibrateDatesConf = CalibrateDatesConf {
@@ -160,7 +160,7 @@ refineCalDate (CalPDF name cals dens)
 -- | A data type to define the settings for age sampling
 data AgeSamplingConf = AgeSamplingConf {
     -- | Random number generator
-      _assRNG :: R.StdGen
+      _assRNG             :: R.StdGen
     -- | Number of samples that should be drawn per sample
     , _assNumberOfSamples :: Word
     } deriving (Show, Eq)

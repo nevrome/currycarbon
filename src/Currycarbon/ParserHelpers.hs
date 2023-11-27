@@ -1,8 +1,8 @@
 module Currycarbon.ParserHelpers where
 
-import qualified Text.Parsec              as P
-import qualified Text.Parsec.Error        as P
-import qualified Text.Parsec.String       as P
+import qualified Text.Parsec        as P
+import qualified Text.Parsec.Error  as P
+import qualified Text.Parsec.String as P
 
 -- * High level building blocks
 
