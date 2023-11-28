@@ -79,34 +79,52 @@ calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
 
 optParseNamedCalExprString :: OP.Parser [NamedCalExpr]
 optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readNamedCalExprs) (
-    OP.metavar "DATE" <>
+    OP.metavar "CalEXPRs" <>
     OP.helpDoc ( Just (
-           s2D "A string to specify \"calibration expressions\", so small chronological \
-           \models for individual events. This expression language has the following \
-           \functions and operators:"
-        <> OH.hardline <> "- calExpr(name = STRING, expr = ...)"
+           s2d "A string to specify \"calibration expressions\", so small chronological \
+           \models for individual events. These can include uncalibrated radiocarbon ages, \
+           \uniform age ranges and operations to combine the resulting age probability \
+           \distribution as sums or products."
+        <> OH.hardline <>
+            s2d "The expression language includes the following functions:"
+        <> OH.hardline
+        <> OH.hardline <> "- calExpr(name = STRING, expr = EXPR)"
         <> OH.hardline <> "- uncalC14(name = STRING, age = INT, sigma = INT)"
         <> OH.hardline <> "- rangeBP(name = STRING, start = INT, stop = INT)"
         <> OH.hardline <> "- rangeBCAD(name = STRING, start = INT, stop = INT)"
-        <> OH.hardline <> "- sum(a = ..., b = ...) | ... + ..."
-        <> OH.hardline <> "- product(a = ..., b = ...) | ... * ..."
+        <> OH.hardline <> "- sum(a = EXPR, b = EXPR)"
+        <> OH.hardline <> "- product(a = EXPR, b = EXPR)"
         <> OH.hardline
-        <> "test2"
+        <> OH.hardline
+        <> s2d "The order of arguments is fixed, but the argument names '<arg> =' \
+           \can be left out. The 'name' arguments are optional. \
+           \Some functions can be shortened with syntactic sugar:"
+        <> OH.hardline
+        <> OH.hardline <> "- calExpr(STRING, EXPR) -> name: EXPR"
+        <> OH.hardline <> "- uncalC14(STRING, INT, INT) -> STRING,INT,INT"
+        <> OH.hardline <> "- sum(EXPR, EXPR) -> EXPR + EXPR"
+        <> OH.hardline <> "- product(EXPR, EXPR) -> EXPR * EXPR"
+        <> OH.hardline
+        <> OH.hardline
+        <> s2d "Parentheses '()' can be used to specify the evaluation order within \
+           \an expression. Multiple expressions can be chained, separated by ';'."
+        <> OH.hardline
+        <> OH.hardline
+        <> "Examples:"
+        <> OH.hardline <> s2d "1. Calibrate a single radiocarbon date with a mean age BP \
+                          \and a one sigma standard deviation:"
+        <> OH.hardline <> "\"3000,30\" or \"uncalC14(age = 3000, sigma = 30)\""
+        <> OH.hardline <> s2d "2. Calibrate two radiocarbon dates and sum them:"
+        <> OH.hardline <> "\"(3000,30) + (3100,40)\" or"
+        <> OH.hardline <> "\"sum(uncalC14(3000,30), uncalC14(3100,40))\""
+        <> OH.hardline <> s2d "3. Compile a complex, named expression:"
+        <> OH.hardline <> "\"Ex3: ((3000,30) + (3100,40)) * rangeBP(3200,3000)\""
+        <> OH.hardline
     ))
     ))
 
-s2D :: String -> OH.Doc
-s2D str = OH.fillSep $ map OH.pretty $ words str
-
---    "A string with one or multiple uncalibrated dates of \
---            \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>\" \
---            \where <sample name> is optional (e.g. \"S1,4000,50\"). \
---            \Multiple dates can be listed separated by \";\" (e.g. \"S1,4000,50; 3000,25; S3,1000,20\"). \
---            \To sum or multiply the post calibration probability distributions, dates can be combined with \
---            \\"+\" or \"*\" (e.g. \"4000,50 + 4100,100\"). \
---            \These expressions can be combined arbitrarily. Parentheses can be added to specify the order \
---            \of operations (e.g. \"(4000,50 + 4100,100) * 3800,50\")"
---    ))
+s2d :: String -> OH.Doc
+s2d str = OH.fillSep $ map OH.pretty $ words str
 
 optParseNamedCalExprFromFile :: OP.Parser [FilePath]
 optParseNamedCalExprFromFile = OP.many (OP.strOption (
