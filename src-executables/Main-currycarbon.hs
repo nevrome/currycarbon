@@ -81,7 +81,9 @@ optParseNamedCalExprString :: OP.Parser [NamedCalExpr]
 optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readNamedCalExprs) (
     OP.metavar "CalEXPRs" <>
     OP.helpDoc ( Just (
-           s2d "A string to specify \"calibration expressions\", so small chronological \
+        "---"
+        <> OH.hardline
+        <> s2d "A string to specify \"calibration expressions\", so small chronological \
            \models for individual events. These can include uncalibrated radiocarbon ages, \
            \uniform age ranges and operations to combine the resulting age probability \
            \distribution as sums or products."
@@ -120,6 +122,7 @@ optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader re
         <> OH.hardline <> s2d "3. Compile a complex, named expression:"
         <> OH.hardline <> "\"Ex3: ((3000,30) + (3100,40)) * rangeBP(3200,3000)\""
         <> OH.hardline
+        <> "---"
     ))
     ))
 
@@ -134,7 +137,10 @@ optParseNamedCalExprFromFile = OP.many (OP.strOption (
     OP.help "A file with a list of calibration expressions. \
             \Formatted just as CalEXPRs, but with a new line for each input expression. \
             \CalEXPRs and --inputFile can be combined and you can provide multiple \
-            \instances of --inputFile."
+            \instances of --inputFile. \
+            \Note that syntactic sugar allows to read simple radiocarbon dates from \
+            \a headless .csv file with one sample per row: \
+            \<sample name>,<mean age BP>,<one sigma standard deviation>."
     ))
 
 optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)

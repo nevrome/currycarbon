@@ -52,7 +52,7 @@ parseCalibrationMethod = do
 -- like this:
 --
 -- @
--- DATE: (5000±30BP + 5100±100BP)
+-- CalEXPR: [Ex2] (S1:5000±30BP + S2:5100±100BP)
 -- Calibrated: 4150BC \>\> 3941BC \> 3814BC \< 3660BC \<\< 3651BC
 -- 1-sigma: 3941-3864BC, 3810-3707BC, 3667-3660BC
 -- 2-sigma: 4150-4148BC, 4048-3651BC
@@ -74,7 +74,7 @@ renderCalDatePretty ::
     -> (NamedCalExpr, CalPDF, CalC14)
     -> String
 renderCalDatePretty ascii (calExpr, calPDF, calC14) =
-    "DATE: " ++ intercalate "\n" [
+    "CalEXPR: " ++ intercalate "\n" [
           renderNamedCalExpr calExpr
         , renderCalC14 calC14
         , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
