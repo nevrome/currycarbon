@@ -151,13 +151,18 @@ optParseCalibrationMethod :: OP.Parser CalibrationMethod
 optParseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
     OP.long "method" <>
     OP.metavar "DSL" <>
-    OP.help "The calibration algorithm that should be used: \
-            \\"<Method>,<Distribution>,<NumberOfDegreesOfFreedom>\". \
-            \The default setting is equivalent to \"Bchron,StudentT,100\" \
+    OP.helpDoc ( Just (
+            s2d "The calibration algorithm that should be used: \
+            \'<Method>,<Distribution>,<NumberOfDegreesOfFreedom>'. "
+        <> OH.hardline <>
+            s2d "The default setting is equivalent to \"Bchron,StudentT,100\" \
             \which copies the algorithm implemented in the Bchron R package. \
-            \Alternatively we implemented  \"MatrixMult\", which comes without further arguments. \
             \For the Bchron algorithm with a normal distribution (\"Bchron,Normal\") \
-            \the degrees of freedom argument is not relevant" <>
+            \the degrees of freedom argument is not relevant"
+        <> OH.hardline <>
+            s2d "Alternatively we implemented  \"MatrixMult\", which comes without further \
+            \arguments."
+    )) <>
     OP.value (Bchron $ StudentTDist 100)
     )
 
@@ -208,6 +213,7 @@ optParseAgeSamplingSettings =
 optParseAgeSamplingConfSeed :: OP.Parser (Maybe Word)
 optParseAgeSamplingConfSeed = OP.option (Just <$> OP.auto) (
        OP.long  "seed"
+    <> OP.metavar "INT"
     <> OP.help  "Seed for the random number generator for age sampling. \
                 \The default causes currycarbon to fall back to a random seed."
     <> OP.value Nothing
