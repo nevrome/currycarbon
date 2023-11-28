@@ -15,7 +15,7 @@ run_currycarbon <- function(additional_commands = "") {
 
 run_currycarbon_calPDF <- function(additional_commands = "") {
   run_currycarbon(paste(
-    "--densityFile /tmp/currycarbonOutput.txt",
+    "--densityFile /tmp/currycarbonOutput.txt -q",
     additional_commands
   ))
   readr::read_csv(
@@ -26,11 +26,12 @@ run_currycarbon_calPDF <- function(additional_commands = "") {
 
 #### comparison with the Bchron R package ####
 
-curry_bchron_studentT100 <- run_currycarbon_calPDF()
-curry_matrixmult_default <- run_currycarbon_calPDF("--method MatrixMultiplication")
-curry_bchron_normal <- run_currycarbon_calPDF("--method \"Bchron,Normal\"")
-# --noInterpolation"))
-
+curry_bchron_studentT100 <- run_currycarbon_calPDF() |>
+  dplyr::rename(density_curry_bchron_studentT100 = density)
+curry_matrixmult <- run_currycarbon_calPDF("--method MatrixMultiplication") |>
+  dplyr::rename(density_curry_matrixmult = density)
+curry_bchron_normal <- run_currycarbon_calPDF("--method \"Bchron,Normal\"") |>
+  dplyr::rename(density_curry_bchron_normal = density)
 
 bchronRaw <- Bchron::BchronCalibrate(
   testdate[1], testdate[2],
@@ -50,7 +51,7 @@ bchron |>
     names_to = "method"
   ) |>
   ggplot() +
-  geom_point(
+  geom_line(
     aes(x = calBCAD, y = value, colour = method), 
     size = 1, alpha = 0.5
   )
@@ -58,9 +59,9 @@ bchron |>
 #### large test (for memory leaks) ####
 
 calpal <- c14bazAAR::get_calpal()
-calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr::write_csv("/tmp/currycarbon_large_input_test.csv", col_names = F)
+calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 1) |> readr::write_csv("/tmp/currycarbon_large_input_test.csv", col_names = F)
 
-#currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q --densityFile /dev/null
+currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q --densityFile /dev/null
 
 #### cal curve ####
 
