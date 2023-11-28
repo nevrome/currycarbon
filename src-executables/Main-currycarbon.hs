@@ -130,23 +130,27 @@ optParseNamedCalExprFromFile :: OP.Parser [FilePath]
 optParseNamedCalExprFromFile = OP.many (OP.strOption (
     OP.long "inputFile" <>
     OP.short 'i' <>
+    OP.metavar "FILE" <>
     OP.help "A file with a list of calibration expressions. \
-            \Formated just as DATE, but with a new line for each input date. \
-            \DATE and --inputFile can be combined and you can provide multiple instances of --inputFile"
+            \Formatted just as CalEXPRs, but with a new line for each input expression. \
+            \CalEXPRs and --inputFile can be combined and you can provide multiple \
+            \instances of --inputFile."
     ))
 
 optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)
 optParseCalCurveFromFile = OP.option (Just <$> OP.str) (
-    OP.long "calibrationCurveFile" <>
-    OP.help "Path to an calibration curve file in .14c format. \
+    OP.long "calCurveFile" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an calibration curve file in '.14c' format. \
             \The calibration curve will be read and used for calibration. \
-            \If no file is provided, currycarbon will use the intcal20 curve." <>
+            \If no file is provided, currycarbon will use the 'intcal20' curve." <>
     OP.value Nothing
     )
 
 optParseCalibrationMethod :: OP.Parser CalibrationMethod
 optParseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
     OP.long "method" <>
+    OP.metavar "DSL" <>
     OP.help "The calibration algorithm that should be used: \
             \\"<Method>,<Distribution>,<NumberOfDegreesOfFreedom>\". \
             \The default setting is equivalent to \"Bchron,StudentT,100\" \
@@ -160,34 +164,37 @@ optParseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
 optParseAllowOutside :: OP.Parser (Bool)
 optParseAllowOutside = OP.switch (
     OP.long "allowOutside" <>
-    OP.help "Allow calibrations to run outside the range of the calibration curve"
+    OP.help "Allow calibrations to run outside the range of the calibration curve."
     )
 
 optParseDontInterpolateCalCurve :: OP.Parser (Bool)
 optParseDontInterpolateCalCurve = OP.switch (
     OP.long "noInterpolation" <>
-    OP.help "Don't interpolate the calibration curve"
+    OP.help "Do not interpolate the calibration curve."
     )
 
 optParseQuiet :: OP.Parser (Bool)
 optParseQuiet = OP.switch (
     OP.long "quiet" <>
     OP.short 'q' <>
-    OP.help "Suppress the printing of calibration results to the command line"
+    OP.help "Suppress the printing of calibration results to the command line."
     )
 
 optParseDensityFile :: OP.Parser (Maybe FilePath)
 optParseDensityFile = OP.option (Just <$> OP.str) (
     OP.long "densityFile" <>
-    OP.help "Path to an output file which stores output densities per sample and calender year" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store output densities per CalEXPR and calender \
+            \year." <>
     OP.value Nothing
     )
 
 optParseHDRFile :: OP.Parser (Maybe FilePath)
 optParseHDRFile = OP.option (Just <$> OP.str) (
     OP.long "hdrFile" <>
-    OP.help "Path to an output file which stores the high probability density regions for each \
-            \sample" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store the high probability density regions for each \
+            \CalEXPR." <>
     OP.value Nothing
     )
 
@@ -201,36 +208,42 @@ optParseAgeSamplingSettings =
 optParseAgeSamplingConfSeed :: OP.Parser (Maybe Word)
 optParseAgeSamplingConfSeed = OP.option (Just <$> OP.auto) (
        OP.long  "seed"
-    <> OP.help  "Seed for the random number generator"
+    <> OP.help  "Seed for the random number generator for age sampling. \
+                \The default causes currycarbon to fall back to a random seed."
     <> OP.value Nothing
+    <> OP.showDefault
     )
 
 optParseAgeSamplingConfNrOfSamples :: OP.Parser Word
 optParseAgeSamplingConfNrOfSamples = OP.option OP.auto (
        OP.short 'n'
     <> OP.long "nrSamples"
-    <> OP.help "Number of age samples to draw per sample"
+    <> OP.metavar "INT"
+    <> OP.help "Number of age samples to draw per CalEXPR."
     )
 
 optParseAgeSamplingFile :: OP.Parser FilePath
 optParseAgeSamplingFile = OP.strOption (
     OP.long "samplesFile" <>
-    OP.help "Path to an output file which stores age samples drawn for each sample"
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store age samples for each CalEXPR."
     )
 
 optParseCalCurveSegmentFile :: OP.Parser (Maybe FilePath)
 optParseCalCurveSegmentFile = OP.option (Just <$> OP.str) (
-    OP.long "calCurveSegmentFile" <>
-    OP.help "Path to an output file which stores the relevant, interpolated calibration curve \
-            \segment for the first (!) input date in a long format. \
-            \This option as well as --calCurveMatrixFile are mostly meant for debugging" <>
+    OP.long "calCurveSegFile" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store the relevant, interpolated calibration curve \
+            \segment for the first (!) input date. \
+            \This option as well as --calCurveMatFile are meant for debugging." <>
     OP.value Nothing
     )
 
 optParseCalCurveMatrixFile :: OP.Parser (Maybe FilePath)
 optParseCalCurveMatrixFile = OP.option (Just <$> OP.str) (
-    OP.long "calCurveMatrixFile" <>
+    OP.long "calCurveMatFile" <>
+    OP.metavar "FILE" <>
     OP.help "Path to an output file which stores the relevant, interpolated calibration curve \
-            \segment for the first (!) input date in a wide matrix format" <>
+            \segment for the first (!) input date in a wide matrix format." <>
     OP.value Nothing
     )

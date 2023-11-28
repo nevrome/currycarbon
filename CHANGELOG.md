@@ -6,6 +6,11 @@
 		- Reworked the cli DSL to support a standardized configuration language syntax implemented in a new module `ParserHelpers.hs`. This introduces a set of flexible functions (`calExpr()`, `uncalC14()`, `rangeBP()`, `rangeBCAD()`, `sum()` and `product`) which generally complement the previously available syntax and operators. Unfortunately this change also breaks some expressions that were valid before and now require additional parentheses to pass.
 		- Added some unit tests to cover the increasingly complex DSL.
 	- Adjusted the rendering of the pretty, human-focussed command line output.
+	- Updated and improved the command line documentation.
+	- Renamed some cli arguments:
+		- `--calibrationCurveFile` -> `--calCurveFile`
+		- `--calCurveSegmentFile` -> `--calCurveSegFile`
+		- `--calCurveMatrixFile` -> `--calCurveMatFile`
 	- Switched to a new GHC version (v9.4.7) and stackage resolver version (lts-21.17).
 - V 0.2.1.2: Maintenance: Switched to a newer compiler/resolver version, lifted some dependency restrictions, ran stylish-haskell on the entire codebase, updated the github actions, deprecated the haddock documentation for the dev version on GitHub.
 - V 0.2.1.1: Lifted some restrictions regarding the upper version bounds of dependencies.

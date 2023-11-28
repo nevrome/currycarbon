@@ -47,7 +47,8 @@ runCalibrate (
     let ascii = encoding /= "UTF-8"
     -- compile dates
     exprsFromFile <- mapM readNamedCalExprsFromFile exprFiles
-    let exprsRenamed = replaceEmptyNames $ exprs ++ concat exprsFromFile
+    let exprsCombined = exprs ++ concat exprsFromFile
+        exprsRenamed = replaceEmptyNames exprsCombined
     if null exprsRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"
     else do
