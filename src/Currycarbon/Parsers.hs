@@ -577,13 +577,13 @@ comments = do
 writeRandomAgeSamples :: FilePath -> [RandomAgeSample] -> IO ()
 writeRandomAgeSamples path calPDFs =
     writeFile path $
-        "sample,calBCAD,density\n"
+        "sample,calBCAD\n"
         ++ renderRandomAgeSamples calPDFs
 
 writeRandomAgeSample :: FilePath -> RandomAgeSample -> IO ()
 writeRandomAgeSample path calPDF =
     writeFile path $
-        "sample,calBCAD,density\n"
+        "sample,calBCAD\n"
         ++ renderRandomAgeSample calPDF
 
 appendRandomAgeSample :: FilePath -> RandomAgeSample -> IO ()
