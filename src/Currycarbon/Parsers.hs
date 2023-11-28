@@ -210,13 +210,13 @@ readOneNamedCalExpr s =
 
 readNamedCalExprsFromFile :: FilePath -> IO [NamedCalExpr]
 readNamedCalExprsFromFile uncalFile = do
-    s <- readFile uncalFile
-    case P.runParser parseCalExprSepByNewline () "" s of
-        Left err -> throwIO $ CurrycarbonCLIParsingException $ showParsecErr err
-        Right x  -> return x
+    ss <- lines <$> readFile uncalFile
+    mapM readOneLine ss
     where
-        parseCalExprSepByNewline :: P.Parser [NamedCalExpr]
-        parseCalExprSepByNewline = P.endBy namedExpr (P.newline <* P.spaces) <* P.eof
+        readOneLine :: String -> IO NamedCalExpr
+        readOneLine s = case readOneNamedCalExpr s of
+            Left err -> throwIO $ CurrycarbonCLIParsingException $ err ++ "\nin \"" ++ s ++ "\""
+            Right x  -> return x
 
 -- UncalC14
 renderUncalC14WithoutName :: UncalC14 -> String
