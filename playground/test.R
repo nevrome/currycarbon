@@ -66,8 +66,8 @@ calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr:
 #### cal curve ####
 
 run_currycarbon(paste(
-  "--calCurveMatrixFile /tmp/curryMatrix.csv",
-  "--calCurveSegmentFile /tmp/currySegment.csv"
+  "--calCurveMatFile /tmp/curryMatrix.csv",
+  "--calCurveSegFile /tmp/currySegment.csv"
 ))
 
 cal_matrix <- readr::read_csv("/tmp/curryMatrix.csv") |>
