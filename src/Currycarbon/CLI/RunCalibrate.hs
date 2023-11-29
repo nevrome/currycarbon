@@ -1,5 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
-
 module Currycarbon.CLI.RunCalibrate
     (CalibrateOptions (..), runCalibrate) where
 

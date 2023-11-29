@@ -11,6 +11,7 @@
 		- `--calibrationCurveFile` -> `--calCurveFile`
 		- `--calCurveSegmentFile` -> `--calCurveSegFile`
 		- `--calCurveMatrixFile` -> `--calCurveMatFile`
+	- Changed the cli behaviour with  `--calCurveSegFile` and `--calCurveMatFile`: currycarbon now fails if the first sample is not a single, uncalibrated radiocarbon date.
 	- Switched to a new GHC version (v9.4.7) and stackage resolver version (lts-21.17).
 - V 0.2.1.2: Maintenance: Switched to a newer compiler/resolver version, lifted some dependency restrictions, ran stylish-haskell on the entire codebase, updated the github actions, deprecated the haddock documentation for the dev version on GitHub.
 - V 0.2.1.1: Lifted some restrictions regarding the upper version bounds of dependencies.
