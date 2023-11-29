@@ -8,12 +8,12 @@ import           Currycarbon.SumCalibration
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
+import           Control.Exception                   (throwIO)
 import           Control.Monad                       (unless, when)
 import           Data.Maybe                          (fromJust, fromMaybe,
                                                       isJust)
 import           System.IO                           (hPutStrLn, stderr)
 import qualified System.Random                       as R
-import Control.Exception (throwIO)
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
@@ -82,7 +82,7 @@ runCalibrate (
         maybeRNG <- case ageSampling of
             Nothing -> pure Nothing
             Just (maybeSeed, _, _) -> case maybeSeed of
-                Nothing -> Just <$> R.initStdGen
+                Nothing   -> Just <$> R.initStdGen
                 Just seed -> return $ Just $ R.mkStdGen (fromIntegral seed)
         -- prepare and write the output per expression
         handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed errorOrCalPDFs
