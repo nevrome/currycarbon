@@ -80,8 +80,14 @@ runCalibrate (
         -- run calibration
         hPutStrLn stderr "Calibrating..."
         let errorOrCalPDFs = map (evalNamedCalExpr calConf calCurve) exprsRenamed
+        -- prepare random number generator for age sampling
+        maybeRNG <- case ageSampling of
+            Nothing -> pure Nothing
+            Just (maybeSeed, _, _) -> case maybeSeed of
+                Nothing -> Just <$> R.initStdGen
+                Just seed -> return $ Just $ R.mkStdGen (fromIntegral seed)
         -- prepare and write the output per expression
-        handleExprs ascii True calCurve $ zip exprsRenamed errorOrCalPDFs
+        handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed errorOrCalPDFs
     where
 
         -- loop over first and subsequent expressions
@@ -89,41 +95,48 @@ runCalibrate (
                Bool -- encoding
             -> Bool -- is this expression the first in the list of expressions?
             -> CalCurveBP
+            -> Maybe R.StdGen -- rng for the age sampling seeds
             -> [(NamedCalExpr, Either CurrycarbonException CalPDF)]
             -> IO ()
-        handleExprs _ _ _ [] = hPutStrLn stderr "Done."
+        handleExprs _ _ _ _ [] = hPutStrLn stderr "Done."
         -- first expression
-        handleExprs _ascii True calCurve (firstDate:otherDates) =
+        handleExprs _ascii True calCurve maybeRNG (firstDate:otherDates) =
             case firstDate of
                 (_, Left e) -> do
                     printE e
-                    handleExprs _ascii True calCurve otherDates
+                    handleExprs _ascii True calCurve maybeRNG otherDates
                 (namedCalExpr, Right cPDF) -> do
-                    flexOut _ascii namedCalExpr cPDF writeCalPDF writeCalC14 writeRandomAgeSample
-                    handleExprs _ascii False calCurve otherDates
+                    let (sampleSeed, newRNG) = drawSeed maybeRNG
+                    flexOut _ascii namedCalExpr cPDF sampleSeed writeCalPDF writeCalC14 writeRandomAgeSample
+                    handleExprs _ascii False calCurve newRNG otherDates
         -- subsequent expression
-        handleExprs _ascii False calCurve (nextDate:otherDates) =
+        handleExprs _ascii False calCurve maybeRNG (nextDate:otherDates) =
             case nextDate of
                 (_, Left e) -> do
                     printE e
-                    handleExprs _ascii False calCurve otherDates
+                    handleExprs _ascii False calCurve maybeRNG otherDates
                 (namedCalExpr, Right cPDF) -> do
-                    flexOut _ascii namedCalExpr cPDF appendCalPDF appendCalC14 appendRandomAgeSample
-                    handleExprs _ascii False calCurve otherDates
+                    let (sampleSeed, newRNG) = drawSeed maybeRNG
+                    flexOut _ascii namedCalExpr cPDF sampleSeed appendCalPDF appendCalC14 appendRandomAgeSample
+                    handleExprs _ascii False calCurve newRNG otherDates
 
         printE :: CurrycarbonException -> IO ()
         printE e = hPutStrLn stderr $ renderCurrycarbonException e
+
+        drawSeed :: Maybe R.StdGen -> (Maybe Int, Maybe R.StdGen)
+        drawSeed maybeRNG = (\x -> (fromIntegral . fst <$> x, snd <$> x)) (R.genWord32 <$> maybeRNG)
 
         -- flexible expression handler
         flexOut ::
                Bool
             -> NamedCalExpr
             -> CalPDF
+            -> Maybe Int
             -> (FilePath -> CalPDF -> IO ())
             -> (FilePath -> CalC14 -> IO ())
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        flexOut _ascii namedCalExpr calPDF calPDFToFile calC14ToFile randomAgeSampleToFile = do
+        flexOut _ascii namedCalExpr calPDF maybeSeed calPDFToFile calC14ToFile randomAgeSampleToFile = do
             -- try to refine calPDF
             case refineCalDate calPDF of
                 -- refining did not work
@@ -136,8 +149,8 @@ runCalibrate (
                         unless quiet $ hPutStrLn stderr "Nothing written to the HDR file"
                     when (isJust densityFile) $
                         calPDFToFile (fromJust densityFile) calPDF
-                    when (isJust ageSampling) $
-                        runAgeSampling (fromJust ageSampling) calPDF randomAgeSampleToFile
+                    when (isJust ageSampling && isJust maybeSeed) $
+                        runAgeSampling (fromJust ageSampling) (fromJust maybeSeed) calPDF randomAgeSampleToFile
                 -- refining did work
                 Just calC14 -> do
                     unless quiet $ do
@@ -146,19 +159,18 @@ runCalibrate (
                         calC14ToFile (fromJust hdrFile) calC14
                     when (isJust densityFile) $
                         calPDFToFile (fromJust densityFile) calPDF
-                    when (isJust ageSampling) $
-                        runAgeSampling (fromJust ageSampling) calPDF randomAgeSampleToFile
+                    when (isJust ageSampling && isJust maybeSeed) $
+                        runAgeSampling (fromJust ageSampling) (fromJust maybeSeed) calPDF randomAgeSampleToFile
 
         runAgeSampling ::
                (Maybe Word, Word, FilePath)
+            -> Int
             -> CalPDF
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        runAgeSampling (maybeSeed, nrOfSamples, path) calPDF randomAgeSampleToFile = do
-            rng <- case maybeSeed of
-                Just s  -> pure $ R.mkStdGen (fromIntegral s)
-                Nothing -> R.initStdGen
-            let conf = AgeSamplingConf rng nrOfSamples
+        runAgeSampling (_, nrOfSamples, path) seed calPDF randomAgeSampleToFile = do
+            let rng = R.mkStdGen seed
+                conf = AgeSamplingConf rng nrOfSamples
                 samplingResult = sampleAgesFromCalPDF conf calPDF
             randomAgeSampleToFile path samplingResult
 
