@@ -67,7 +67,7 @@ combinePDFs f initVal (CalPDF name1 cals1 dens1) (CalPDF name2 cals2 dens2) =
             pdfSorted = sortBy (comparing fst) (c1 ++ c2)
             pdfGrouped = groupBy (\a b -> fst a == fst b) pdfSorted
             pdfRes = map foldYearGroup pdfGrouped
-        in CalPDF (name1 ++ ":" ++ name2) (VU.fromList $ map fst pdfRes) (VU.fromList $ map snd pdfRes)
+        in CalPDF (name1 ++ ";" ++ name2) (VU.fromList $ map fst pdfRes) (VU.fromList $ map snd pdfRes)
         where
             getMiss :: YearBCAD -> YearBCAD -> YearBCAD -> YearBCAD -> [YearBCAD]
             getMiss a1 a2 b1 b2
