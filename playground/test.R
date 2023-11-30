@@ -15,11 +15,11 @@ run_currycarbon <- function(additional_commands = "") {
 
 run_currycarbon_calPDF <- function(additional_commands = "") {
   run_currycarbon(paste(
-    "--densityFile /tmp/currycarbonOutput.txt -q",
+    "--densityFile /tmp/currycarbonOutput.tsv -q",
     additional_commands
   ))
-  readr::read_csv(
-    "/tmp/currycarbonOutput.txt",
+  readr::read_tsv(
+    "/tmp/currycarbonOutput.tsv",
     col_types = readr::cols()
   )
 }
@@ -38,21 +38,21 @@ bchronRaw <- Bchron::BchronCalibrate(
   calCurves = 'intcal20'
 )
 bchron <- tibble::tibble(
-  calBCAD = -bchronRaw$Date1$ageGrid + 1950,
+  yearBCAD = -bchronRaw$Date1$ageGrid + 1950,
   density_bchron = bchronRaw$Date1$densities
 )
 
-bchron |> 
-  dplyr::full_join(curry_bchron_studentT100, by = "calBCAD") |>
-  dplyr::full_join(curry_bchron_normal, by = "calBCAD") |>
-  dplyr::full_join(curry_matrixmult, by = "calBCAD") |>
+bchron |>
+  dplyr::full_join(curry_bchron_studentT100, by = "yearBCAD") |>
+  dplyr::full_join(curry_bchron_normal, by = "yearBCAD") |>
+  dplyr::full_join(curry_matrixmult, by = "yearBCAD") |>
   tidyr::pivot_longer(
     tidyselect::starts_with("dens"),
     names_to = "method"
   ) |>
   ggplot() +
   geom_line(
-    aes(x = calBCAD, y = value, colour = method), 
+    aes(x = yearBCAD, y = value, colour = method), 
     linewidth = 1, alpha = 0.5
   )
 
@@ -66,11 +66,11 @@ system("currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q")
 #### cal curve ####
 
 run_currycarbon(paste(
-  "--calCurveMatFile /tmp/curryMatrix.csv",
-  "--calCurveSegFile /tmp/currySegment.csv"
+  "--calCurveMatFile /tmp/curryMatrix.tsv",
+  "--calCurveSegFile /tmp/currySegment.tsv"
 ))
 
-cal_matrix <- readr::read_csv("/tmp/curryMatrix.csv") |>
+cal_matrix <- readr::read_tsv("/tmp/curryMatrix.tsv") |>
   tidyr::gather(vars, count, -...1) |>
   dplyr::transmute(
     uncal = ...1,
@@ -78,7 +78,7 @@ cal_matrix <- readr::read_csv("/tmp/curryMatrix.csv") |>
     val = count
   )
 
-cal_segment <- readr::read_csv("/tmp/currySegment.csv")
+cal_segment <- readr::read_tsv("/tmp/currySegment.tsv")
 
 ggplot() +
   geom_raster(
@@ -87,24 +87,24 @@ ggplot() +
   ) +
   geom_path(
     data = cal_segment,
-    mapping = aes(x = calBCAD, y = uncalBCAD),
-    color = "red", size = 0.5
+    mapping = aes(x = calYearBCAD, y = uncalYearBCAD),
+    color = "red", linewidth = 0.5
   ) +
   scale_y_reverse() +
   coord_fixed()
 
 #### sum and product cal ####
 
-system('currycarbon "A,3000,20+B,2500,200+C,2800,70" --densityFile /tmp/currycarbonSumCalTest1.csv')
+system('currycarbon "A,3000,20+B,2500,200+C,2800,70" --densityFile /tmp/currycarbonSumCalTest1.tsv')
 
-sumCalTest1 <- readr::read_csv(
-  "/tmp/currycarbonSumCalTest1.csv",
+sumCalTest1 <- readr::read_tsv(
+  "/tmp/currycarbonSumCalTest1.tsv",
   col_types = readr::cols()
 )
 
 sumCalTest1 |>
   ggplot() +
-  geom_line(aes(x = calBCAD, y = density))
+  geom_line(aes(x = yearBCAD, y = density))
 
 # Oxcal:
 #
@@ -115,16 +115,16 @@ sumCalTest1 |>
 #   R_Date("C",2800,70);
 # };
 
-system('currycarbon "A,3000,30+B,3200,40*C,3300,30" --densityFile /tmp/currycarbonSumCalTest2.csv')
+system('currycarbon "A,3000,30+B,3200,40*C,3300,30" --densityFile /tmp/currycarbonSumCalTest2.tsv')
 
-sumCalTest2 <- readr::read_csv(
-  "/tmp/currycarbonSumCalTest2.csv",
+sumCalTest2 <- readr::read_tsv(
+  "/tmp/currycarbonSumCalTest2.tsv",
   col_types = readr::cols()
 )
 
 sumCalTest2 |>
   ggplot() +
-  geom_line(aes(x = calBCAD, y = density))
+  geom_line(aes(x = yearBCAD, y = density))
 
 # Oxcal:
 #
