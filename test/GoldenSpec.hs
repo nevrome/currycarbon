@@ -4,7 +4,7 @@ import           Control.Applicative
 import           Control.Monad
 import           System.IO
 import           System.Process
-import           Test.Hspec          (Spec, describe, it, shouldReturn, shouldBe)
+import           Test.Hspec          (Spec, describe, it, shouldBe)
 
 spec :: Spec
 spec = goldenTest
@@ -41,8 +41,9 @@ runStdoutStderrTests tests = do
             (_, Just out, Just err, _) <- createProcess cp
             hSetBuffering out NoBuffering
             hSetBuffering err NoBuffering
+            outActually <- liftA2 (++) (hGetContents err) (hGetContents out)
             outExpected <- readFile $ "test/golden/data/" ++ test ++ ".out"
-            liftA2 (++) (hGetContents err) (hGetContents out) `shouldReturn` outExpected
+            outActually `shouldBe` outExpected
 
 runFileOutputTests :: [(String, FilePath)] -> Spec
 runFileOutputTests tests = do
