@@ -111,7 +111,7 @@ testReadNamedExpression =
             `shouldBe`
             Right (NamedCalExpr "" uncalC14)
     it "should be able to handle complex, nested queries" $ do
-        readOneNamedCalExpr "calExpr(test, sum(uncalC14(3000,30), product(rangeBP(3000,2000), rangeBCAD(-1050,-50))) * uncalC14(3000,30))"
+        readOneNamedCalExpr "calExpr(id = test, sum(uncalC14(3000,30), product(rangeBP(3000,2000), rangeBCAD(-1050,-50))) * uncalC14(3000,30))"
             `shouldBe`
             Right (NamedCalExpr "test" $ ProductCal (SumCal uncalC14 (ProductCal windowBP windowBCAD)) uncalC14)
 
