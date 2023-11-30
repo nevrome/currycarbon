@@ -90,19 +90,19 @@ optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader re
         <> OH.hardline <>
             s2d "The expression language includes the following functions:"
         <> OH.hardline
-        <> OH.hardline <> "- calExpr(name = STRING, expr = EXPR)"
-        <> OH.hardline <> "- uncalC14(name = STRING, age = INT, sigma = INT)"
-        <> OH.hardline <> "- rangeBP(name = STRING, start = INT, stop = INT)"
-        <> OH.hardline <> "- rangeBCAD(name = STRING, start = INT, stop = INT)"
+        <> OH.hardline <> "- calExpr(id = STRING, expr = EXPR)"
+        <> OH.hardline <> "- uncalC14(id = STRING, yearBP = INT, sigma = INT)"
+        <> OH.hardline <> "- rangeBP(id = STRING, start = INT, stop = INT)"
+        <> OH.hardline <> "- rangeBCAD(id = STRING, start = INT, stop = INT)"
         <> OH.hardline <> "- sum(a = EXPR, b = EXPR)"
         <> OH.hardline <> "- product(a = EXPR, b = EXPR)"
         <> OH.hardline
         <> OH.hardline
         <> s2d "The order of arguments is fixed, but the argument names '<arg> =' \
-           \can be left out. The 'name' arguments are optional. \
+           \can be left out. The 'id' arguments are optional. \
            \Some functions can be shortened with syntactic sugar:"
         <> OH.hardline
-        <> OH.hardline <> "- calExpr(STRING, EXPR) -> name: EXPR"
+        <> OH.hardline <> "- calExpr(STRING, EXPR) -> id: EXPR"
         <> OH.hardline <> "- uncalC14(STRING, INT, INT) -> STRING,INT,INT"
         <> OH.hardline <> "- sum(EXPR, EXPR) -> EXPR + EXPR"
         <> OH.hardline <> "- product(EXPR, EXPR) -> EXPR * EXPR"
@@ -115,7 +115,7 @@ optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader re
         <> "Examples:"
         <> OH.hardline <> s2d "1. Calibrate a single radiocarbon date with a mean age BP \
                           \and a one sigma standard deviation:"
-        <> OH.hardline <> "\"3000,30\" or \"uncalC14(age = 3000, sigma = 30)\""
+        <> OH.hardline <> "\"3000,30\" or \"uncalC14(yearBP = 3000, sigma = 30)\""
         <> OH.hardline <> s2d "2. Calibrate two radiocarbon dates and sum them:"
         <> OH.hardline <> "\"(3000,30) + (3100,40)\" or"
         <> OH.hardline <> "\"sum(uncalC14(3000,30), uncalC14(3100,40))\""

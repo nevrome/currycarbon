@@ -108,7 +108,7 @@ parseTimeWindowBP :: P.Parser TimeWindowBP
 parseTimeWindowBP = parseRecordType "rangeBP" $ P.try long P.<|> short
     where
         long = do
-            name  <- parseArgument "name" parseAnyString
+            name  <- parseArgument "id" parseAnyString
             start <- parseArgument "start" parseWord
             stop  <- parseArgument "stop" parseWord
             construct name start stop
@@ -125,7 +125,7 @@ parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
 parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ P.try long P.<|> short
     where
         long = do
-            name  <- parseArgument "name" parseAnyString
+            name  <- parseArgument "id" parseAnyString
             start <- parseArgument "start" parseInt
             stop  <- parseArgument "stop" parseInt
             construct name start stop
@@ -185,7 +185,7 @@ namedExpr = P.try nameBeforeColon P.<|> P.try record P.<|> onlyExpr
             return (NamedCalExpr name ex)
         record = parseRecordType "calExpr" $ P.try long P.<|> short
         long = do
-            name <- parseArgument "name" parseAnyString
+            name <- parseArgument "id" parseAnyString
             ex   <- parseArgument "expr" expr
             return (NamedCalExpr name ex)
         short = do
@@ -259,42 +259,42 @@ parseUncalC14 = P.try record P.<|> P.try long P.<|> short
     where
         record = parseRecordType "uncalC14" $ P.try long P.<|> short
         long = do
-            name  <- parseArgument "name" parseAnyString
-            age   <- parseArgument "age" parseWord
+            name  <- parseArgument "id" parseAnyString
+            age   <- parseArgument "yearBP" parseWord
             sigma <- parseArgument "sigma" parseWord
             return (UncalC14 name age sigma)
         short = do
-            age   <- parseArgument "age" parseWord
+            age   <- parseArgument "yearBP" parseWord
             sigma <- parseArgument "sigma" parseWord
             return (UncalC14 "" age sigma)
 
 -- CalC14
--- | Write 'CalC14's to the file system. The output file is a long .csv file with the following structure:
+-- | Write 'CalC14's to the file system. The output file is a long .tsv file with the following structure:
 --
 -- @
--- sample,hdrSigma,hdrStartBCAD,hdrStopBCAD
--- Sample1,1,-3797,-3709
--- Sample1,1,-3894,-3880
--- Sample1,2,-3680,-3655
--- Sample1,2,-3810,-3700
--- Sample1,2,-3941,-3864
--- Sample2,1,-1142,-1130
--- Sample2,1,-1173,-1161
--- Sample2,1,-1293,-1194
--- Sample2,1,-1368,-1356
--- Sample2,2,-1061,-1059
--- Sample2,2,-1323,-1112
--- Sample2,2,-1393,-1334
+-- id  hdrSigma  hdrStartYearBCAD  hdrStopYearBCAD
+-- Sample1  1	-3797	-3709
+-- Sample1  1	-3894	-3880
+-- Sample1  2	-3680	-3655
+-- Sample1  2	-3810	-3700
+-- Sample1  2	-3941	-3864
+-- Sample2  1	-1142	-1130
+-- Sample2	1	-1173	-1161
+-- Sample2	1	-1293	-1194
+-- Sample2	1	-1368	-1356
+-- Sample2	2	-1061	-1059
+-- Sample2	2	-1323	-1112
+-- Sample2	2	-1393	-1334
 -- @
 --
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 writeCalC14s path calC14s = writeFile path $
-    "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n"
+    "id\thdrSigma\thdrStartYearBCAD\thdrStopYearBCAD\n"
     ++ intercalate "\n" (map renderCalC14ForFile calC14s)
 
 writeCalC14 :: FilePath -> CalC14 -> IO ()
 writeCalC14 path calC14 = writeFile path $
-    "sample,hdrSigma,hdrStartBCAD,hdrStopBCAD\n"
+    "id\thdrSigma\thdrStartYearBCAD\thdrStopYearBCAD\n"
     ++ renderCalC14ForFile calC14
 
 appendCalC14 :: FilePath -> CalC14 -> IO ()
@@ -309,7 +309,7 @@ renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
         zip3 (repeat name) (repeat "2") (renderHDRsForFile hdrs95)
     where
         renderRow :: (String, String, (String, String)) -> String
-        renderRow (a, b, (c, d)) = intercalate "," [a,b,c,d]
+        renderRow (a, b, (c, d)) = intercalate "\t" [a,b,c,d]
 
 renderCalC14s :: [CalC14] -> String
 renderCalC14s xs =
@@ -366,40 +366,40 @@ writeCalCurveMatrix path calCurveMatrix =
 
 renderCalCurveMatrix :: CalCurveMatrix -> String
 renderCalCurveMatrix (CalCurveMatrix uncals cals curveDensities) =
-    let header = "," ++ intercalate "," (map show $ VU.toList cals) ++ "\n"
+    let header = "\t" ++ intercalate "\t" (map show $ VU.toList cals) ++ "\n"
         body = zipWith makeRow (VU.toList uncals) (transpose $ V.toList (V.map VU.toList curveDensities))
     in header ++ intercalate "\n" body
     where
-      makeRow uncal dens = show uncal ++ "," ++ intercalate "," (map show dens)
+      makeRow uncal dens = show uncal ++ "\t" ++ intercalate "\t" (map show dens)
 
 -- CalPDF
--- | Write 'CalPDF's to the file system. The output file is a long .csv file with the following structure:
+-- | Write 'CalPDF's to the file system. The output file is a long .tsv file with the following structure:
 --
 -- @
--- sample,calBCAD,density
+-- id  yearBCAD  density
 -- ...
--- Sample1,-1391,2.8917924e-4
--- Sample1,-1390,3.3285577e-4
--- Sample1,-1389,3.5674628e-4
--- Sample1,-1388,3.750703e-4
+-- Sample1  -1391   2.8917924e-4
+-- Sample1  -1390   3.3285577e-4
+-- Sample1  -1389   3.5674628e-4
+-- Sample1  -1388   3.750703e-4
 -- ...
--- Sample2,-3678,1.8128564e-3
--- Sample2,-3677,1.9512239e-3
--- Sample2,-3676,2.0227064e-3
--- Sample2,-3675,2.095691e-3
+-- Sample2  -3678   1.8128564e-3
+-- Sample2  -3677   1.9512239e-3
+-- Sample2  -3676   2.0227064e-3
+-- Sample2  -3675   2.095691e-3
 -- ...
 -- @
 --
 writeCalPDFs :: FilePath -> [CalPDF] -> IO ()
 writeCalPDFs path calPDFs =
     writeFile path $
-        "sample,calBCAD,density\n"
+        "id\tyearBCAD\tdensity\n"
         ++ renderCalPDFs calPDFs
 
 writeCalPDF :: FilePath -> CalPDF -> IO ()
 writeCalPDF path calPDF =
     writeFile path $
-        "sample,calBCAD,density\n"
+        "id\tyearBCAD\tdensity\n"
         ++ renderCalPDF calPDF
 
 appendCalPDF :: FilePath -> CalPDF -> IO ()
@@ -413,7 +413,7 @@ renderCalPDF :: CalPDF -> String
 renderCalPDF (CalPDF name cals dens) =
     concatMap makeRow $ VU.toList $ VU.zip cals dens
     where
-      makeRow (x,y) = name ++ "," ++ show x ++ "," ++ show y ++ "\n"
+      makeRow (x,y) = name ++ "\t" ++ show x ++ "\t" ++ show y ++ "\n"
 
 -- cli plot
 data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
@@ -513,11 +513,11 @@ writeCalCurve path calCurve =
 
 renderCalCurve :: CalCurveBCAD -> String
 renderCalCurve (CalCurveBCAD cals uncals sigmas) =
-    let header = "calBCAD,uncalBCAD,Sigma\n"
+    let header = "calYearBCAD\tuncalYearBCAD\tsigma\n"
         body = map makeRow $ VU.toList $ VU.zip3 cals uncals sigmas
     in header ++ intercalate "\n" body
     where
-      makeRow (x,y,z) = show x ++ "," ++ show y ++ "," ++ show z
+      makeRow (x,y,z) = show x ++ "\t" ++ show y ++ "\t" ++ show z
 
 -- | Read a calibration curve file. The file must adhere to the current version of the
 -- .c14 file format (e.g. [here](http://intcal.org/curves/intcal20.14c)). Look
@@ -557,33 +557,33 @@ comments = do
     return ""
 
 -- RandomAgeSamples
--- | Write 'RandomAgeSamples's to the file system. The output file is a long .csv file with the following structure:
+-- | Write 'RandomAgeSamples's to the file system. The output file is a long .tsv file with the following structure:
 --
 -- @
--- sample,calBCAD
+-- id  yearBCAD
 -- ...
--- Sample1,-1221
--- Sample1,-1211
--- Sample1,-1230
--- Sample1,-1225
+-- Sample1  -1221
+-- Sample1  -1211
+-- Sample1  -1230
+-- Sample1  -1225
 -- ...
--- Sample2,-3763
--- Sample2,-3788
--- Sample2,-3767
--- Sample2,-3774
+-- Sample2  -3763
+-- Sample2  -3788
+-- Sample2  -3767
+-- Sample2  -3774
 -- ...
 -- @
 --
 writeRandomAgeSamples :: FilePath -> [RandomAgeSample] -> IO ()
 writeRandomAgeSamples path calPDFs =
     writeFile path $
-        "sample,calBCAD\n"
+        "id\tyearBCAD\n"
         ++ renderRandomAgeSamples calPDFs
 
 writeRandomAgeSample :: FilePath -> RandomAgeSample -> IO ()
 writeRandomAgeSample path calPDF =
     writeFile path $
-        "sample,calBCAD\n"
+        "id\tyearBCAD\n"
         ++ renderRandomAgeSample calPDF
 
 appendRandomAgeSample :: FilePath -> RandomAgeSample -> IO ()
@@ -597,4 +597,4 @@ renderRandomAgeSample :: RandomAgeSample -> String
 renderRandomAgeSample (RandomAgeSample name samples) =
     concatMap makeRow $ VU.toList samples
     where
-      makeRow x = name ++ "," ++ show x ++ "\n"
+      makeRow x = name ++ "\t" ++ show x ++ "\n"

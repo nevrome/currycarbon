@@ -5,6 +5,7 @@
 		- Introduced the `NamedCalExpr` as a wrapper around `CalExpr` with an identifier and then adjusted the ID generation for `CalPDF`s to favour this identifier.
 		- Reworked the cli DSL to support a standardized configuration language syntax implemented in a new module `ParserHelpers.hs`. This introduces a set of flexible functions (`calExpr()`, `uncalC14()`, `rangeBP()`, `rangeBCAD()`, `sum()` and `product`) which generally complement the previously available syntax and operators. Unfortunately this change also breaks some expressions that were valid before and now require additional parentheses to pass.
 		- Added some unit tests to cover the increasingly complex DSL.
+	- Changed the output files from .csv to .tsv and to a more meaningful and consistent set of column names.
 	- Adjusted the rendering of the pretty, human-focussed command line output.
 	- Updated and improved the command line documentation.
 	- Renamed some cli arguments:

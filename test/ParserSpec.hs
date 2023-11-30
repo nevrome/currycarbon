@@ -36,7 +36,7 @@ testReadNamedExpression =
             `shouldBe`
             Right (NamedCalExpr "" (uncalC14N "test"))
     it "should read named function arguments correctly" $ do
-        readOneNamedCalExpr "uncalC14(name = test, age = 3000, sigma = 30)"
+        readOneNamedCalExpr "uncalC14(id = test, yearBP = 3000, sigma = 30)"
             `shouldBe`
             Right (NamedCalExpr "" (uncalC14N "test"))
     it "should read partially named function arguments correctly" $ do
