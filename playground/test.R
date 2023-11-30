@@ -152,3 +152,18 @@ sumCalTest2 |>
 #     R_Date("C",3300,30);
 #   };
 # };
+
+#### another test of the random age sampling ####
+
+system('currycarbon "A,3000,30+B,3200,40*C,3300,30" --samplesFile /tmp/currySamples.tsv -n 10000')
+
+age_samples <- readr::read_tsv("/tmp/currySamples.tsv")
+
+year_count <- age_samples |>
+  dplyr::mutate(yearBCAD = round(yearBCAD, -1)) |>
+  dplyr::group_by(yearBCAD) |>
+  dplyr::summarise(n = dplyr::n())
+
+year_count |>
+  ggplot() +
+  geom_bar(aes(x = yearBCAD, y = n), stat = "identity")
