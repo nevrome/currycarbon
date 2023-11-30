@@ -21,10 +21,10 @@ goldenTest =
     runStdoutStderrTests stdout_stderr_tests
 
     let file_output_tests = [
-              ("density_file",       "/tmp/currycarbon_test_density_file.tsv")
-            , ("hdr_file",           "/tmp/currycarbon_test_hdr_file.tsv")
-            , ("samples_file",       "/tmp/currycarbon_test_samples_file.tsv")
-            , ("cal_curve_seg_file", "/tmp/currycarbon_test_cal_curve_seg_file.tsv")
+              "density_file"
+            , "hdr_file"
+            , "samples_file"
+            , "cal_curve_seg_file"
             ]
 
     runFileOutputTests file_output_tests
@@ -42,19 +42,20 @@ runStdoutStderrTests tests = do
             hSetBuffering out NoBuffering
             hSetBuffering err NoBuffering
             outActually <- liftA2 (++) (hGetContents err) (hGetContents out)
-            outExpected <- readFile $ "test/golden/data/" ++ test ++ ".out"
+            outExpected <- readFile $ "test/golden/expected_data/" ++ test ++ ".out"
             outActually `shouldBe` outExpected
 
-runFileOutputTests :: [(String, FilePath)] -> Spec
+runFileOutputTests :: [String] -> Spec
 runFileOutputTests tests = do
-    forM_ tests $ \(test, path) -> do
+    forM_ tests $ \(test) -> do
         it (test ++ " should produce the correct output file") $ do
             let cp = (shell ("bash " ++ test ++ ".sh")) {
                   cwd = Just "test/golden",
                   std_out = CreatePipe,
                   std_err = CreatePipe
                 }
-            _ <- createProcess cp
-            outActually <- readFile path
-            outExpected <- readFile ("test/golden/data/" ++ test ++ ".tsv")
+            (_, _, _, exitCode) <- createProcess cp
+            _ <- waitForProcess exitCode
+            outActually <- readFile ("test/golden/actual_data/" ++ test ++ ".tsv")
+            outExpected <- readFile ("test/golden/expected_data/" ++ test ++ ".tsv")
             outActually `shouldBe` outExpected

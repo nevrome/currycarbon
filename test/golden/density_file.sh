@@ -1,1 +1,1 @@
-currycarbon "3000,30" --densityFile /tmp/currycarbon_test_density_file.tsv
+currycarbon "3000,30" --densityFile actual_data/density_file.tsv

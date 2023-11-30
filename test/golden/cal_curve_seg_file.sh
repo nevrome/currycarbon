@@ -1,1 +1,1 @@
-currycarbon "3000,30" --calCurveSegFile /tmp/currycarbon_test_cal_curve_seg_file.tsv
+currycarbon "3000,30" --calCurveSegFile actual_data/cal_curve_seg_file.tsv

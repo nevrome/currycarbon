@@ -272,7 +272,7 @@ parseUncalC14 = P.try record P.<|> P.try long P.<|> short
 -- | Write 'CalC14's to the file system. The output file is a long .tsv file with the following structure:
 --
 -- @
--- id  hdrSigma  hdrStartYearBCAD  hdrStopYearBCAD
+-- id  hdrSigmaLevel  hdrStartYearBCAD  hdrStopYearBCAD
 -- Sample1  1	-3797	-3709
 -- Sample1  1	-3894	-3880
 -- Sample1  2	-3680	-3655
@@ -289,12 +289,12 @@ parseUncalC14 = P.try record P.<|> P.try long P.<|> short
 --
 writeCalC14s :: FilePath -> [CalC14] -> IO ()
 writeCalC14s path calC14s = writeFile path $
-    "id\thdrSigma\thdrStartYearBCAD\thdrStopYearBCAD\n"
+    "id\thdrSigmaLevel\thdrStartYearBCAD\thdrStopYearBCAD\n"
     ++ intercalate "\n" (map renderCalC14ForFile calC14s)
 
 writeCalC14 :: FilePath -> CalC14 -> IO ()
 writeCalC14 path calC14 = writeFile path $
-    "id\thdrSigma\thdrStartYearBCAD\thdrStopYearBCAD\n"
+    "id\thdrSigmaLevel\thdrStartYearBCAD\thdrStopYearBCAD\n"
     ++ renderCalC14ForFile calC14
 
 appendCalC14 :: FilePath -> CalC14 -> IO ()
