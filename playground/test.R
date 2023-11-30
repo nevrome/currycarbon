@@ -56,6 +56,21 @@ bchron |>
     linewidth = 1, alpha = 0.5
   )
 
+#### confirm the reliability of the random age sampling ####
+
+run_currycarbon("--samplesFile /tmp/currySamples.tsv -n 10000")
+
+age_samples <- readr::read_tsv("/tmp/currySamples.tsv")
+
+year_count <- age_samples |>
+  dplyr::mutate(yearBCAD = round(yearBCAD, -1)) |>
+  dplyr::group_by(yearBCAD) |>
+  dplyr::summarise(n = dplyr::n())
+
+year_count |>
+  ggplot() +
+  geom_bar(aes(x = yearBCAD, y = n), stat = "identity")
+
 #### large test (for memory leaks) ####
 
 calpal <- c14bazAAR::get_calpal()
