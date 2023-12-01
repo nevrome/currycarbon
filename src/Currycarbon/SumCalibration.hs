@@ -21,17 +21,21 @@ evalNamedCalExpr conf curve (NamedCalExpr exprID expr) =
 -- | Evaluate a dating expression by calibrating the individual dates and forming the respective
 --   sums and products of post-calibration density distributions
 evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
-evalCalExpr conf curve calExpr = normalize $ evalE calExpr
+evalCalExpr conf curve calExpr = norm $ evalE calExpr
     where
         evalE :: CalExpr -> Either CurrycarbonException CalPDF
-        evalE (UnCalDate a)    = normalize $ calibrateDate conf curve a
-        evalE (WindowBP a)     = normalize $ Right $ windowBP2CalPDF a
-        evalE (WindowBCAD a)   = normalize $ Right $ windowBCAD2CalPDF a
-        evalE (CalDate a)      = normalize $ Right a
-        evalE (SumCal a b)     = normalize $ eitherCombinePDFs (+) 0 (evalE a) (evalE b)
-        evalE (ProductCal a b) = normalize $ eitherCombinePDFs (*) 1 (evalE a) (evalE b)
-        normalize :: Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF
-        normalize = mapEither id normalizeCalPDF
+        -- these are already normalized by their constructors
+        evalE (UnCalDate a)    = calibrateDate conf curve a
+        evalE (WindowBP a)     = Right $ windowBP2CalPDF a
+        evalE (WindowBCAD a)   = Right $ windowBCAD2CalPDF a
+        -- this can theoretically be non-normalized input
+        evalE (CalDate a)      = norm $ Right a
+        -- sums must not be normalized
+        evalE (SumCal a b)     = eitherCombinePDFs (+) 0 (evalE a) (evalE b)
+        -- products must be normalized (and their input, in case it's a sum)
+        evalE (ProductCal a b) = norm $ eitherCombinePDFs (*) 1 (norm $ evalE a) (norm $ evalE b)
+        norm :: Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF
+        norm = mapEither id normalizeCalPDF
         -- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
         mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
         mapEither f _ (Left x)  = Left (f x)
@@ -84,7 +88,7 @@ windowBCAD2CalPDF :: TimeWindowBCAD -> CalPDF
 windowBCAD2CalPDF (TimeWindowBCAD name start stop) =
     let years = VU.fromList $ [start..stop]
         dens = VU.replicate (VU.length years) 1
-    in CalPDF name years dens
+    in normalizeCalPDF $ CalPDF name years dens
 
 windowBP2CalPDF :: TimeWindowBP -> CalPDF
 windowBP2CalPDF (TimeWindowBP name start stop) =
