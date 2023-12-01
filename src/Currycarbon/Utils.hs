@@ -9,7 +9,8 @@ import           Control.Exception (Exception)
 data CurrycarbonException =
       CurrycarbonCLIParsingException String -- ^ An exception to describe an issue in the currycarbon CLI input parsing
     | CurrycarbonCalibrationRangeException String -- ^ An exection to describe the case that a
-                                                  -- date is not in the range of the supplied calibration curve
+                                                      -- date is not in the range of the supplied calibration curve
+    | CurrycarbonCLIException String
     deriving (Show)
 
 instance Exception CurrycarbonException
@@ -19,3 +20,6 @@ renderCurrycarbonException (CurrycarbonCLIParsingException s) =
     "<!> Error: Input can not be parsed\n" ++ s
 renderCurrycarbonException (CurrycarbonCalibrationRangeException s) =
     s ++ " <!> Error: Date outside of calibration range"
+renderCurrycarbonException (CurrycarbonCLIException s) =
+    "<!> Error: " ++ s
+

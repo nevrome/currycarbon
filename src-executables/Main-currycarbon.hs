@@ -10,6 +10,7 @@ import           Paths_currycarbon            (version)
 import           Control.Exception            (catch)
 import           Data.Version                 (showVersion)
 import qualified Options.Applicative          as OP
+import qualified Options.Applicative.Help     as OH
 import           System.Exit                  (exitFailure)
 import           System.IO                    (hGetEncoding, hPutStrLn, stderr,
                                                stdout)
@@ -56,8 +57,8 @@ optParser :: OP.Parser Options
 optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> optParseCalExprString
-                                      <*> optParseCalExprFromFile
+calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
+                                      <*> optParseNamedCalExprFromFile
                                       <*> optParseCalCurveFromFile
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -66,6 +67,7 @@ calibrateOptParser = CalibrateOptions <$> optParseCalExprString
                                       <*> pure "unknown"
                                       <*> optParseDensityFile
                                       <*> optParseHDRFile
+                                      <*> optParseAgeSamplingSettings
                                       <*> optParseCalCurveSegmentFile
                                       <*> optParseCalCurveMatrixFile
 
@@ -75,97 +77,185 @@ calibrateOptParser = CalibrateOptions <$> optParseCalExprString
 --
 -- These functions define and handle the CLI input arguments
 
-optParseCalExprString :: OP.Parser [CalExpr]
-optParseCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readCalExpr) (
-    OP.metavar "DATE" <>
-    OP.help "A string with one or multiple uncalibrated dates of \
-            \the form \"<sample name>,<mean age BP>,<one sigma standard deviation>\" \
-            \where <sample name> is optional (e.g. \"S1,4000,50\"). \
-            \Multiple dates can be listed separated by \";\" (e.g. \"S1,4000,50; 3000,25; S3,1000,20\"). \
-            \To sum or multiply the post calibration probability distributions, dates can be combined with \
-            \\"+\" or \"*\" (e.g. \"4000,50 + 4100,100\"). \
-            \These expressions can be combined arbitrarily. Parentheses can be added to specify the order \
-            \of operations (e.g. \"(4000,50 + 4100,100) * 3800,50\")"
+optParseNamedCalExprString :: OP.Parser [NamedCalExpr]
+optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readNamedCalExprs) (
+    OP.metavar "CalEXPRs" <>
+    OP.helpDoc ( Just (
+        "---"
+        <> OH.hardline
+        <> s2d "A string to specify \"calibration expressions\", so small chronological \
+           \models for individual events. These can include uncalibrated radiocarbon ages, \
+           \uniform age ranges and operations to combine the resulting age probability \
+           \distribution as sums or products."
+        <> OH.hardline <>
+            s2d "The expression language includes the following functions:"
+        <> OH.hardline
+        <> OH.hardline <> "- calExpr(id = STRING, expr = EXPR)"
+        <> OH.hardline <> "- uncalC14(id = STRING, yearBP = INT, sigma = INT)"
+        <> OH.hardline <> "- rangeBP(id = STRING, start = INT, stop = INT)"
+        <> OH.hardline <> "- rangeBCAD(id = STRING, start = INT, stop = INT)"
+        <> OH.hardline <> "- sum(a = EXPR, b = EXPR)"
+        <> OH.hardline <> "- product(a = EXPR, b = EXPR)"
+        <> OH.hardline
+        <> OH.hardline
+        <> s2d "The order of arguments is fixed, but the argument names '<arg> =' \
+           \can be left out. The 'id' arguments are optional. \
+           \Some functions can be shortened with syntactic sugar:"
+        <> OH.hardline
+        <> OH.hardline <> "- calExpr(STRING, EXPR) -> id: EXPR"
+        <> OH.hardline <> "- uncalC14(STRING, INT, INT) -> STRING,INT,INT"
+        <> OH.hardline <> "- sum(EXPR, EXPR) -> EXPR + EXPR"
+        <> OH.hardline <> "- product(EXPR, EXPR) -> EXPR * EXPR"
+        <> OH.hardline
+        <> OH.hardline
+        <> s2d "Parentheses '()' can be used to specify the evaluation order within \
+           \an expression. Multiple expressions can be chained, separated by ';'."
+        <> OH.hardline
+        <> OH.hardline
+        <> "Examples:"
+        <> OH.hardline <> s2d "1. Calibrate a single radiocarbon date with a mean age BP \
+                          \and a one sigma standard deviation:"
+        <> OH.hardline <> "\"3000,30\" or \"uncalC14(yearBP = 3000, sigma = 30)\""
+        <> OH.hardline <> s2d "2. Calibrate two radiocarbon dates and sum them:"
+        <> OH.hardline <> "\"(3000,30) + (3100,40)\" or"
+        <> OH.hardline <> "\"sum(uncalC14(3000,30), uncalC14(3100,40))\""
+        <> OH.hardline <> s2d "3. Compile a complex, named expression:"
+        <> OH.hardline <> "\"Ex3: ((3000,30) + (3100,40)) * rangeBP(3200,3000)\""
+        <> OH.hardline
+        <> "---"
+    ))
     ))
 
-optParseCalExprFromFile :: OP.Parser [FilePath]
-optParseCalExprFromFile = OP.many (OP.strOption (
+s2d :: String -> OH.Doc
+s2d str = OH.fillSep $ map OH.pretty $ words str
+
+optParseNamedCalExprFromFile :: OP.Parser [FilePath]
+optParseNamedCalExprFromFile = OP.many (OP.strOption (
     OP.long "inputFile" <>
     OP.short 'i' <>
+    OP.metavar "FILE" <>
     OP.help "A file with a list of calibration expressions. \
-            \Formated just as DATE, but with a new line for each input date. \
-            \DATE and --inputFile can be combined and you can provide multiple instances of --inputFile"
+            \Formatted just as CalEXPRs, but with a new line for each input expression. \
+            \CalEXPRs and --inputFile can be combined and you can provide multiple \
+            \instances of --inputFile. \
+            \Note that syntactic sugar allows to read simple radiocarbon dates from \
+            \a headless .csv file with one sample per row: \
+            \<sample name>,<mean age BP>,<one sigma standard deviation>."
     ))
 
 optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)
 optParseCalCurveFromFile = OP.option (Just <$> OP.str) (
-    OP.long "calibrationCurveFile" <>
-    OP.help "Path to an calibration curve file in .14c format. \
+    OP.long "calCurveFile" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an calibration curve file in '.14c' format. \
             \The calibration curve will be read and used for calibration. \
-            \If no file is provided, currycarbon will use the intcal20 curve." <>
+            \If no file is provided, currycarbon will use the 'intcal20' curve." <>
     OP.value Nothing
     )
 
 optParseCalibrationMethod :: OP.Parser CalibrationMethod
 optParseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
     OP.long "method" <>
-    OP.help "The calibration algorithm that should be used: \
-            \\"<Method>,<Distribution>,<NumberOfDegreesOfFreedom>\". \
-            \The default setting is equivalent to \"Bchron,StudentT,100\" \
+    OP.metavar "DSL" <>
+    OP.helpDoc ( Just (
+            s2d "The calibration algorithm that should be used: \
+            \'<Method>,<Distribution>,<NumberOfDegreesOfFreedom>'. "
+        <> OH.hardline <>
+            s2d "The default setting is equivalent to \"Bchron,StudentT,100\" \
             \which copies the algorithm implemented in the Bchron R package. \
-            \Alternatively we implemented  \"MatrixMult\", which comes without further arguments. \
             \For the Bchron algorithm with a normal distribution (\"Bchron,Normal\") \
-            \the degrees of freedom argument is not relevant" <>
+            \the degrees of freedom argument is not relevant"
+        <> OH.hardline <>
+            s2d "Alternatively we implemented  \"MatrixMult\", which comes without further \
+            \arguments."
+    )) <>
     OP.value (Bchron $ StudentTDist 100)
     )
 
 optParseAllowOutside :: OP.Parser (Bool)
 optParseAllowOutside = OP.switch (
     OP.long "allowOutside" <>
-    OP.help "Allow calibrations to run outside the range of the calibration curve"
+    OP.help "Allow calibrations to run outside the range of the calibration curve."
     )
 
 optParseDontInterpolateCalCurve :: OP.Parser (Bool)
 optParseDontInterpolateCalCurve = OP.switch (
     OP.long "noInterpolation" <>
-    OP.help "Don't interpolate the calibration curve"
+    OP.help "Do not interpolate the calibration curve."
     )
 
 optParseQuiet :: OP.Parser (Bool)
 optParseQuiet = OP.switch (
     OP.long "quiet" <>
     OP.short 'q' <>
-    OP.help "Suppress the printing of calibration results to the command line"
+    OP.help "Suppress the printing of calibration results to the command line."
     )
 
 optParseDensityFile :: OP.Parser (Maybe FilePath)
 optParseDensityFile = OP.option (Just <$> OP.str) (
     OP.long "densityFile" <>
-    OP.help "Path to an output file which stores output densities per sample and calender year" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store output densities per CalEXPR and calender \
+            \year." <>
     OP.value Nothing
     )
 
 optParseHDRFile :: OP.Parser (Maybe FilePath)
 optParseHDRFile = OP.option (Just <$> OP.str) (
     OP.long "hdrFile" <>
-    OP.help "Path to an output file which stores the high probability density regions for each \
-            \sample" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store the high probability density regions for each \
+            \CalEXPR." <>
     OP.value Nothing
+    )
+
+optParseAgeSamplingSettings :: OP.Parser (Maybe (Maybe Word, Word, FilePath))
+optParseAgeSamplingSettings =
+    OP.optional $ (,,) <$>
+            optParseAgeSamplingConfSeed
+        <*> optParseAgeSamplingConfNrOfSamples
+        <*> optParseAgeSamplingFile
+
+optParseAgeSamplingConfSeed :: OP.Parser (Maybe Word)
+optParseAgeSamplingConfSeed = OP.option (Just <$> OP.auto) (
+       OP.long  "seed"
+    <> OP.metavar "INT"
+    <> OP.help  "Seed for the random number generator for age sampling. \
+                \The default causes currycarbon to fall back to a random seed."
+    <> OP.value Nothing
+    <> OP.showDefault
+    )
+
+optParseAgeSamplingConfNrOfSamples :: OP.Parser Word
+optParseAgeSamplingConfNrOfSamples = OP.option OP.auto (
+       OP.short 'n'
+    <> OP.long "nrSamples"
+    <> OP.metavar "INT"
+    <> OP.help "Number of age samples to draw per CalEXPR."
+    )
+
+optParseAgeSamplingFile :: OP.Parser FilePath
+optParseAgeSamplingFile = OP.strOption (
+    OP.long "samplesFile" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store age samples for each CalEXPR."
     )
 
 optParseCalCurveSegmentFile :: OP.Parser (Maybe FilePath)
 optParseCalCurveSegmentFile = OP.option (Just <$> OP.str) (
-    OP.long "calCurveSegmentFile" <>
-    OP.help "Path to an output file which stores the relevant, interpolated calibration curve \
-            \segment for the first (!) input date in a long format. \
-            \This option as well as --calCurveMatrixFile are mostly meant for debugging" <>
+    OP.long "calCurveSegFile" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store the relevant, interpolated calibration curve \
+            \segment for the first (!) input date. \
+            \This option as well as --calCurveMatFile are meant for debugging." <>
     OP.value Nothing
     )
 
 optParseCalCurveMatrixFile :: OP.Parser (Maybe FilePath)
 optParseCalCurveMatrixFile = OP.option (Just <$> OP.str) (
-    OP.long "calCurveMatrixFile" <>
+    OP.long "calCurveMatFile" <>
+    OP.metavar "FILE" <>
     OP.help "Path to an output file which stores the relevant, interpolated calibration curve \
-            \segment for the first (!) input date in a wide matrix format" <>
+            \segment for the first (!) input date in a wide matrix format." <>
     OP.value Nothing
     )

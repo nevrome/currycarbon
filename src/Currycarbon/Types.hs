@@ -110,14 +110,30 @@ data CalPDF = CalPDF {
     , _calPDFDens :: VU.Vector Float
     } deriving (Show, Eq)
 
+-- | A data type for named calibration expressions
+data NamedCalExpr = NamedCalExpr {
+    -- | Expression identifier
+      _exprID :: String
+    -- | Expression
+    , _expr   :: CalExpr
+    } deriving (Show, Eq)
+
 -- | A data type to represent an expression for sum- or product calibration
 data CalExpr =
       UnCalDate UncalC14
+    | WindowBP TimeWindowBP
+    | WindowBCAD TimeWindowBCAD
     | CalDate CalPDF
     | SumCal CalExpr CalExpr
     | ProductCal CalExpr CalExpr
-    deriving Show
+    deriving (Show, Eq)
 -- http://www.cse.chalmers.se/edu/year/2018/course/TDA452/lectures/RecursiveDataTypes.html
+
+data TimeWindowBP = TimeWindowBP String YearBP YearBP
+    deriving (Show, Eq)
+
+data TimeWindowBCAD = TimeWindowBCAD String YearBCAD YearBCAD
+    deriving (Show, Eq)
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {
@@ -148,7 +164,7 @@ data CalRangeSummary = CalRangeSummary {
 
 -- | A data type to represent a high density region of a probability distribution.
 -- A high density region is here defined as an age range, within which the respective
--- cummulative probability (e.g. of an calibrated radiocarbon date density curve)
+-- cumulative probability (e.g. of an calibrated radiocarbon date density curve)
 -- is above a certain threshold
 data HDR = HDR {
     -- | Start of the high density region in years calBCAD
@@ -156,3 +172,11 @@ data HDR = HDR {
     -- | End of the high density region in years calBCAD
     , _hdrstop  :: YearBCAD
     } deriving (Show, Eq)
+
+-- | A data type to store random samples drawn from a calPDF
+data RandomAgeSample = RandomAgeSample {
+    -- | Identifier
+      _rasId      :: String
+    -- | Random samples
+    , _rasSamples :: VU.Vector YearBCAD
+    } deriving Show

@@ -45,7 +45,13 @@ module Currycarbon (
     CalExpr (..),
     addPDFs,
     multiplyPDFs,
-    normalizeCalPDF
+    normalizeCalPDF,
+
+    -- * Drawing random samples from CalPDFs
+    -- $randsamp
+    AgeSamplingConf (..),
+    sampleAgesFromCalPDF,
+    RandomAgeSample (..)
     ) where
 
 import           Currycarbon.CalCurves.Intcal20
@@ -127,4 +133,16 @@ A more basic interface is available with 'addPDFs' and 'multiplyPDFs',
 which allow to combine two 'CalPDF's with the respective operation.
 Depending on the application, 'normalizeCalPDF' will come in handy here,
 to normalize the output density distributions.
+-}
+
+{- $randsamp
+
+Another common requirement for archaeological data analysis is temporal resampling,
+where random age samples are drawn from 'CalPDF's according to the probability
+density distribution.
+
+currycarbon supports this with 'sampleAgesFromCalPDF', which takes a configuration
+data type 'AgeSamplingConf' including a random number generator and the number of
+requested age samples, and an arbitrary 'CalPDF'. It returns an object of type
+'RandomAgeSample' with a vector of sampled 'YearBCAD's.
 -}

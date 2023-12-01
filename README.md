@@ -28,86 +28,126 @@ chmod +x currycarbon-Linux
 ```
 
 ```
-currycarbon v0.2.1.0 (UTF-8)
+currycarbon v0.3.0.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
-DATE: Sample1:4990±30BP
+CalEXPR: [1] Sample1:4990±30BP
 Calibrated: 3936BC >> 3794BC > 3757BC < 3662BC << 3654BC
 1-sigma: 3794-3707BC, 3666-3662BC
 2-sigma: 3936-3874BC, 3804-3697BC, 3684-3654BC
-                                     ▁▁▁    ▁▁▁▁            
-                                   ▁▁▒▒▒▁▁▁▁▒▒▒▒▁           
-                                   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒       ▁   
-                  ▁▁              ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁     ▁▒   
-                ▁▁▒▒▁             ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ▁▒▒▁  
-           ▁▁▁▁▁▒▒▒▒▒▁          ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▒▒▒▒▁ 
+                                     ▁▁▁    ▁▁▁▁
+                                   ▁▁▒▒▒▁▁▁▁▒▒▒▒▁
+                                   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒       ▁
+                  ▁▁              ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁     ▁▒
+                ▁▁▒▒▁             ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ▁▒▒▁
+           ▁▁▁▁▁▒▒▒▒▒▁          ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▒▒▒▒▁
         ▁▁▁▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁
  -3950 ┄─────────┬───────────────┬────────────────┬─────────┄ -3640
-           >                      >     ^               < < 
-                                  ────────────────      ─   
-           ───────────           ──────────────────  ────── 
+           >                      >     ^               < <
+                                  ────────────────      ─
+           ───────────           ──────────────────  ──────
 Done.
 ```
 
 ```
-Usage: currycarbon [--version] [DATE] [-i|--inputFile ARG] 
-                   [--calibrationCurveFile ARG] [--method ARG] [--allowOutside] 
-                   [--noInterpolation] [-q|--quiet] [--densityFile ARG] 
-                   [--hdrFile ARG] [--calCurveSegmentFile ARG] 
-                   [--calCurveMatrixFile ARG]
+Usage: currycarbon [--version] [CalEXPRs] [-i|--inputFile FILE]
+                   [--calCurveFile FILE] [--method DSL] [--allowOutside]
+                   [--noInterpolation] [-q|--quiet] [--densityFile FILE]
+                   [--hdrFile FILE]
+                   [[--seed INT] (-n|--nrSamples INT) --samplesFile FILE]
+                   [--calCurveSegFile FILE] [--calCurveMatFile FILE]
+
   Intercept calibration of radiocarbon dates
 
 Available options:
   -h,--help                Show this help text
   --version                Show version
-  DATE                     A string with one or multiple uncalibrated dates of
-                           the form "<sample name>,<mean age BP>,<one sigma
-                           standard deviation>" where <sample name> is optional
-                           (e.g. "S1,4000,50"). Multiple dates can be listed
-                           separated by ";" (e.g. "S1,4000,50; 3000,25;
-                           S3,1000,20"). To sum or multiply the post calibration
-                           probability distributions, dates can be combined with
-                           "+" or "*" (e.g. "4000,50 + 4100,100"). These
-                           expressions can be combined arbitrarily. Parentheses
-                           can be added to specify the order of operations (e.g.
-                           "(4000,50 + 4100,100) * 3800,50")
-  -i,--inputFile ARG       A file with a list of calibration expressions.
-                           Formated just as DATE, but with a new line for each
-                           input date. DATE and --inputFile can be combined and
-                           you can provide multiple instances of --inputFile
-  --calibrationCurveFile ARG
-                           Path to an calibration curve file in .14c format. The
-                           calibration curve will be read and used for
+  CalEXPRs                 ---
+                           A string to specify "calibration expressions", so
+                           small chronological models for individual events.
+                           These can include uncalibrated radiocarbon ages,
+                           uniform age ranges and operations to combine the
+                           resulting age probability distribution as sums or
+                           products.
+                           The expression language includes the following
+                           functions:
+
+                           - calExpr(name = STRING, expr = EXPR)
+                           - uncalC14(name = STRING, age = INT, sigma = INT)
+                           - rangeBP(name = STRING, start = INT, stop = INT)
+                           - rangeBCAD(name = STRING, start = INT, stop = INT)
+                           - sum(a = EXPR, b = EXPR)
+                           - product(a = EXPR, b = EXPR)
+
+                           The order of arguments is fixed, but the argument
+                           names '<arg> =' can be left out. The 'name' arguments
+                           are optional. Some functions can be shortened with
+                           syntactic sugar:
+
+                           - calExpr(STRING, EXPR) -> name: EXPR
+                           - uncalC14(STRING, INT, INT) -> STRING,INT,INT
+                           - sum(EXPR, EXPR) -> EXPR + EXPR
+                           - product(EXPR, EXPR) -> EXPR * EXPR
+
+                           Parentheses '()' can be used to specify the
+                           evaluation order within an expression. Multiple
+                           expressions can be chained, separated by ';'.
+
+                           Examples:
+                           1. Calibrate a single radiocarbon date with a mean
+                           age BP and a one sigma standard deviation:
+                           "3000,30" or "uncalC14(age = 3000, sigma = 30)"
+                           2. Calibrate two radiocarbon dates and sum them:
+                           "(3000,30) + (3100,40)" or
+                           "sum(uncalC14(3000,30), uncalC14(3100,40))"
+                           3. Compile a complex, named expression:
+                           "Ex3: ((3000,30) + (3100,40)) * rangeBP(3200,3000)"
+                           ---
+  -i,--inputFile FILE      A file with a list of calibration expressions.
+                           Formatted just as CalEXPRs, but with a new line for
+                           each input expression. CalEXPRs and --inputFile can
+                           be combined and you can provide multiple instances of
+                           --inputFile. Note that syntactic sugar allows to read
+                           simple radiocarbon dates from a headless .csv file
+                           with one sample per row: <sample name>,<mean age
+                           BP>,<one sigma standard deviation>.
+  --calCurveFile FILE      Path to an calibration curve file in '.14c' format.
+                           The calibration curve will be read and used for
                            calibration. If no file is provided, currycarbon will
-                           use the intcal20 curve.
-  --method ARG             The calibration algorithm that should be used:
-                           "<Method>,<Distribution>,<NumberOfDegreesOfFreedom>".
+                           use the 'intcal20' curve.
+  --method DSL             The calibration algorithm that should be used:
+                           '<Method>,<Distribution>,<NumberOfDegreesOfFreedom>'.
                            The default setting is equivalent to
                            "Bchron,StudentT,100" which copies the algorithm
-                           implemented in the Bchron R package. Alternatively we
-                           implemented "MatrixMult", which comes without further
-                           arguments. For the Bchron algorithm with a normal
-                           distribution ("Bchron,Normal") the degrees of freedom
-                           argument is not relevant
+                           implemented in the Bchron R package. For the Bchron
+                           algorithm with a normal distribution
+                           ("Bchron,Normal") the degrees of freedom argument is
+                           not relevant
+                           Alternatively we implemented "MatrixMult", which
+                           comes without further arguments.
   --allowOutside           Allow calibrations to run outside the range of the
-                           calibration curve
-  --noInterpolation        Don't interpolate the calibration curve
+                           calibration curve.
+  --noInterpolation        Do not interpolate the calibration curve.
   -q,--quiet               Suppress the printing of calibration results to the
-                           command line
-  --densityFile ARG        Path to an output file which stores output densities
-                           per sample and calender year
-  --hdrFile ARG            Path to an output file which stores the high
-                           probability density regions for each sample
-  --calCurveSegmentFile ARG
-                           Path to an output file which stores the relevant,
+                           command line.
+  --densityFile FILE       Path to an output file to store output densities per
+                           CalEXPR and calender year.
+  --hdrFile FILE           Path to an output file to store the high probability
+                           density regions for each CalEXPR.
+  --seed INT               Seed for the random number generator for age
+                           sampling. The default causes currycarbon to fall back
+                           to a random seed. (default: Nothing)
+  -n,--nrSamples INT       Number of age samples to draw per CalEXPR.
+  --samplesFile FILE       Path to an output file to store age samples for each
+                           CalEXPR.
+  --calCurveSegFile FILE   Path to an output file to store the relevant,
                            interpolated calibration curve segment for the first
-                           (!) input date in a long format. This option as well
-                           as --calCurveMatrixFile are mostly meant for
-                           debugging
-  --calCurveMatrixFile ARG Path to an output file which stores the relevant,
+                           (!) input date. This option as well as
+                           --calCurveMatFile are meant for debugging.
+  --calCurveMatFile FILE   Path to an output file which stores the relevant,
                            interpolated calibration curve segment for the first
-                           (!) input date in a wide matrix format
+                           (!) input date in a wide matrix format.
 ```
 
 ### For developers who want to edit the code

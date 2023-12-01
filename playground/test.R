@@ -15,61 +15,77 @@ run_currycarbon <- function(additional_commands = "") {
 
 run_currycarbon_calPDF <- function(additional_commands = "") {
   run_currycarbon(paste(
-    "--densityFile /tmp/currycarbonOutput.txt",
+    "--densityFile /tmp/currycarbonOutput.tsv -q",
     additional_commands
   ))
-  readr::read_csv(
-    "/tmp/currycarbonOutput.txt",
+  readr::read_tsv(
+    "/tmp/currycarbonOutput.tsv",
     col_types = readr::cols()
   )
 }
 
 #### comparison with the Bchron R package ####
 
-curry_bchron_studentT100 <- run_currycarbon_calPDF()
-curry_matrixmult_default <- run_currycarbon_calPDF("--method MatrixMultiplication")
-curry_bchron_normal <- run_currycarbon_calPDF("--method \"Bchron,Normal\"")
-# --noInterpolation"))
-
+curry_bchron_studentT100 <- run_currycarbon_calPDF() |>
+  dplyr::rename(density_curry_bchron_studentT100 = density)
+curry_matrixmult <- run_currycarbon_calPDF("--method MatrixMultiplication") |>
+  dplyr::rename(density_curry_matrixmult = density)
+curry_bchron_normal <- run_currycarbon_calPDF("--method \"Bchron,Normal\"") |>
+  dplyr::rename(density_curry_bchron_normal = density)
 
 bchronRaw <- Bchron::BchronCalibrate(
   testdate[1], testdate[2],
   calCurves = 'intcal20'
 )
 bchron <- tibble::tibble(
-  calBCAD = -bchronRaw$Date1$ageGrid + 1950,
+  yearBCAD = -bchronRaw$Date1$ageGrid + 1950,
   density_bchron = bchronRaw$Date1$densities
 )
 
-bchron |> 
-  dplyr::full_join(curry_bchron_studentT100, by = "calBCAD") |>
-  dplyr::full_join(curry_bchron_normal, by = "calBCAD") |>
-  dplyr::full_join(curry_matrixmult_default, by = "calBCAD") |>
+bchron |>
+  dplyr::full_join(curry_bchron_studentT100, by = "yearBCAD") |>
+  dplyr::full_join(curry_bchron_normal, by = "yearBCAD") |>
+  dplyr::full_join(curry_matrixmult, by = "yearBCAD") |>
   tidyr::pivot_longer(
     tidyselect::starts_with("dens"),
     names_to = "method"
   ) |>
   ggplot() +
-  geom_point(
-    aes(x = calBCAD, y = value, colour = method), 
-    size = 1, alpha = 0.5
+  geom_line(
+    aes(x = yearBCAD, y = value, colour = method), 
+    linewidth = 1, alpha = 0.5
   )
+
+#### confirm the reliability of the random age sampling ####
+
+run_currycarbon("--samplesFile /tmp/currySamples.tsv -n 10000")
+
+age_samples <- readr::read_tsv("/tmp/currySamples.tsv")
+
+year_count <- age_samples |>
+  dplyr::mutate(yearBCAD = round(yearBCAD, -1)) |>
+  dplyr::group_by(yearBCAD) |>
+  dplyr::summarise(n = dplyr::n())
+
+year_count |>
+  ggplot() +
+  geom_bar(aes(x = yearBCAD, y = n), stat = "identity")
 
 #### large test (for memory leaks) ####
 
 calpal <- c14bazAAR::get_calpal()
 calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr::write_csv("/tmp/currycarbon_large_input_test.csv", col_names = F)
 
-#currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q --densityFile /dev/null
+system("currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q")
 
 #### cal curve ####
 
 run_currycarbon(paste(
-  "--calCurveMatrixFile /tmp/curryMatrix.csv",
-  "--calCurveSegmentFile /tmp/currySegment.csv"
+  "--calCurveMatFile /tmp/curryMatrix.tsv",
+  "--calCurveSegFile /tmp/currySegment.tsv"
 ))
 
-cal_matrix <- readr::read_csv("/tmp/curryMatrix.csv") |>
+cal_matrix <- readr::read_tsv("/tmp/curryMatrix.tsv") |>
   tidyr::gather(vars, count, -...1) |>
   dplyr::transmute(
     uncal = ...1,
@@ -77,7 +93,7 @@ cal_matrix <- readr::read_csv("/tmp/curryMatrix.csv") |>
     val = count
   )
 
-cal_segment <- readr::read_csv("/tmp/currySegment.csv")
+cal_segment <- readr::read_tsv("/tmp/currySegment.tsv")
 
 ggplot() +
   geom_raster(
@@ -86,24 +102,24 @@ ggplot() +
   ) +
   geom_path(
     data = cal_segment,
-    mapping = aes(x = calBCAD, y = uncalBCAD),
-    color = "red", size = 0.5
+    mapping = aes(x = calYearBCAD, y = uncalYearBCAD),
+    color = "red", linewidth = 0.5
   ) +
   scale_y_reverse() +
   coord_fixed()
 
 #### sum and product cal ####
 
-system('currycarbon "A,3000,20+B,2500,200+C,2800,70" --densityFile /tmp/currycarbonSumCalTest1.csv')
+system('currycarbon "A,3000,20+B,2500,200+C,2800,70" --densityFile /tmp/currycarbonSumCalTest1.tsv')
 
-sumCalTest1 <- readr::read_csv(
-  "/tmp/currycarbonSumCalTest1.csv",
+sumCalTest1 <- readr::read_tsv(
+  "/tmp/currycarbonSumCalTest1.tsv",
   col_types = readr::cols()
 )
 
 sumCalTest1 |>
   ggplot() +
-  geom_line(aes(x = calBCAD, y = density))
+  geom_line(aes(x = yearBCAD, y = density))
 
 # Oxcal:
 #
@@ -114,16 +130,16 @@ sumCalTest1 |>
 #   R_Date("C",2800,70);
 # };
 
-system('currycarbon "A,3000,30+B,3200,40*C,3300,30" --densityFile /tmp/currycarbonSumCalTest2.csv')
+system('currycarbon "A,3000,30+B,3200,40*C,3300,30" --densityFile /tmp/currycarbonSumCalTest2.tsv')
 
-sumCalTest2 <- readr::read_csv(
-  "/tmp/currycarbonSumCalTest2.csv",
+sumCalTest2 <- readr::read_tsv(
+  "/tmp/currycarbonSumCalTest2.tsv",
   col_types = readr::cols()
 )
 
 sumCalTest2 |>
   ggplot() +
-  geom_line(aes(x = calBCAD, y = density))
+  geom_line(aes(x = yearBCAD, y = density))
 
 # Oxcal:
 #
@@ -136,3 +152,18 @@ sumCalTest2 |>
 #     R_Date("C",3300,30);
 #   };
 # };
+
+#### another test of the random age sampling ####
+
+system('currycarbon "A,3000,30+B,3200,40*C,3300,30" --samplesFile /tmp/currySamples.tsv -n 10000')
+
+age_samples <- readr::read_tsv("/tmp/currySamples.tsv")
+
+year_count <- age_samples |>
+  dplyr::mutate(yearBCAD = round(yearBCAD, -1)) |>
+  dplyr::group_by(yearBCAD) |>
+  dplyr::summarise(n = dplyr::n())
+
+year_count |>
+  ggplot() +
+  geom_bar(aes(x = yearBCAD, y = n), stat = "identity")

@@ -16,6 +16,8 @@ module Currycarbon.Calibration.Calibration
       , refineCalDate
       , CalibrateDatesConf (..)
       , defaultCalConf
+      , AgeSamplingConf (..)
+      , sampleAgesFromCalPDF
     ) where
 
 import           Currycarbon.Calibration.Bchron
@@ -24,10 +26,12 @@ import           Currycarbon.Calibration.Utils
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
+import qualified Control.Monad.Random               as CMR
 import           Data.List                          (elemIndex, groupBy, sort,
                                                      sortBy)
 import           Data.Maybe                         (fromJust)
 import qualified Data.Vector.Unboxed                as VU
+import qualified System.Random                      as R
 
 -- | A data type to cover the configuration options of the calibrateDates function
 data CalibrateDatesConf = CalibrateDatesConf {
@@ -83,25 +87,44 @@ refineCalDates :: [CalPDF] -> [Maybe CalC14]
 refineCalDates = map refineCalDate
 
 refineCalDate :: CalPDF -> Maybe CalC14
-refineCalDate (CalPDF name cals dens) =
-    if VU.sum dens == 0 || VU.length (VU.filter (>= 1.0) dens) == 1 -- don't calculate CalC14, if it's not meaningful
-    then Nothing
-    else Just $ CalC14 {
+refineCalDate (CalPDF name cals dens)
+    -- don't calculate CalC14, if it's not meaningful
+    | VU.sum dens == 0 || VU.length (VU.filter (>= 1.0) dens) == 1 = Nothing
+    -- for simple uniform age ranges
+    | VU.length (VU.uniq dens) == 1 =
+        let start = VU.head cals
+            stop  = VU.last cals
+        in Just $ CalC14 {
+          _calC14id           = name
+        , _calC14RangeSummary = CalRangeSummary {
+              _calRangeStartTwoSigma = start
+            , _calRangeStartOneSigma = start
+            , _calRangeMedian        = median
+            , _calRangeStopOneSigma  = stop
+            , _calRangeStopTwoSigma  = stop
+            }
+        , _calC14HDROneSigma  = [HDR start stop]
+        , _calC14HDRTwoSigma  = [HDR start stop]
+        }
+    -- for normal post-calibration probability distributions
+    | otherwise =
+        Just $ CalC14 {
           _calC14id           = name
         , _calC14RangeSummary = CalRangeSummary {
               _calRangeStartTwoSigma = _hdrstart $ head hdrs95
             , _calRangeStartOneSigma = _hdrstart $ head hdrs68
-            , _calRangeMedian        = fromJust $ cals `indexVU` elemIndex (minimum distanceTo05) distanceTo05
+            , _calRangeMedian        = median
             , _calRangeStopOneSigma  = _hdrstop  $ last hdrs68
             , _calRangeStopTwoSigma  = _hdrstop  $ last hdrs95
             }
         , _calC14HDROneSigma  = hdrs68
         , _calC14HDRTwoSigma  = hdrs95
-    }
+        }
     where
         -- simple density cumsum for median age
         cumsumDensities = cumsumDens (VU.toList $ VU.zip cals dens)
         distanceTo05 = map (\x -> abs $ (x - 0.5)) cumsumDensities
+        median = fromJust $ cals `indexVU` elemIndex (minimum distanceTo05) distanceTo05
         -- sorted density cumsum for hdrs
         sortedDensities = sortBy (flip (\ (_, dens1) (_, dens2) -> compare dens1 dens2)) (VU.toList $ VU.zip cals dens)
         cumsumSortedDensities = cumsumDens sortedDensities
@@ -131,3 +154,25 @@ refineCalDate (CalPDF name cals dens) =
         getIn95 (_,_,_,x) = x
         getYear :: (Int, Float, Bool, Bool) -> Int
         getYear (year,_,_,_) = year
+
+-- age sampling
+
+-- | A data type to define the settings for age sampling
+data AgeSamplingConf = AgeSamplingConf {
+    -- | Random number generator
+      _assRNG             :: R.StdGen
+    -- | Number of samples that should be drawn per sample
+    , _assNumberOfSamples :: Word
+    } deriving (Show, Eq)
+
+-- | Draw random samples from a probability density table
+sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample
+sampleAgesFromCalPDF (AgeSamplingConf rng n) (CalPDF calPDFid cals dens) =
+    let weightedList = zip (VU.toList cals) (map toRational $ VU.toList dens)
+        infSamplesList = sampleWeightedList rng weightedList
+        samples = take (fromIntegral n) infSamplesList
+    in RandomAgeSample calPDFid (VU.fromList samples)
+    where
+        sampleWeightedList :: CMR.RandomGen g => g -> [(a, Rational)] -> [a]
+        sampleWeightedList gen weights = CMR.evalRand m gen
+            where m = sequence . repeat . CMR.fromList $ weights

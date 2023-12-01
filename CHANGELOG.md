@@ -1,49 +1,66 @@
-- V 0.2.1.2: Maintenance: Switched to a newer compiler/resolver version, lifted some dependency restrictions, ran stylish-haskell on the entire codebase, updated the github actions, deprecated the haddock documentation for the dev version on GitHub
-- V 0.2.1.1: Lifted some restrictions regarding the upper version bounds of dependencies
-- V 0.2.1.0: Added a mechanism to detect terminal encoding and fall back on a simpler CLI plot if it is not UTF-8
-- V 0.2.0.1: Brought sample names back to default CLI output
-- V 0.2.0.0: Added sum (and product) calibration and made the necessary changes to various interfaces (including CLI) to make this functionality accessible
-- V 0.1.2.0: Added simple summary data (CalRangeSummary with calibrated median age + begin and end of 1- and 2-sigma ranges) to CalC14 and the cli output and plot. The latter got refactored and enhanced in the process. HDRs are now "ordered", so _hdrstart actually stores the older and _hdrstop the younger date
-- V 0.1.1.0: Complete rewrite of the cli output handling to avoid a memory leak
-- V 0.1.0.0: Switch to PVP versioning (https://pvp.haskell.org/)
-- V 0.24.4: Removed big dependencies bytestring and statistics
-- V 0.24.3: Multiple changes in .cabal to make cabal check happy
-- V 0.24.2: Found and fixed another severe bug in renderCalCurve
-- V 0.24.1: Fixed a serious bug in renderCalCurveMatrix
-- V 0.24.0: Introduced more precise data types to distinguish years BP and years BC/AD
-- V 0.23.1: Small changes to the instances of some general types
-- V 0.23.0: Renamed multiple functions to make the naming of operations for parsing, reading, from-file reading, rendering and writing consistent across data types
-- V 0.22.0: Changed the interface of the important calibrateDates function with a new config data type CalibrateDatesConf
-- V 0.21.3: Refactored the calibration curve interpolation
-- V 0.21.2: Introduced doctest and added some tiny examples/tests to try it out
-- V 0.21.1: Split up the calibration module for better readability
-- V 0.21.0: Added a neat CLI density plot for calibrated dates
-- V 0.20.2: Some performance improvements for the calibration of large numbers of dates
-- V 0.20.1: Better (parsing) error handling
-- V 0.20.0: Added an option --allowOutside to allow for calibrations to run outside the range of the calibration curve
-- V 0.19.0: Added functionality to filter out dates outside of the range of the calibration curve and report an error in this case
-- V 0.18.0: Implemented calibration with a StudentT distribution to mimic Bchron and established that as the new default. Reimplemented the --method option of the CLI tool to reflect that change
-- V 0.17.0: Changed argument order in CalCurve data type to adjust to the order in .14C files
-- V 0.16.0: Refactoring in the library to simplify and clarify the interface
-- V 0.15.0: Added another calibration algorithm (following the implementation by Andrew Parnell in Bchron) and a method switch for the CLI
-- V 0.14.0: Introduced strictness, which brought a significant increase in performance. See the discussion here: https://old.reddit.com/r/haskell/comments/picjy6/how_could_i_improve_the_performance_of_my/
-- V 0.13.0: Major rewrite with the vector library - includes multiple bugfixes, but is surprisingly slow
-- V 0.12.0: Renamed some core functions
-- V 0.11.0: Made calibration curve interpolation optional and turned it off by default
-- V 0.10.0: Simplified CLI interface by dropping the "calibrate" subcommand (currycarbon is sufficient now) and by repurposing -q from --quickOut to --quiet
-- V 0.9.0: Made --hdrFile output a lot more machine-readable
-- V 0.8.0: Added option --calibrationCurveFile to calibrate with different calibration curves
-- V 0.7.2: More documentation, small changes in code layout and renamed CLI module that provides runCalibrate
-- V 0.7.1: Added type documentation with haddock and replaced the existing types with record types
-- V 0.7.0: Changed the date input interface once more
-- V 0.6.0: Changed the date input interface, because parenthesis can be part of valid lab numbers
-- V 0.5.2: Fixed parallel evalutation (deepseq forced memory-intensive, non-lazy behaviour)
-- V 0.5.1: Added github release action (copied from poseidon-hs)
-- V 0.5.0: Added file input for dates to calibrate
-- V 0.4.0: Made output calibrated dates negative numbers for BC and positive for AD - and adjusted HDR printing accordingly
-- V 0.3.2: Some optimisation
-- V 0.3.1: Added automatic filling of unknown sample names
-- V 0.3.0: Simplified interface
-- V 0.2.1: Removed ascii plot functionality
-- V 0.2.0: Added parallel processing for the main calibration operation
-- V 0.1.0: First basically working version
+- V 0.3.0.0: Major update with multiple breaking changes and new features:
+	- Added a new mechanism to draw random age samples from a CalPDF (`sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample`). This is available from the command line with the options `samplesFile`, `--seed`, and `-n`/`--nrSamples`.
+	- Added a new concept to the `CalExpr` data type: Age ranges with uniform probability for each year in the range (`TimeWindowBP` and `TimeWindowBCAD`).
+	- Reworked the encoding and evaluation mechanism for calibration expressions:
+		- Introduced the `NamedCalExpr` as a wrapper around `CalExpr` with an identifier, and then adjusted the ID generation for `CalPDF`s to prioritize this identifier.
+		- Reworked the CLI DSL to support a standardized configuration language syntax implemented in a new module `ParserHelpers.hs`. This introduces a set of flexible functions (`calExpr()`, `uncalC14()`, `rangeBP()`, `rangeBCAD()`, `sum()` and `product()`) which generally complement the previously available syntax and operators. They are preserved as syntactic sugar for the new, more standardized syntax. Unfortunately this change breaks some expressions that were valid before (e.g. `"3000,30 + 3020,50"`). They now require additional parentheses to pass (eo e.g. `"(3000,30) + (3020,50)"`).
+		- Added some unit tests to cover the increasingly complex DSL.
+	- Changed the output files from .csv to .tsv and to a more meaningful and consistent set of column names.
+	- Slightly adjusted the rendering of the pretty, human-focussed command line output.
+	- Updated and improved the command line documentation.
+	- Renamed some CLI arguments:
+		- `--calibrationCurveFile` -> `--calCurveFile`
+		- `--calCurveSegmentFile` -> `--calCurveSegFile`
+		- `--calCurveMatrixFile` -> `--calCurveMatFile`
+	- Changed the CLI behaviour with  `--calCurveSegFile` and `--calCurveMatFile`: currycarbon now fails with these options if the first sample is not a single, uncalibrated radiocarbon date (so `uncalC14()`).
+	- Added a simple golden test system with some basic calls to the `currycarbon` CLI tool.
+	- Switched to a new GHC version (v9.4.7) and stackage resolver version (lts-21.17).
+- V 0.2.1.2: Maintenance: Switched to a newer compiler/resolver version, lifted some dependency restrictions, ran stylish-haskell on the entire codebase, updated the github actions, deprecated the haddock documentation for the dev version on GitHub.
+- V 0.2.1.1: Lifted some restrictions regarding the upper version bounds of dependencies.
+- V 0.2.1.0: Added a mechanism to detect terminal encoding and fall back on a simpler CLI plot if it is not UTF-8.
+- V 0.2.0.1: Brought sample names back to default CLI output.
+- V 0.2.0.0: Added sum (and product) calibration and made the necessary changes to various interfaces (including CLI) to make this functionality accessible.
+- V 0.1.2.0: Added simple summary data (`CalRangeSummary` with calibrated median age + begin and end of 1- and 2-sigma ranges) to `CalC14` and the CLI output and plot. The latter got refactored and enhanced in the process. `HDR`s are now "ordered", so `_hdrstart` actually stores the older and `_hdrstop` the younger date.
+- V 0.1.1.0: Complete rewrite of the CLI output handling to avoid a memory leak.
+- V 0.1.0.0: Switch to PVP versioning (https://pvp.haskell.org/).
+- V 0.24.4: Removed big dependencies bytestring and statistics.
+- V 0.24.3: Multiple changes in .cabal to make cabal check happy.
+- V 0.24.2: Found and fixed another severe bug in `renderCalCurve`.
+- V 0.24.1: Fixed a serious bug in `renderCalCurveMatrix`.
+- V 0.24.0: Introduced more precise data types to distinguish years BP and years BC/AD.
+- V 0.23.1: Small changes to the instances of some general types.
+- V 0.23.0: Renamed multiple functions to make the naming of operations for parsing, reading, from-file reading, rendering and writing consistent across data types.
+- V 0.22.0: Changed the interface of the important `calibrateDates` function with a new config data type `CalibrateDatesConf`.
+- V 0.21.3: Refactored the calibration curve interpolation.
+- V 0.21.2: Introduced doctest and added some tiny examples/tests to try it out.
+- V 0.21.1: Split up the calibration module for better readability.
+- V 0.21.0: Added a neat CLI density plot for calibrated dates.
+- V 0.20.2: Some performance improvements for the calibration of large numbers of dates.
+- V 0.20.1: Better (parsing) error handling.
+- V 0.20.0: Added an option `--allowOutside` to allow for calibrations to run outside the range of the calibration curve.
+- V 0.19.0: Added functionality to filter out dates outside of the range of the calibration curve and report an error in this case.
+- V 0.18.0: Implemented calibration with a StudentT distribution to mimic Bchron and established that as the new default. Reimplemented the `--method` option of the CLI tool to reflect that change.
+- V 0.17.0: Changed argument order in the `CalCurve` data type to adjust to the order in `.14C` files.
+- V 0.16.0: Refactoring in the library to simplify and clarify the interface.
+- V 0.15.0: Added another calibration algorithm (following the implementation by Andrew Parnell in Bchron) and a method switch for the CLI.
+- V 0.14.0: Introduced strictness, which brought a significant increase in performance. See the discussion here: https://old.reddit.com/r/haskell/comments/picjy6/how_could_i_improve_the_performance_of_my/.
+- V 0.13.0: Major rewrite with the vector library - includes multiple bugfixes, but is surprisingly slow.
+- V 0.12.0: Renamed some core functions.
+- V 0.11.0: Made calibration curve interpolation optional and turned it off by default.
+- V 0.10.0: Simplified CLI interface by dropping the `calibrate` subcommand (`currycarbon` is sufficient now) and by repurposing `-q` from `--quickOut` to `--quiet`.
+- V 0.9.0: Made `--hdrFile` output a lot more machine-readable.
+- V 0.8.0: Added option `--calibrationCurveFile` to calibrate with different calibration curves.
+- V 0.7.2: More documentation, small changes in code layout and renamed CLI module that provides `runCalibrate`.
+- V 0.7.1: Added type documentation with haddock and replaced the existing types with record types.
+- V 0.7.0: Changed the date input interface once more.
+- V 0.6.0: Changed the date input interface, because parenthesis can be part of valid lab numbers.
+- V 0.5.2: Fixed parallel evaluation (deepseq forced memory-intensive, non-lazy behaviour).
+- V 0.5.1: Added github release action (copied from poseidon-hs).
+- V 0.5.0: Added file input for dates to calibrate.
+- V 0.4.0: Made output calibrated dates negative numbers for BC and positive for AD - and adjusted HDR printing accordingly.
+- V 0.3.2: Some optimisation.
+- V 0.3.1: Added automatic filling of unknown sample names.
+- V 0.3.0: Simplified interface.
+- V 0.2.1: Removed ascii plot functionality.
+- V 0.2.0: Added parallel processing for the main calibration operation.
+- V 0.1.0: First basically working version.
