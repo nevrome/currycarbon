@@ -1,27 +1,27 @@
 - V 0.3.0.0: Major update with multiple breaking changes and new features:
-	- Added a new mechanism to draw random age samples from a CalPDF (`sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample`). This is available from the command line with the options `--seed`, `-n`/`--nrSamples` and `samplesFile`.
+	- Added a new mechanism to draw random age samples from a CalPDF (`sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample`). This is available from the command line with the options `samplesFile`, `--seed`, and `-n`/`--nrSamples`.
 	- Added a new concept to the `CalExpr` data type: Age ranges with uniform probability for each year in the range (`TimeWindowBP` and `TimeWindowBCAD`).
 	- Reworked the encoding and evaluation mechanism for calibration expressions:
-		- Introduced the `NamedCalExpr` as a wrapper around `CalExpr` with an identifier and then adjusted the ID generation for `CalPDF`s to favour this identifier.
-		- Reworked the cli DSL to support a standardized configuration language syntax implemented in a new module `ParserHelpers.hs`. This introduces a set of flexible functions (`calExpr()`, `uncalC14()`, `rangeBP()`, `rangeBCAD()`, `sum()` and `product`) which generally complement the previously available syntax and operators. Unfortunately this change also breaks some expressions that were valid before and now require additional parentheses to pass.
+		- Introduced the `NamedCalExpr` as a wrapper around `CalExpr` with an identifier, and then adjusted the ID generation for `CalPDF`s to prioritize this identifier.
+		- Reworked the CLI DSL to support a standardized configuration language syntax implemented in a new module `ParserHelpers.hs`. This introduces a set of flexible functions (`calExpr()`, `uncalC14()`, `rangeBP()`, `rangeBCAD()`, `sum()` and `product()`) which generally complement the previously available syntax and operators. They are preserved as syntactic sugar for the new, more standardized syntax. Unfortunately this change breaks some expressions that were valid before (e.g. `"3000,30 + 3020,50"`). They now require additional parentheses to pass (eo e.g. `"(3000,30) + (3020,50)"`).
 		- Added some unit tests to cover the increasingly complex DSL.
 	- Changed the output files from .csv to .tsv and to a more meaningful and consistent set of column names.
-	- Adjusted the rendering of the pretty, human-focussed command line output.
+	- Slightly adjusted the rendering of the pretty, human-focussed command line output.
 	- Updated and improved the command line documentation.
-	- Renamed some cli arguments:
+	- Renamed some CLI arguments:
 		- `--calibrationCurveFile` -> `--calCurveFile`
 		- `--calCurveSegmentFile` -> `--calCurveSegFile`
 		- `--calCurveMatrixFile` -> `--calCurveMatFile`
-	- Changed the cli behaviour with  `--calCurveSegFile` and `--calCurveMatFile`: currycarbon now fails if the first sample is not a single, uncalibrated radiocarbon date.
-	- Added a simple golden test system with some basic calls to the `currycarbon` cli tool.
+	- Changed the CLI behaviour with  `--calCurveSegFile` and `--calCurveMatFile`: currycarbon now fails with these options if the first sample is not a single, uncalibrated radiocarbon date (so `uncalC14()`).
+	- Added a simple golden test system with some basic calls to the `currycarbon` CLI tool.
 	- Switched to a new GHC version (v9.4.7) and stackage resolver version (lts-21.17).
 - V 0.2.1.2: Maintenance: Switched to a newer compiler/resolver version, lifted some dependency restrictions, ran stylish-haskell on the entire codebase, updated the github actions, deprecated the haddock documentation for the dev version on GitHub.
 - V 0.2.1.1: Lifted some restrictions regarding the upper version bounds of dependencies.
 - V 0.2.1.0: Added a mechanism to detect terminal encoding and fall back on a simpler CLI plot if it is not UTF-8.
 - V 0.2.0.1: Brought sample names back to default CLI output.
 - V 0.2.0.0: Added sum (and product) calibration and made the necessary changes to various interfaces (including CLI) to make this functionality accessible.
-- V 0.1.2.0: Added simple summary data (`CalRangeSummary` with calibrated median age + begin and end of 1- and 2-sigma ranges) to `CalC14` and the cli output and plot. The latter got refactored and enhanced in the process. `HDR`s are now "ordered", so `_hdrstart` actually stores the older and `_hdrstop` the younger date.
-- V 0.1.1.0: Complete rewrite of the cli output handling to avoid a memory leak.
+- V 0.1.2.0: Added simple summary data (`CalRangeSummary` with calibrated median age + begin and end of 1- and 2-sigma ranges) to `CalC14` and the CLI output and plot. The latter got refactored and enhanced in the process. `HDR`s are now "ordered", so `_hdrstart` actually stores the older and `_hdrstop` the younger date.
+- V 0.1.1.0: Complete rewrite of the CLI output handling to avoid a memory leak.
 - V 0.1.0.0: Switch to PVP versioning (https://pvp.haskell.org/).
 - V 0.24.4: Removed big dependencies bytestring and statistics.
 - V 0.24.3: Multiple changes in .cabal to make cabal check happy.
