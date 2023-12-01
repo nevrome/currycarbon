@@ -135,43 +135,30 @@ runCalibrate (
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
         flexOut _ascii namedCalExpr calPDF maybeSeed calPDFToFile calC14ToFile randomAgeSampleToFile = do
-            -- try to refine calPDF
             case refineCalDate calPDF of
-                -- refining did not work
-                Nothing -> do
+                Left e -> do
                     unless quiet $ do
                         putStrLn (renderNamedCalExpr namedCalExpr)
-                        hPutStrLn stderr "Warning: Could not calculate meaningful HDRs for this expression. \
-                                          \Check --densityFile."
-                    when (isJust hdrFile) $
-                        unless quiet $ hPutStrLn stderr "Nothing written to the HDR file"
-                    when (isJust densityFile) $
-                        calPDFToFile (fromJust densityFile) calPDF
-                    when (isJust ageSampling && isJust maybeSeed) $
-                        runAgeSampling (fromJust ageSampling) (fromJust maybeSeed) calPDF randomAgeSampleToFile
-                -- refining did work
-                Just calC14 -> do
+                        printE e
+                    when (isJust hdrFile) $ unless quiet $
+                        hPutStrLn stderr "<!> Error: Can not create --hdrFile"
+                Right calC14 -> do
                     unless quiet $ do
                         putStrLn (renderCalDatePretty _ascii (namedCalExpr, calPDF, calC14))
                     when (isJust hdrFile) $
                         calC14ToFile (fromJust hdrFile) calC14
-                    when (isJust densityFile) $
-                        calPDFToFile (fromJust densityFile) calPDF
-                    when (isJust ageSampling && isJust maybeSeed) $
-                        runAgeSampling (fromJust ageSampling) (fromJust maybeSeed) calPDF randomAgeSampleToFile
-
-        runAgeSampling ::
-               (Maybe Word, Word, FilePath)
-            -> Int
-            -> CalPDF
-            -> (FilePath -> RandomAgeSample -> IO ())
-            -> IO ()
-        runAgeSampling (_, nrOfSamples, path) seed calPDF randomAgeSampleToFile = do
-            let rng = R.mkStdGen seed
-                conf = AgeSamplingConf rng nrOfSamples
-                samplingResult = sampleAgesFromCalPDF conf calPDF
-            randomAgeSampleToFile path samplingResult
-
+            when (isJust ageSampling && isJust maybeSeed) $ do
+                let (_, nrOfSamples, path) = fromJust ageSampling
+                    rng = R.mkStdGen (fromJust maybeSeed)
+                    conf = AgeSamplingConf rng nrOfSamples
+                case sampleAgesFromCalPDF conf calPDF of
+                    Left e -> do
+                        unless quiet $ do
+                            printE e
+                            hPutStrLn stderr "<!> Error: Can not create --samplesFile"
+                    Right res -> randomAgeSampleToFile path res
+            when (isJust densityFile) $
+                calPDFToFile (fromJust densityFile) calPDF
 
 -- | Helper function to replace empty input names with a sequence of numbers,
 -- to get each input date an unique identifier

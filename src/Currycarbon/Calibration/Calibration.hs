@@ -83,18 +83,19 @@ calibrateDate (CalibrateDatesConf Bchron{distribution=distr} allowOutside interp
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
-refineCalDates :: [CalPDF] -> [Maybe CalC14]
+refineCalDates :: [CalPDF] -> [Either CurrycarbonException CalC14]
 refineCalDates = map refineCalDate
 
-refineCalDate :: CalPDF -> Maybe CalC14
-refineCalDate (CalPDF name cals dens)
+refineCalDate :: CalPDF -> Either CurrycarbonException CalC14
+refineCalDate calPDF@(CalPDF name cals dens)
     -- don't calculate CalC14, if it's not meaningful
-    | VU.sum dens == 0 || VU.length (VU.filter (>= 1.0) dens) == 1 = Nothing
+    | isInvalidCalPDF calPDF =
+        Left $ CurrycarbonInvalidCalPDFException "refinement"
     -- for simple uniform age ranges
     | VU.length (VU.uniq dens) == 1 =
         let start = VU.head cals
             stop  = VU.last cals
-        in Just $ CalC14 {
+        in Right $ CalC14 {
           _calC14id           = name
         , _calC14RangeSummary = CalRangeSummary {
               _calRangeStartTwoSigma = start
@@ -108,7 +109,7 @@ refineCalDate (CalPDF name cals dens)
         }
     -- for normal post-calibration probability distributions
     | otherwise =
-        Just $ CalC14 {
+        Right $ CalC14 {
           _calC14id           = name
         , _calC14RangeSummary = CalRangeSummary {
               _calRangeStartTwoSigma = _hdrstart $ head hdrs95
@@ -166,13 +167,18 @@ data AgeSamplingConf = AgeSamplingConf {
     } deriving (Show, Eq)
 
 -- | Draw random samples from a probability density table
-sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample
-sampleAgesFromCalPDF (AgeSamplingConf rng n) (CalPDF calPDFid cals dens) =
+sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> Either CurrycarbonException RandomAgeSample
+sampleAgesFromCalPDF (AgeSamplingConf rng n) calPDF@(CalPDF calPDFid cals dens) =
     let weightedList = zip (VU.toList cals) (map toRational $ VU.toList dens)
         infSamplesList = sampleWeightedList rng weightedList
         samples = take (fromIntegral n) infSamplesList
-    in RandomAgeSample calPDFid (VU.fromList samples)
+    in if isInvalidCalPDF calPDF
+       then Left $ CurrycarbonInvalidCalPDFException "random age sampling"
+       else Right $ RandomAgeSample calPDFid (VU.fromList samples)
     where
         sampleWeightedList :: CMR.RandomGen g => g -> [(a, Rational)] -> [a]
         sampleWeightedList gen weights = CMR.evalRand m gen
             where m = sequence . repeat . CMR.fromList $ weights
+
+isInvalidCalPDF :: CalPDF -> Bool
+isInvalidCalPDF (CalPDF _ _ dens) = VU.sum dens == 0 || VU.any (>= 1.0) dens
