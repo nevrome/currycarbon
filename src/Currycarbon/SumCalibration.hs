@@ -21,16 +21,17 @@ evalNamedCalExpr conf curve (NamedCalExpr exprID expr) =
 -- | Evaluate a dating expression by calibrating the individual dates and forming the respective
 --   sums and products of post-calibration density distributions
 evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
-evalCalExpr conf curve calExpr = mapEither id normalizeCalPDF $ evalE calExpr
+evalCalExpr conf curve calExpr = normalize $ evalE calExpr
     where
         evalE :: CalExpr -> Either CurrycarbonException CalPDF
-        evalE (UnCalDate a)    = calibrateDate conf curve a
-        evalE (WindowBP a)     = Right $ windowBP2CalPDF a
-        evalE (WindowBCAD a)   = Right $ windowBCAD2CalPDF a
-        evalE (CalDate a)      = Right a
-        evalE (SumCal a b)     = eitherCombinePDFs (+) 0 (evalE a) (evalE b)
-        evalE (ProductCal a b) = mapEither id normalizeCalPDF $ eitherCombinePDFs (*) 1
-            (mapEither id normalizeCalPDF $ evalE a) (mapEither id normalizeCalPDF $ evalE b) -- product needs extra normalization
+        evalE (UnCalDate a)    = normalize $ calibrateDate conf curve a
+        evalE (WindowBP a)     = normalize $ Right $ windowBP2CalPDF a
+        evalE (WindowBCAD a)   = normalize $ Right $ windowBCAD2CalPDF a
+        evalE (CalDate a)      = normalize $ Right a
+        evalE (SumCal a b)     = normalize $ eitherCombinePDFs (+) 0 (evalE a) (evalE b)
+        evalE (ProductCal a b) = normalize $ eitherCombinePDFs (*) 1 (evalE a) (evalE b)
+        normalize :: Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF
+        normalize = mapEither id normalizeCalPDF
         -- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
         mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
         mapEither f _ (Left x)  = Left (f x)
