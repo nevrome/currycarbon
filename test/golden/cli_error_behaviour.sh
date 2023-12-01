@@ -7,3 +7,5 @@ currycarbon "uncalC14(3200,30) * rangeBP(3000,2800)" --hdrFile /dev/null
 currycarbon "uncalC14(3200,30) * rangeBP(3000,2800)" --samplesFile /dev/null -n 3
 ## hdr & samples file requested
 currycarbon "uncalC14(3200,30) * rangeBP(3000,2800)" --hdrFile /dev/null --samplesFile /dev/null -n 3
+## density file
+currycarbon "uncalC14(3200,30) * rangeBP(3000,2800)" --densityFile /dev/null
