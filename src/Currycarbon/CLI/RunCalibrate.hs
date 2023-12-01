@@ -138,7 +138,7 @@ runCalibrate (
             case refineCalDate calPDF of
                 Left e -> do
                     unless quiet $ do
-                        putStrLn (renderNamedCalExpr namedCalExpr)
+                        putStrLn ("CalEXPR: " ++ renderNamedCalExpr namedCalExpr)
                         printE e
                     when (isJust hdrFile) $ unless quiet $
                         hPutStrLn stderr "<!> Error: Can not create --hdrFile"
