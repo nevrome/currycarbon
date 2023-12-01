@@ -12,3 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: freckle/stack-action@v4
+        with:
+          stack-arguments: --coverage
+      # prepare and upload test coverage report
+      - uses: 8c6794b6/hpc-codecov-action@v3
+        with:
+          target: stack:spec
+      - uses: codecov/codecov-action@v3
