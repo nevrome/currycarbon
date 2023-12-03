@@ -79,65 +79,75 @@ ggplot(mapping = aes(x = yearBCAD, y = density)) +
   geom_line(data = oxcal_test2) +
   geom_line(data = currycarbon_test2, color = "red")
 
+# Test 3
 
-
-# the following two results are equal
-system('currycarbon "((A,3000,20)+(B,2900,200)+(C,2800,70))+(((D,3500,60)+(E,3400,60))+(F,3300,30))" --densityFile /tmp/currycarbonSumCalTest1.tsv')
-
-sumCalTest1 <- readr::read_tsv(
-  "/tmp/currycarbonSumCalTest2.tsv",
-  col_types = readr::cols()
+oxcal_test3a <- run_oxcal(
+'
+  Sum("(A+B+C)+((D*E)+F)")
+  {
+    R_Date("A",3000,20);
+    R_Date("B",2900,200);
+    R_Date("C",2800,70);
+    R_Date("D",3500,60);
+    R_Date("E",3400,60);
+    R_Date("F",3300,30);
+  };
+'
 )
 
-system('currycarbon "(A,3000,20)+(B,2900,200)+(C,2800,70)+(D,3500,60)+(E,3400,60)+(F,3300,30)" --densityFile /tmp/currycarbonSumCalTest2.tsv')
-
-sumCalTest2 <- readr::read_tsv(
-  "/tmp/currycarbonSumCalTest2.tsv",
-  col_types = readr::cols()
+oxcal_test3b <- run_oxcal(
+'
+  Sum("(A+B+C)+((D*E)+F)")
+  {
+    Sum("A+B+C")
+    {
+      R_Date("A",3000,20);
+      R_Date("B",2900,200);
+      R_Date("C",2800,70);
+    };
+    Sum("(D*E)+F")
+    {
+      Sum("D*E")
+      {
+        R_Date("D",3500,60);
+        R_Date("E",3400,60);
+      };
+      R_Date("F",3300,30);
+    };
+  };
+'
 )
 
-ggplot() +
+currycarbon_test3a <- run_currycarbon(
+  "(A,3000,20)+(B,2900,200)+(C,2800,70)+(D,3500,60)+(E,3400,60)+(F,3300,30)"
+)
+
+currycarbon_test3b <- run_currycarbon(
+  "((A,3000,20)+(B,2900,200)+(C,2800,70))+(((D,3500,60)+(E,3400,60))+(F,3300,30))"
+)
+
+# currycarbon behaves consistently like a simple sum model
+ggplot(mapping = aes(x = yearBCAD, y = density)) +
   geom_line(
-    data = sumCalTest2,
-    mapping = aes(x = yearBCAD, y = density),
-    color = "red"
+    data = oxcal_test3a,
   ) +
   geom_line(
-    data = sumCalTest2,
-    mapping = aes(x = yearBCAD, y = density),
-    color = "blue"
+    data = currycarbon_test3a,
+    color = "red"
+  ) +
+  geom_point(
+    data = currycarbon_test3b,
+    color = "green",
+    size = 0.1
   )
 
-# but the following two oxcal scripts are not - only the second one is similar to the currycarbon result
-# I think that's how it should be (2023-12-01)
-
-# Oxcal:
-#
-# Sum("(A+B+C)+((D*E)+F)")
-# {
-#   Sum("A+B+C")
-#   {
-#     R_Date("A",3000,20);
-#     R_Date("B",2900,200);
-#     R_Date("C",2800,70);
-#   };
-#   Sum("(D*E)+F")
-#   {
-#     Sum("D*E")
-#     {
-#       R_Date("D",3500,60);
-#       R_Date("E",3400,60);
-#     };
-#     R_Date("F",3300,30);
-#   };
-# };
-
-# Sum("(A+B+C)+((D*E)+F)")
-# {
-#   R_Date("A",3000,20);
-#   R_Date("B",2900,200);
-#   R_Date("C",2800,70);
-#   R_Date("D",3500,60);
-#   R_Date("E",3400,60);
-#   R_Date("F",3300,30);
-# };
+# oxcal behaves differently with complex models, maybe because of intermediate normalization
+ggplot(mapping = aes(x = yearBCAD, y = density)) +
+  geom_line(
+    data = oxcal_test3b,
+  ) +
+  geom_point(
+    data = currycarbon_test3b,
+    color = "green",
+    size = 0.1
+  )
