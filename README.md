@@ -74,19 +74,19 @@ Available options:
                            The expression language includes the following
                            functions:
 
-                           - calExpr(name = STRING, expr = EXPR)
-                           - uncalC14(name = STRING, age = INT, sigma = INT)
-                           - rangeBP(name = STRING, start = INT, stop = INT)
-                           - rangeBCAD(name = STRING, start = INT, stop = INT)
+                           - calExpr(id = STRING, expr = EXPR)
+                           - uncalC14(id = STRING, yearBP = INT, sigma = INT)
+                           - rangeBP(id = STRING, start = INT, stop = INT)
+                           - rangeBCAD(id = STRING, start = INT, stop = INT)
                            - sum(a = EXPR, b = EXPR)
                            - product(a = EXPR, b = EXPR)
 
                            The order of arguments is fixed, but the argument
-                           names '<arg> =' can be left out. The 'name' arguments
+                           names '<arg> =' can be left out. The 'id' arguments
                            are optional. Some functions can be shortened with
                            syntactic sugar:
 
-                           - calExpr(STRING, EXPR) -> name: EXPR
+                           - calExpr(STRING, EXPR) -> id: EXPR
                            - uncalC14(STRING, INT, INT) -> STRING,INT,INT
                            - sum(EXPR, EXPR) -> EXPR + EXPR
                            - product(EXPR, EXPR) -> EXPR * EXPR
@@ -98,7 +98,7 @@ Available options:
                            Examples:
                            1. Calibrate a single radiocarbon date with a mean
                            age BP and a one sigma standard deviation:
-                           "3000,30" or "uncalC14(age = 3000, sigma = 30)"
+                           "3000,30" or "uncalC14(yearBP = 3000, sigma = 30)"
                            2. Calibrate two radiocarbon dates and sum them:
                            "(3000,30) + (3100,40)" or
                            "sum(uncalC14(3000,30), uncalC14(3100,40))"
