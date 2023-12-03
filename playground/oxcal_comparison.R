@@ -1,7 +1,7 @@
 library(ggplot2)
 oxcAAR::quickSetupOxcal()
 
-#### oxcal vs currycarbon ####
+#### oxcal vs currycarbon for sums and products ####
 
 run_oxcal <- function(code) {
   oxcalRawRes <- oxcAAR::executeOxcalScript(code) |>

@@ -1,5 +1,6 @@
 library(ggplot2)
 
+# an arbitrary test date
 testdate <- c(5000,190)
 
 run_currycarbon <- function(additional_commands = "") {
@@ -24,7 +25,7 @@ run_currycarbon_calPDF <- function(additional_commands = "") {
   )
 }
 
-#### comparison with the Bchron R package ####
+#### comparison with the Bchron R package for the calibarion of single dates ####
 
 curry_bchron_studentT100 <- run_currycarbon_calPDF() |>
   dplyr::rename(density_curry_bchron_studentT100 = density)
@@ -60,7 +61,7 @@ bchron |>
 
 # Test 1
 
-run_currycarbon("--samplesFile /tmp/currySamples.tsv -n 10000")
+run_currycarbon("--samplesFile /tmp/currySamples.tsv -n 100000")
 
 age_samples <- readr::read_tsv("/tmp/currySamples.tsv")
 
@@ -71,7 +72,7 @@ year_count <- age_samples |>
 
 year_count |>
   ggplot() +
-  geom_bar(aes(x = yearBCAD, y = n), stat = "identity")
+  geom_path(aes(x = yearBCAD, y = n))
 
 # Test 2
 
@@ -80,7 +81,7 @@ system('currycarbon "A,3000,30+B,3200,40*C,3300,30" --samplesFile /tmp/currySamp
 age_samples <- readr::read_tsv("/tmp/currySamples.tsv")
 
 year_count <- age_samples |>
-  dplyr::mutate(yearBCAD = round(yearBCAD, -1)) |>
+  dplyr::mutate(yearBCAD = plyr::round_any(yearBCAD, 10, floor)) |>
   dplyr::group_by(yearBCAD) |>
   dplyr::summarise(n = dplyr::n())
 
@@ -95,7 +96,7 @@ calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr:
 
 system("currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q")
 
-#### cal curve ####
+#### cal curve output ####
 
 run_currycarbon(paste(
   "--calCurveMatFile /tmp/curryMatrix.tsv",
