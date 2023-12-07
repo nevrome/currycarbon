@@ -1,3 +1,4 @@
+- V 0.3.0.1: The golden tests can not run on stackage as it stands, so I hid them behind an environment variable.
 - V 0.3.0.0: Major update with multiple breaking changes and new features:
 	- Added a new mechanism to draw random age samples from a CalPDF (`sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample`). This is available from the command line with the options `samplesFile`, `--seed`, and `-n`/`--nrSamples`.
 	- Added a new concept to the `CalExpr` data type: Age ranges with uniform probability for each year in the range (`TimeWindowBP` and `TimeWindowBCAD`).
