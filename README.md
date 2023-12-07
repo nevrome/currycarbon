@@ -161,7 +161,7 @@ To install the latest development version you can follow these steps:
 
 #### Running the golden tests
 
-Because the golden tests can not run on stackage as they are set up now (see the discussion [here](https://github.com/nevrome/currycarbon/issues/17)) I hit them behind an environment variable. You can run them with
+Because the golden tests can not run on stackage as they are set up now (see the discussion [here](https://github.com/nevrome/currycarbon/issues/17)) I hid them behind an environment variable. You can run them with
 
 ```bash
 CURRY_RUN_GOLDEN=true stack test --pedantic
