@@ -65,16 +65,18 @@ test-suite spec
     hs-source-dirs:
       test
     main-is:
-      Spec.hs
+      Main.hs
     type:
       exitcode-stdio-1.0
     build-depends:
         base >= 4.9 && < 5
       , currycarbon
       , hspec >= 2 && < 3
+      , hspec-core >= 2.10 && < 3
       , process >= 1.6 && < 1.7
     other-modules:
       ParserSpec,
-      GoldenSpec
+      GoldenSpec,
+      Spec
     default-language:
       Haskell2010

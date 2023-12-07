@@ -159,6 +159,16 @@ To install the latest development version you can follow these steps:
 2. Clone the repository
 3. Execute `stack install` inside the repository to build the tool and automatically copy the executables to `~/.local/bin` (which you may want to add to your path). This will install the compiler and all dependencies into folders that won't interfere with any installation you might already have.
 
+#### Running the golden tests
+
+Because the golden tests can not run on stackage as they are set up now (see the discussion [here](https://github.com/nevrome/currycarbon/issues/17)) I hit them behind an environment variable. You can run them with
+
+```bash
+CURRY_RUN_GOLDEN=true stack test --pedantic
+```
+
+Just calling `stack test --pedantic` without this variable will skip any test with the pattern `"Golden"` in their descriptors.
+
 #### Preparing a new stable release
 
 The Github Actions script in `.github/workflows/release.yml` registers a new draft release and automatically builds and uploads currycarbon binaries when a new Git tag with the prefix `v*` is pushed. 
