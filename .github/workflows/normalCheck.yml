@@ -20,4 +20,6 @@ jobs:
       - uses: 8c6794b6/hpc-codecov-action@v3
         with:
           target: stack:spec
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # set in organization settings
