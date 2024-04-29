@@ -17,7 +17,7 @@ jobs:
         with:
           stack-arguments: --coverage
       # prepare and upload test coverage report
-      - uses: 8c6794b6/hpc-codecov-action@v3
+      - uses: 8c6794b6/hpc-codecov-action@v4
         with:
           target: stack:spec
       - uses: codecov/codecov-action@v4
