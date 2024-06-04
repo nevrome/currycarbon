@@ -36,7 +36,8 @@ module Currycarbon (
     -- $derivedOutput
     refineCalDates,
     CalC14 (..),
-    writeCalC14s,
+    writeCalC14CalRangeSummaries,
+    writeCalC14HDRs,
     renderCalDatePretty,
 
     -- * Sum (and product) calibration

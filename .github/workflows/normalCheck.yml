@@ -13,7 +13,7 @@ jobs:
       CURRY_RUN_GOLDEN: true # run golden tests, see the README for more info
     steps:
       - uses: actions/checkout@v4
-      - uses: freckle/stack-action@v4
+      - uses: freckle/stack-action@v5
         with:
           stack-arguments: --coverage
       # prepare and upload test coverage report

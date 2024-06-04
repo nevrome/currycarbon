@@ -269,7 +269,55 @@ parseUncalC14 = P.try record P.<|> P.try long P.<|> short
             return (UncalC14 "" age sigma)
 
 -- CalC14
--- | Write 'CalC14's to the file system. The output file is a long .tsv file with the following structure:
+renderCalC14s :: [CalC14] -> String
+renderCalC14s xs =
+    "Calibrated high density ranges (HDR):\n"
+    ++ intercalate "\n" (map renderCalC14 xs)
+
+renderCalC14 :: CalC14 -> String
+renderCalC14 (CalC14 _ rangeSummary hdrs68 hdrs95) =
+       "Calibrated: " ++ renderCalRangeSummary rangeSummary ++ "\n"
+    ++ "1-sigma: " ++ renderHDRs hdrs68 ++ "\n"
+    ++ "2-sigma: " ++ renderHDRs hdrs95
+
+-- CalC14 - CalRangeSummary
+-- | Write 'CalRangeSummary's to the file system. The output file is a .tsv file with the following structure:
+--
+-- @
+-- id	startTwoSigmaYearBCAD	startOneSigmaYearBCAD	medianYearBCAD	stopOneSigmaYearBCAD	stopTwoSigmaYearBCAD
+-- Sample1	-3941	-3894	-3773	-3709	-3655
+-- Sample3	-2572	-2566	-2527	-2472	-2467
+-- @
+--
+writeCalC14CalRangeSummaries :: FilePath -> [CalC14] -> IO ()
+writeCalC14CalRangeSummaries path calC14s = writeFile path $
+    "id\tstartTwoSigmaYearBCAD\tstartOneSigmaYearBCAD\tmedianYearBCAD\tstopOneSigmaYearBCAD\tstopTwoSigmaYearBCAD\n"
+    ++ intercalate "\n" (map renderCalC14CalRangeSummaryForFile calC14s)
+
+writeCalC14CalRangeSummary :: FilePath -> CalC14 -> IO ()
+writeCalC14CalRangeSummary path calC14 = writeFile path $
+    "id\tstartTwoSigmaYearBCAD\tstartOneSigmaYearBCAD\tmedianYearBCAD\tstopOneSigmaYearBCAD\tstopTwoSigmaYearBCAD\n"
+    ++ renderCalC14CalRangeSummaryForFile calC14
+
+appendCalC14CalRangeSummary :: FilePath -> CalC14 -> IO ()
+appendCalC14CalRangeSummary path calC14 =
+    appendFile path $ "\n" ++ renderCalC14CalRangeSummaryForFile calC14
+
+renderCalC14CalRangeSummaryForFile :: CalC14 -> String
+renderCalC14CalRangeSummaryForFile (CalC14 name (CalRangeSummary start2 start1 median stop1 stop2) _ _) =
+    intercalate "\t" $ name:map show [start2,start1,median,stop1,stop2]
+
+-- CalRangeSummary
+renderCalRangeSummary :: CalRangeSummary -> String
+renderCalRangeSummary s =
+       renderYearBCAD (_calRangeStartTwoSigma s) ++ " >> "
+    ++ renderYearBCAD (_calRangeStartOneSigma s) ++ " > "
+    ++ renderYearBCAD (_calRangeMedian s) ++ " < "
+    ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " << "
+    ++ renderYearBCAD (_calRangeStopTwoSigma s)
+
+-- CalC14 - HDR
+-- | Write 'HDR's to the file system. The output file is a long .tsv file with the following structure:
 --
 -- @
 -- id  hdrSigmaLevel  hdrStartYearBCAD  hdrStopYearBCAD
@@ -287,22 +335,22 @@ parseUncalC14 = P.try record P.<|> P.try long P.<|> short
 -- Sample2	2	-1393	-1334
 -- @
 --
-writeCalC14s :: FilePath -> [CalC14] -> IO ()
-writeCalC14s path calC14s = writeFile path $
+writeCalC14HDRs :: FilePath -> [CalC14] -> IO ()
+writeCalC14HDRs path calC14s = writeFile path $
     "id\thdrSigmaLevel\thdrStartYearBCAD\thdrStopYearBCAD\n"
-    ++ intercalate "\n" (map renderCalC14ForFile calC14s)
+    ++ intercalate "\n" (map renderCalC14HDRForFile calC14s)
 
-writeCalC14 :: FilePath -> CalC14 -> IO ()
-writeCalC14 path calC14 = writeFile path $
+writeCalC14HDR :: FilePath -> CalC14 -> IO ()
+writeCalC14HDR path calC14 = writeFile path $
     "id\thdrSigmaLevel\thdrStartYearBCAD\thdrStopYearBCAD\n"
-    ++ renderCalC14ForFile calC14
+    ++ renderCalC14HDRForFile calC14
 
-appendCalC14 :: FilePath -> CalC14 -> IO ()
-appendCalC14 path calC14 =
-    appendFile path $ "\n" ++ renderCalC14ForFile calC14
+appendCalC14HDR :: FilePath -> CalC14 -> IO ()
+appendCalC14HDR path calC14 =
+    appendFile path $ "\n" ++ renderCalC14HDRForFile calC14
 
-renderCalC14ForFile :: CalC14 -> String
-renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
+renderCalC14HDRForFile :: CalC14 -> String
+renderCalC14HDRForFile (CalC14 name _ hdrs68 hdrs95) =
     intercalate "\n" $
         map renderRow $
         zip3 (repeat name) (repeat "1") (renderHDRsForFile hdrs68) ++
@@ -310,25 +358,6 @@ renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
     where
         renderRow :: (String, String, (String, String)) -> String
         renderRow (a, b, (c, d)) = intercalate "\t" [a,b,c,d]
-
-renderCalC14s :: [CalC14] -> String
-renderCalC14s xs =
-    "Calibrated high density ranges (HDR):\n"
-    ++ intercalate "\n" (map renderCalC14 xs)
-
-renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 _ rangeSummary hdrs68 hdrs95) =
-       "Calibrated: " ++ renderCalRangeSummary rangeSummary ++ "\n"
-    ++ "1-sigma: " ++ renderHDRs hdrs68 ++ "\n"
-    ++ "2-sigma: " ++ renderHDRs hdrs95
-
-renderCalRangeSummary :: CalRangeSummary -> String
-renderCalRangeSummary s =
-       renderYearBCAD (_calRangeStartTwoSigma s) ++ " >> "
-    ++ renderYearBCAD (_calRangeStartOneSigma s) ++ " > "
-    ++ renderYearBCAD (_calRangeMedian s) ++ " < "
-    ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " << "
-    ++ renderYearBCAD (_calRangeStopTwoSigma s)
 
 -- BP
 renderYearBP :: YearBP -> String
@@ -342,7 +371,7 @@ renderYearBCAD x
     | x >= 0 = show x ++ "AD"
     | otherwise = error $ "This should never happen: " ++ show x
 
--- HDR
+-- HDR for CLI output
 renderHDRsForFile :: [HDR] -> [(String, String)]
 renderHDRsForFile = map renderHDRForFile
 

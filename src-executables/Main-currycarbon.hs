@@ -65,6 +65,7 @@ calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
                                       <*> optParseDontInterpolateCalCurve
                                       <*> optParseQuiet
                                       <*> pure "unknown"
+                                      <*> optParseBasicFile
                                       <*> optParseDensityFile
                                       <*> optParseHDRFile
                                       <*> optParseAgeSamplingSettings
@@ -189,6 +190,16 @@ optParseQuiet = OP.switch (
     OP.long "quiet" <>
     OP.short 'q' <>
     OP.help "Suppress the printing of calibration results to the command line."
+    )
+
+optParseBasicFile :: OP.Parser (Maybe FilePath)
+optParseBasicFile = OP.option (Just <$> OP.str) (
+    OP.long "basicFile" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store basic, per-expression output: \
+            \The minimum start and maximum end of \
+            \the high probability density regions and the median age." <>
+    OP.value Nothing
     )
 
 optParseDensityFile :: OP.Parser (Maybe FilePath)
