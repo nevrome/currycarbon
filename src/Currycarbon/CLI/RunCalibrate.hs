@@ -25,7 +25,8 @@ data CalibrateOptions = CalibrateOptions {
       , _calibrateDontInterpolateCalCurve :: Bool -- ^ Don't interpolate the calibration curve
       , _calibrateQuiet                   :: Bool -- ^ Suppress the printing of calibration results to the command line
       , _calibrateStdOutEncoding          :: String -- ^ Encoding of the stdout stream (show TextEncoding)
-      , _calibrateDensityFile             :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
+      , _calibrateBasicFile               :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
+      , _calibrateDensityFile             :: Maybe FilePath -- ^ Path to an output file
       , _calibrateHDRFile                 :: Maybe FilePath -- ^ Path to an output file
       , _calibrateAgeSampling             :: Maybe (Maybe Word, Word, FilePath) -- ^ Settings for the age sampling
       , _calibrateCalCurveSegmentFile     :: Maybe FilePath -- ^ Path to an output file
@@ -39,7 +40,7 @@ runCalibrate (
             exprs exprFiles
             calCurveFile method allowOutside noInterpolate
             quiet encoding
-            densityFile hdrFile
+            basicFile densityFile hdrFile
             ageSampling
             calCurveSegmentFile calCurveMatrixFile
         ) = do
@@ -105,7 +106,7 @@ runCalibrate (
                     handleExprs _ascii True calCurve maybeRNG otherDates
                 (namedCalExpr, Right cPDF) -> do
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii namedCalExpr cPDF sampleSeed writeCalPDF writeCalC14 writeRandomAgeSample
+                    flexOut _ascii namedCalExpr cPDF sampleSeed writeCalPDF writeCalC14CalRangeSummary writeCalC14HDR writeRandomAgeSample
                     handleExprs _ascii False calCurve newRNG otherDates
         -- subsequent expression
         handleExprs _ascii False calCurve maybeRNG (nextDate:otherDates) =
@@ -115,7 +116,7 @@ runCalibrate (
                     handleExprs _ascii False calCurve maybeRNG otherDates
                 (namedCalExpr, Right cPDF) -> do
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii namedCalExpr cPDF sampleSeed appendCalPDF appendCalC14 appendRandomAgeSample
+                    flexOut _ascii namedCalExpr cPDF sampleSeed appendCalPDF appendCalC14CalRangeSummary appendCalC14HDR appendRandomAgeSample
                     handleExprs _ascii False calCurve newRNG otherDates
 
         printE :: CurrycarbonException -> IO ()
@@ -132,21 +133,26 @@ runCalibrate (
             -> Maybe Int
             -> (FilePath -> CalPDF -> IO ())
             -> (FilePath -> CalC14 -> IO ())
+            -> (FilePath -> CalC14 -> IO ())
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        flexOut _ascii namedCalExpr calPDF maybeSeed calPDFToFile calC14ToFile randomAgeSampleToFile = do
+        flexOut _ascii namedCalExpr calPDF maybeSeed calPDFToFile calC14CalRangeSummaryToFile calC14HDRToFile randomAgeSampleToFile = do
             case refineCalDate calPDF of
                 Left e -> do
                     unless quiet $ do
                         putStrLn ("CalEXPR: " ++ renderNamedCalExpr namedCalExpr)
                         printE e
+                    when (isJust basicFile) $ unless quiet $
+                        hPutStrLn stderr "<!> Error: Can not create --basicFile"
                     when (isJust hdrFile) $ unless quiet $
                         hPutStrLn stderr "<!> Error: Can not create --hdrFile"
                 Right calC14 -> do
                     unless quiet $ do
                         putStrLn (renderCalDatePretty _ascii (namedCalExpr, calPDF, calC14))
+                    when (isJust basicFile) $
+                        calC14CalRangeSummaryToFile (fromJust basicFile) calC14
                     when (isJust hdrFile) $
-                        calC14ToFile (fromJust hdrFile) calC14
+                        calC14HDRToFile (fromJust hdrFile) calC14
             when (isJust ageSampling && isJust maybeSeed) $ do
                 let (_, nrOfSamples, path) = fromJust ageSampling
                     rng = R.mkStdGen (fromJust maybeSeed)
