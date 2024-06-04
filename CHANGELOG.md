@@ -1,5 +1,5 @@
 - V 0.4.0.0: Another major update:
-    - 
+    - Changed the release pipeline: Now again with a windows executable. currycarbon-macOS was replaced by currycarbon-macOS-X64 and currycarbon-macOS-ARM64.
 	- Switched to a new stackage resolver version (lts-21.21).
 - V 0.3.0.1: The golden tests can not run on stackage as it stands, so I hid them behind an environment variable.
 - V 0.3.0.0: Major update with multiple breaking changes and new features:
