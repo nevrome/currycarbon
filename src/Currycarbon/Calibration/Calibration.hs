@@ -137,23 +137,23 @@ refineCalDate calPDF@(CalPDF name cals dens)
         -- helper functions
         indexVU _ Nothing  = Nothing
         indexVU x (Just i) = x VU.!? i
-        cumsumDens :: [(YearBCAD, Float)] -> [Float]
+        cumsumDens :: [(YearBCAD, Double)] -> [Double]
         cumsumDens x = scanl1 (+) $ map snd x
-        densities2HDR68 :: [(Int, Float, Bool, Bool)] -> [HDR]
+        densities2HDR68 :: [(Int, Double, Bool, Bool)] -> [HDR]
         densities2HDR68 cDensities =
             let highDensityGroups = groupBy (\(_,_,in681,_) (_,_,in682,_) -> in681 == in682) cDensities
                 filteredDensityGroups = filter (all getIn68) highDensityGroups
             in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
-        densities2HDR95 :: [(Int, Float, Bool, Bool)] -> [HDR]
+        densities2HDR95 :: [(Int, Double, Bool, Bool)] -> [HDR]
         densities2HDR95 cDensities =
             let highDensityGroups = groupBy (\(_,_,_,in951) (_,_,_,in952) -> in951 == in952) cDensities
                 filteredDensityGroups = filter (all getIn95) highDensityGroups
             in map (\xs -> let yearRange = map getYear xs in HDR (head yearRange) (last yearRange)) filteredDensityGroups
-        getIn68 :: (Int, Float, Bool, Bool) -> Bool
+        getIn68 :: (Int, Double, Bool, Bool) -> Bool
         getIn68 (_,_,x,_) = x
-        getIn95 :: (Int, Float, Bool, Bool) -> Bool
+        getIn95 :: (Int, Double, Bool, Bool) -> Bool
         getIn95 (_,_,_,x) = x
-        getYear :: (Int, Float, Bool, Bool) -> Int
+        getYear :: (Int, Double, Bool, Bool) -> Int
         getYear (year,_,_,_) = year
 
 -- age sampling

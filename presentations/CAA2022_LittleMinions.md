@@ -202,7 +202,7 @@ calibrateDate :: CalibrateDatesConf     -- ^ configuration options
 data CalPDF = CalPDF {
       _calPDFid :: String               -- | Identifier, e.g. a lab number
     , _calPDFCals :: VU.Vector YearBCAD -- | years calBC/AD
-    , _calPDFDens :: VU.Vector Float    -- | probability for each year
+    , _calPDFDens :: VU.Vector Double    -- | probability for each year
     }
 ```
 
@@ -221,7 +221,7 @@ calibrateDate :: CalibrateDatesConf     -- ^ configuration options
 data CalPDF = CalPDF {
       _calPDFid :: String               -- | Identifier, e.g. a lab number
     , _calPDFCals :: VU.Vector YearBCAD -- | years calBC/AD
-    , _calPDFDens :: VU.Vector Float    -- | probability for each year
+    , _calPDFDens :: VU.Vector Double    -- | probability for each year
     }
 ```
 

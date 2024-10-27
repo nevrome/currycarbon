@@ -1,4 +1,5 @@
 - V 0.4.0.0: Another major update:
+    - Moved from Float to Double for probability densities and all functions that interact with them.
     - Added a new output option `--basicFile` to the CLI to enable simple per-expression output: The minimum start and maximum end of the high probability density regions and the median age. In this context `writeCalC14` was split into `writeCalC14HDR` and `writeCalC14CalRangeSummary` in the library.
     - Changed the release pipeline: Now again with a windows executable. currycarbon-macOS was replaced by currycarbon-macOS-X64 and currycarbon-macOS-ARM64.
 	- Switched to a new stackage resolver version (lts-21.21).
