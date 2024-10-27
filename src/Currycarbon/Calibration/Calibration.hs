@@ -46,8 +46,15 @@ data CalibrateDatesConf = CalibrateDatesConf {
       -- will be a per-year density. The mechanism is inspired by the
       -- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)
       , _calConfInterpolateCalCurve :: Bool
+      -- | Trim the calibration curve before the calibration.
+      -- Reduces the calibration curve to a segment around the mean of the 
+      -- uncalibrated date +/- six times its standard deviation.
+      -- This speeds up calibration.
       , _calConfTrimCalCurveBeforeCalibration :: Bool
-      , _calConfTrimCalDensAfterCalibration :: Bool
+      -- | Trim the output CalPDF with a fixed threshold.
+      -- Years before/after the first/the last probability density of
+      -- 0.00001 get removed.
+      , _calConfTrimCalPDFAfterCalibration :: Bool
     } deriving (Show, Eq)
 
 -- | A default configuration that should yield almost identical calibration results
@@ -58,7 +65,7 @@ defaultCalConf = CalibrateDatesConf {
       , _calConfAllowOutside = False
       , _calConfInterpolateCalCurve = True
       , _calConfTrimCalCurveBeforeCalibration = True
-      , _calConfTrimCalDensAfterCalibration = True
+      , _calConfTrimCalPDFAfterCalibration = True
     }
 
 -- | Calibrates a list of dates with the provided calibration curve
