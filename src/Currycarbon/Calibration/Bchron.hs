@@ -10,12 +10,14 @@ import           Currycarbon.Utils
 import qualified Data.Vector.Unboxed           as VU
 
 -- | Intercept calibration as implemented in the Bchron R package (see 'Bchron')
-calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
-calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
+calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateBchron distr allowOutside interpolate trimCurve trimDens calCurve uncalC14@(UncalC14 name age ageSd) =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ renderUncalC14 uncalC14
     else
-        let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
+        let rawCalCurveSegment = if trimCurve
+                                 then getRelevantCalCurveSegment uncalC14 calCurve
+                                 else calCurve
             CalCurveBCAD cals mus tau1s = prepareCalCurveSegment interpolate rawCalCurveSegment
             ageDouble = -(fromIntegral age)+1950
             ageSd2Double = fromIntegral $ ageSd*ageSd
@@ -26,4 +28,8 @@ calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 n
                     VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageDouble - mu) / sqrt (ageSd2Double + tau1 * tau1))) musDouble tau1sDouble
                 StudentTDist degreesOfFreedom ->
                     VU.zipWith (\mu tau1 -> dt degreesOfFreedom ((ageDouble - mu) / sqrt (ageSd2Double + tau1 * tau1))) musDouble tau1sDouble
-        in Right $ trimLowDensityEdgesCalPDF $ normalizeCalPDF $ CalPDF name cals dens
+            calPDF = CalPDF name cals dens
+            res = if trimDens
+                  then trimLowDensityEdgesCalPDF $ normalizeCalPDF calPDF
+                  else normalizeCalPDF calPDF
+        in Right res

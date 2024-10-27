@@ -16,17 +16,22 @@ import           Data.Vector.Generic           (convert)
 import qualified Data.Vector.Unboxed           as VU
 
 -- | Intercept calibration implemented with matrix multiplication (see 'MatrixMultiplication')
-calibrateDateMatrixMult :: Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
-calibrateDateMatrixMult allowOutside interpolate calCurve uncalC14 =
+calibrateDateMatrixMult :: Bool -> Bool -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateMatrixMult allowOutside interpolate trimCurve trimDens calCurve uncalC14 =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ renderUncalC14 uncalC14
     else
-        let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
+        let rawCalCurveSegment = if trimCurve
+                                 then getRelevantCalCurveSegment uncalC14 calCurve
+                                 else calCurve
             calCurveSegment = prepareCalCurveSegment interpolate rawCalCurveSegment
             uncalPDF = uncalToPDF uncalC14
             calCurveMatrix = makeCalCurveMatrix uncalPDF calCurveSegment
             calPDF = projectUncalOverCalCurve uncalPDF calCurveMatrix
-        in Right $ trimLowDensityEdgesCalPDF $ normalizeCalPDF calPDF
+            res = if trimDens
+                  then trimLowDensityEdgesCalPDF $ normalizeCalPDF calPDF
+                  else normalizeCalPDF calPDF
+        in Right res
 
 -- | Construct a matrix representation of a calibration curve for a given date
 makeCalCurveMatrix :: UncalPDF -> CalCurveBCAD -> CalCurveMatrix

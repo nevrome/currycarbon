@@ -46,6 +46,8 @@ data CalibrateDatesConf = CalibrateDatesConf {
       -- will be a per-year density. The mechanism is inspired by the
       -- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)
       , _calConfInterpolateCalCurve :: Bool
+      , _calConfTrimCalCurveBeforeCalibration :: Bool
+      , _calConfTrimCalDensAfterCalibration :: Bool
     } deriving (Show, Eq)
 
 -- | A default configuration that should yield almost identical calibration results
@@ -55,6 +57,8 @@ defaultCalConf = CalibrateDatesConf {
         _calConfMethod = Bchron { distribution = StudentTDist 100 }
       , _calConfAllowOutside = False
       , _calConfInterpolateCalCurve = True
+      , _calConfTrimCalCurveBeforeCalibration = True
+      , _calConfTrimCalDensAfterCalibration = True
     }
 
 -- | Calibrates a list of dates with the provided calibration curve
@@ -65,10 +69,10 @@ calibrateDates :: CalibrateDatesConf -- ^ Configuration options to consider
                                                           -- either an exception if the calibration failed for some
                                                           -- reason, or a 'CalPDF'
 calibrateDates _ _ [] = []
-calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDates =
-    map (calibrateDateMatrixMult allowOutside interpolate calCurve) uncalDates
-calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDates =
-    map (calibrateDateBchron distr allowOutside interpolate calCurve) uncalDates
+calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate trimCurve trimDens) calCurve uncalDates =
+    map (calibrateDateMatrixMult allowOutside interpolate trimCurve trimDens calCurve) uncalDates
+calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate trimCurve trimDens) calCurve uncalDates =
+    map (calibrateDateBchron distr allowOutside interpolate trimCurve trimDens calCurve) uncalDates
 
 -- | Calibrates a date with the provided calibration curve
 calibrateDate :: CalibrateDatesConf -- ^ Configuration options to consider
@@ -76,10 +80,10 @@ calibrateDate :: CalibrateDatesConf -- ^ Configuration options to consider
                  -> UncalC14 -- ^ An uncalibrated radiocarbon date
                  -> Either CurrycarbonException CalPDF -- ^ The function returns either an exception if the
                                                         -- calibration failed for some reason, or a 'CalPDF'
-calibrateDate (CalibrateDatesConf MatrixMultiplication allowOutside interpolate) calCurve uncalDate =
-    calibrateDateMatrixMult allowOutside interpolate calCurve uncalDate
-calibrateDate (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate) calCurve uncalDate =
-    calibrateDateBchron distr allowOutside interpolate calCurve uncalDate
+calibrateDate (CalibrateDatesConf MatrixMultiplication allowOutside interpolate trimCurve trimDens) calCurve uncalDate =
+    calibrateDateMatrixMult allowOutside interpolate trimCurve trimDens calCurve uncalDate
+calibrateDate (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate trimCurve trimDens) calCurve uncalDate =
+    calibrateDateBchron distr allowOutside interpolate trimCurve trimDens calCurve uncalDate
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
