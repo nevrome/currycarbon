@@ -66,7 +66,7 @@ data UncalPDF = UncalPDF {
     -- | Years BP
     , _uncalPDFUnCals :: VU.Vector YearBP
     -- | Probability densities
-    , _uncalPDFDens   :: VU.Vector Float
+    , _uncalPDFDens   :: VU.Vector Double
     } deriving Show
 
 -- | A data type to represent a calibration curve with 'YearBP'
@@ -96,7 +96,7 @@ data CalCurveMatrix = CalCurveMatrix {
     -- | Column names of the calibration curve matrix: Years calBCAD
     , _calCurveMatrixCals   :: VU.Vector YearBCAD
     -- | Matrix (as a list of columns) with the probability densities
-    , _calCurveMatrixDens   :: V.Vector (VU.Vector Float)
+    , _calCurveMatrixDens   :: V.Vector (VU.Vector Double)
     } deriving Show
 
 -- | A data type to represent a year-wise probability density for calibrated dates.
@@ -107,7 +107,7 @@ data CalPDF = CalPDF {
     -- | Years calBCAD
     , _calPDFCals :: VU.Vector YearBCAD
     -- | Probability densities for each year in '_calPDFCals'
-    , _calPDFDens :: VU.Vector Float
+    , _calPDFDens :: VU.Vector Double
     } deriving (Show, Eq)
 
 -- | A data type for named calibration expressions

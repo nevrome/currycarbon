@@ -1,17 +1,17 @@
-currycarbon v0.3.0.1 (UTF-8)
+currycarbon v0.4.0.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
 <!> Error: Invalid CalPDF for refinement, either because all densities are 0 or one density is > 1
 Done.
-currycarbon v0.3.0.1 (UTF-8)
+currycarbon v0.4.0.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
 <!> Error: Invalid CalPDF for refinement, either because all densities are 0 or one density is > 1
 <!> Error: Can not create --hdrFile
 Done.
-currycarbon v0.3.0.1 (UTF-8)
+currycarbon v0.4.0.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
@@ -19,7 +19,7 @@ Calibrating...
 <!> Error: Invalid CalPDF for random age sampling, either because all densities are 0 or one density is > 1
 <!> Error: Can not create --samplesFile
 Done.
-currycarbon v0.3.0.1 (UTF-8)
+currycarbon v0.4.0.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
@@ -28,7 +28,7 @@ Calibrating...
 <!> Error: Invalid CalPDF for random age sampling, either because all densities are 0 or one density is > 1
 <!> Error: Can not create --samplesFile
 Done.
-currycarbon v0.3.0.1 (UTF-8)
+currycarbon v0.4.0.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...

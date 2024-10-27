@@ -96,30 +96,30 @@ parseDoubleSequence = do
     _ <- P.oneOf ":"
     stop <- parseDouble
     _ <- P.oneOf ":"
-    by <- parsePositiveFloatNumber
+    by <- parsePositiveDouble
     return [start,(start+by)..stop]
 
 -- * Number parsers
 
 parseDouble :: P.Parser Double
 parseDouble = do
-    P.try parseNegativeFloatNumber P.<|> parsePositiveFloatNumber
+    P.try parseNegativeDouble P.<|> parsePositiveDouble
 
-parseNegativeFloatNumber :: P.Parser Double
-parseNegativeFloatNumber = do
+parseNegativeDouble :: P.Parser Double
+parseNegativeDouble = do
     _ <- P.oneOf "-"
-    i <- parsePositiveFloatNumber
+    i <- parsePositiveDouble
     return (-i)
 
 parseFraction :: P.Parser Double
 parseFraction = do
-    num <- parsePositiveFloatNumber
+    num <- parsePositiveDouble
     if num > 1
     then fail "must be between zero and one"
     else return num
 
-parsePositiveFloatNumber :: P.Parser Double
-parsePositiveFloatNumber = do
+parsePositiveDouble :: P.Parser Double
+parsePositiveDouble = do
     num <- parseNumber
     optionalMore <- P.option "" $ (:) <$> P.char '.' <*> parseNumber
     return $ read $ num ++ optionalMore
@@ -149,10 +149,6 @@ parsePositiveInt = fromIntegral <$> parseWord
 -- https://hackage.haskell.org/package/base-4.19.0.0/docs/Data-Word.html
 parseWord :: P.Parser Word
 parseWord = do
-    read <$> parseNumber
-
-parsePositiveDouble :: P.Parser Double
-parsePositiveDouble = do
     read <$> parseNumber
 
 parseNumber :: P.Parser [Char]
