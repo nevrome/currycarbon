@@ -9,9 +9,9 @@ module Currycarbon (
     -- $calibration
     calibrateDates,
     -- ** Configuration
+    CalibrationMethod (..),
     CalibrateDatesConf (..),
     defaultCalConf,
-    CalibrationMethod (..),
     -- ** Input
     UncalC14 (..),
     readUncalC14FromFile,

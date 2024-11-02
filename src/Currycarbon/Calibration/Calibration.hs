@@ -33,64 +33,28 @@ import           Data.Maybe                         (fromJust)
 import qualified Data.Vector.Unboxed                as VU
 import qualified System.Random                      as R
 
--- | A data type to cover the configuration options of the calibrateDates function
-data CalibrateDatesConf = CalibrateDatesConf {
-      -- | The calibration algorithm that should be used
-        _calConfMethod              :: CalibrationMethod
-      -- | Allow calibration to run outside of the range of the calibration curve
-      , _calConfAllowOutside        :: Bool
-      -- | Interpolate the calibration curve before calibration.
-      -- This is a simple linear interpolation only to increase the output
-      -- resolution for earlier time periods, where the typical calibration
-      -- curves are less dense by default. With the interpolation, the output
-      -- will be a per-year density. The mechanism is inspired by the
-      -- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)
-      , _calConfInterpolateCalCurve :: Bool
-      -- | Trim the calibration curve before the calibration.
-      -- Reduces the calibration curve to a segment around the mean of the 
-      -- uncalibrated date +/- six times its standard deviation.
-      -- This speeds up calibration.
-      , _calConfTrimCalCurveBeforeCalibration :: Bool
-      -- | Trim the output CalPDF with a fixed threshold.
-      -- Years before/after the first/the last probability density of
-      -- 0.00001 get removed.
-      , _calConfTrimCalPDFAfterCalibration :: Bool
-    } deriving (Show, Eq)
-
--- | A default configuration that should yield almost identical calibration results
--- to the [Bchron R package](https://github.com/andrewcparnell/Bchron)
-defaultCalConf :: CalibrateDatesConf
-defaultCalConf = CalibrateDatesConf {
-        _calConfMethod = Bchron { distribution = StudentTDist 100 }
-      , _calConfAllowOutside = False
-      , _calConfInterpolateCalCurve = True
-      , _calConfTrimCalCurveBeforeCalibration = True
-      , _calConfTrimCalPDFAfterCalibration = True
-    }
-
 -- | Calibrates a list of dates with the provided calibration curve
-calibrateDates :: CalibrateDatesConf -- ^ Configuration options to consider
+calibrateDates ::    CalibrationMethod -- ^ Calibration method to use
+                  -> CalibrateDatesConf -- ^ Configuration options to consider
                   -> CalCurveBP -- ^ A calibration curve
                   -> [UncalC14] -- ^ A list of uncalibrated radiocarbon dates
                   -> [Either CurrycarbonException CalPDF] -- ^ The function returns a list for each input date, with
                                                           -- either an exception if the calibration failed for some
                                                           -- reason, or a 'CalPDF'
-calibrateDates _ _ [] = []
-calibrateDates (CalibrateDatesConf MatrixMultiplication allowOutside interpolate trimCurve trimDens) calCurve uncalDates =
-    map (calibrateDateMatrixMult allowOutside interpolate trimCurve trimDens calCurve) uncalDates
-calibrateDates (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate trimCurve trimDens) calCurve uncalDates =
-    map (calibrateDateBchron distr allowOutside interpolate trimCurve trimDens calCurve) uncalDates
+calibrateDates _ _ _ [] = []
+calibrateDates MatrixMultiplication config calCurve uncalDates =
+    map (calibrateDateMatrixMult config calCurve) uncalDates
+calibrateDates Bchron{distribution=distr} config calCurve uncalDates =
+    map (calibrateDateBchron distr config calCurve) uncalDates
 
 -- | Calibrates a date with the provided calibration curve
-calibrateDate :: CalibrateDatesConf -- ^ Configuration options to consider
+calibrateDate ::    CalibrationMethod -- ^ Calibration method to use
+                 -> CalibrateDatesConf -- ^ Configuration options to consider
                  -> CalCurveBP -- ^ A calibration curve
                  -> UncalC14 -- ^ An uncalibrated radiocarbon date
                  -> Either CurrycarbonException CalPDF -- ^ The function returns either an exception if the
                                                         -- calibration failed for some reason, or a 'CalPDF'
-calibrateDate (CalibrateDatesConf MatrixMultiplication allowOutside interpolate trimCurve trimDens) calCurve uncalDate =
-    calibrateDateMatrixMult allowOutside interpolate trimCurve trimDens calCurve uncalDate
-calibrateDate (CalibrateDatesConf Bchron{distribution=distr} allowOutside interpolate trimCurve trimDens) calCurve uncalDate =
-    calibrateDateBchron distr allowOutside interpolate trimCurve trimDens calCurve uncalDate
+calibrateDate method config calCurve uncalDate = head $ calibrateDates method config calCurve [uncalDate]
 
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date

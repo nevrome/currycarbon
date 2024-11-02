@@ -12,20 +12,20 @@ import           Data.List                           (groupBy, sortBy)
 import           Data.Ord                            (comparing)
 import qualified Data.Vector.Unboxed                 as VU
 
-evalNamedCalExpr :: CalibrateDatesConf -> CalCurveBP -> NamedCalExpr -> Either CurrycarbonException CalPDF
-evalNamedCalExpr conf curve (NamedCalExpr exprID expr) =
-    case evalCalExpr conf curve expr of
+evalNamedCalExpr :: CalibrationMethod -> CalibrateDatesConf -> CalCurveBP -> NamedCalExpr -> Either CurrycarbonException CalPDF
+evalNamedCalExpr method conf curve (NamedCalExpr exprID expr) =
+    case evalCalExpr method conf curve expr of
         Left err     -> Left err
         Right calPDF -> Right calPDF { _calPDFid = exprID }
 
 -- | Evaluate a dating expression by calibrating the individual dates and forming the respective
 --   sums and products of post-calibration density distributions
-evalCalExpr :: CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
-evalCalExpr conf curve calExpr = norm $ evalE calExpr
+evalCalExpr :: CalibrationMethod -> CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
+evalCalExpr method conf curve calExpr = norm $ evalE calExpr
     where
         evalE :: CalExpr -> Either CurrycarbonException CalPDF
         -- these are already normalized by their constructors
-        evalE (UnCalDate a)    = calibrateDate conf curve a
+        evalE (UnCalDate a)    = calibrateDate method conf curve a
         evalE (WindowBP a)     = Right $ windowBP2CalPDF a
         evalE (WindowBCAD a)   = Right $ windowBCAD2CalPDF a
         -- this can theoretically be non-normalized input

@@ -1,8 +1,9 @@
 - V 0.4.0.0: Another major update:
+    - Changed the interface of the core calibration functions. `CalibrateDatesConf` no longer includes the `CalibrationMethod`, so `calibrateDates` and `evalNamedCalExpr` functions need it as an extra argument. `calibrateDateBchron` and `calibrateDateMatrixMult` now take `CalibrateDatesConf` and not its individual elements.
     - Moved from Float to Double for probability densities and all functions that interact with them.
     - Added a new output option `--basicFile` to the CLI to enable simple per-expression output: The minimum start and maximum end of the high probability density regions and the median age. In this context `writeCalC14` was split into `writeCalC14HDR` and `writeCalC14CalRangeSummary` in the library.
     - Changed the release pipeline: Now again with a windows executable. currycarbon-macOS was replaced by currycarbon-macOS-X64 and currycarbon-macOS-ARM64.
-	- Switched to a new stackage resolver version (lts-21.21).
+    - Switched to a new stackage resolver version (lts-21.21).
 - V 0.3.0.1: The golden tests can not run on stackage as it stands, so I hid them behind an environment variable.
 - V 0.3.0.0: Major update with multiple breaking changes and new features:
 	- Added a new mechanism to draw random age samples from a CalPDF (`sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample`). This is available from the command line with the options `samplesFile`, `--seed`, and `-n`/`--nrSamples`.

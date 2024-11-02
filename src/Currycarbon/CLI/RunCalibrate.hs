@@ -57,8 +57,7 @@ runCalibrate (
         hPutStrLn stderr $ "Curve: " ++ fromMaybe "IntCal20" calCurveFile
         calCurve <- maybe (return intcal20) readCalCurveFromFile calCurveFile
         let calConf = defaultCalConf {
-              _calConfMethod = method
-            , _calConfAllowOutside = allowOutside
+              _calConfAllowOutside = allowOutside
             , _calConfInterpolateCalCurve = not noInterpolate
             }
         -- handle the special debug cases
@@ -78,7 +77,7 @@ runCalibrate (
                         \a single uncalibrated radiocarbon date."
         -- run calibration
         hPutStrLn stderr "Calibrating..."
-        let errorOrCalPDFs = map (evalNamedCalExpr calConf calCurve) exprsRenamed
+        let errorOrCalPDFs = map (evalNamedCalExpr method calConf calCurve) exprsRenamed
         -- prepare random number generator for age sampling
         maybeRNG <- case ageSampling of
             Nothing -> pure Nothing

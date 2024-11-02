@@ -16,8 +16,8 @@ import           Data.Vector.Generic           (convert)
 import qualified Data.Vector.Unboxed           as VU
 
 -- | Intercept calibration implemented with matrix multiplication (see 'MatrixMultiplication')
-calibrateDateMatrixMult :: Bool -> Bool -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
-calibrateDateMatrixMult allowOutside interpolate trimCurve trimDens calCurve uncalC14 =
+calibrateDateMatrixMult :: CalibrateDatesConf -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateMatrixMult (CalibrateDatesConf allowOutside interpolate trimCurve trimDens) calCurve uncalC14 =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ renderUncalC14 uncalC14
     else

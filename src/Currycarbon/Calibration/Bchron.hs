@@ -10,8 +10,8 @@ import           Currycarbon.Utils
 import qualified Data.Vector.Unboxed           as VU
 
 -- | Intercept calibration as implemented in the Bchron R package (see 'Bchron')
-calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
-calibrateDateBchron distr allowOutside interpolate trimCurve trimDens calCurve uncalC14@(UncalC14 name age ageSd) =
+calibrateDateBchron :: CalibrationDistribution -> CalibrateDatesConf -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateBchron distr (CalibrateDatesConf allowOutside interpolate trimCurve trimDens) calCurve uncalC14@(UncalC14 name age ageSd) =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ renderUncalC14 uncalC14
     else
