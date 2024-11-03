@@ -16,7 +16,7 @@ goldenTest =
 
     let stdout_stderr_tests = [
               "single_radiocarbon_date"
-            , "cli_error_behaviour"
+            , "tricky_expressions"
             ]
 
     runStdoutStderrTests stdout_stderr_tests
