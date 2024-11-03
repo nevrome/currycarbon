@@ -1,4 +1,5 @@
 - V 0.4.0.0: Another major update:
+    - Changed the way calibration curves are embedded in currycarbon. This now uses the brilliant `file-embed` library.
     - Changed the interface of the core calibration functions. `CalibrateDatesConf` no longer includes the `CalibrationMethod`, so `calibrateDates` and `evalNamedCalExpr` functions need it as an extra argument. `calibrateDateBchron` and `calibrateDateMatrixMult` now take `CalibrateDatesConf` and not its individual elements.
     - Moved from Float to Double for probability densities and all functions that interact with them.
     - Added a new output option `--basicFile` to the CLI to enable simple per-expression output: The minimum start and maximum end of the high probability density regions and the median age. In this context `writeCalC14` was split into `writeCalC14HDR` and `writeCalC14CalRangeSummary` in the library.

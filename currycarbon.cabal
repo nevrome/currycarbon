@@ -41,6 +41,7 @@ library
       , math-functions >= 0.3 && < 0.4
       , MonadRandom >= 0.6 && < 1
       , random > 1.2 && < 1.3
+      , file-embed > 0.0.11.1 && < 0.1.0.0
     default-language:
       Haskell2010
 
