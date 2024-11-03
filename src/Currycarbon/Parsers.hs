@@ -2,16 +2,18 @@
 
 module Currycarbon.Parsers where
 
+import           Currycarbon.CalCurves.Intcal20 (intcal20)
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
-import           Control.Exception         (throwIO)
-import           Data.List                 (intercalate, transpose)
-import qualified Data.Vector               as V
-import qualified Data.Vector.Unboxed       as VU
-import qualified Text.Parsec               as P
-import qualified Text.Parsec.String        as P
+import           Control.Exception              (throwIO)
+import           Currycarbon.Calibration.Utils
+import           Data.List                      (intercalate, transpose)
+import qualified Data.Vector                    as V
+import qualified Data.Vector.Unboxed            as VU
+import qualified Text.Parsec                    as P
+import qualified Text.Parsec.String             as P
 
 -- * Parsing, rendering and writing functions
 --
@@ -77,6 +79,7 @@ renderCalDatePretty ascii (calExpr, calPDF, calC14) =
     "CalEXPR: " ++ intercalate "\n" [
           renderNamedCalExpr calExpr
         , renderCalC14 calC14
+        , renderCLIPlotCalCurve ascii 6 50 calPDF
         , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
         ]
 
@@ -447,6 +450,53 @@ renderCalPDF (CalPDF name cals dens) =
 -- cli plot
 data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
 
+getSymbol :: Bool -> PlotSymbol -> Char
+getSymbol True HistFill  = '*'
+getSymbol False HistFill = '▒'
+getSymbol True HistTop   = '_'
+getSymbol False HistTop  = '▁'
+getSymbol True AxisEnd   = '+'
+getSymbol False AxisEnd  = '┄'
+getSymbol True AxisLine  = '-'
+getSymbol False AxisLine = '─'
+getSymbol True AxisTick  = '|'
+getSymbol False AxisTick = '┬'
+getSymbol True HDRLine   = '-'
+getSymbol False HDRLine  = '─'
+
+splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
+splitEvery _ [] = []
+splitEvery n list = first : splitEvery n rest
+    where (first,rest) = splitAt n list
+
+renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalPDF -> String
+renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) =
+    let startYear = VU.head cals
+        stopYear = VU.last cals
+        -- TODO: check if punch out has exactly the right cutting points
+        calCurveSegment = punchOutCalCurveBCAD startYear stopYear $ makeBCADCalCurve $ interpolateCalCurve intcal20
+        calCurveUncals = VU.map fromIntegral $ _calCurveBCADUnCals calCurveSegment
+        yearsPerCol = case quot (VU.length calCurveUncals) cols of
+            0 -> 1 -- relevant for very short PDFs
+            1 -> 2
+            q -> q
+        meanUncalcalCurveUncalsAgePerCol = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList calCurveUncals
+        meanYearPerCol = rescaleToRows meanUncalcalCurveUncalsAgePerCol
+        plotRows = map (\x -> replicate 8 ' ' ++ map (getLineSymbol x) meanYearPerCol) [0..rows]
+    in intercalate "\n" plotRows
+    where
+        rescaleToRows :: [Double] -> [Int]
+        rescaleToRows xs =
+            let minVal = minimum xs
+                maxVal = maximum xs
+                range  = maxVal - minVal
+                scaler = (fromIntegral rows) / range
+            in map (round . ((*) scaler) . (subtract minVal)) xs
+        getLineSymbol :: Int -> Int -> Char
+        getLineSymbol x y
+            | x == y = '*'
+            | otherwise = ' '
+
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
      let startYear = VU.head cals
@@ -468,25 +518,8 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                 meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList dens_
                 maxDens = maximum meanDens
             in map (\x -> round $ (x / maxDens) * scaling) meanDens
-        splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
-        splitEvery _ [] = []
-        splitEvery n list = first : splitEvery n rest
-            where (first,rest) = splitAt n list
         padString :: Int -> String -> String
         padString l x = replicate (l - length x) ' ' ++ x
-        getSymbol :: Bool -> PlotSymbol -> Char
-        getSymbol True HistFill  = '*'
-        getSymbol False HistFill = '▒'
-        getSymbol True HistTop   = '_'
-        getSymbol False HistTop  = '▁'
-        getSymbol True AxisEnd   = '+'
-        getSymbol False AxisEnd  = '┄'
-        getSymbol True AxisLine  = '-'
-        getSymbol False AxisLine = '─'
-        getSymbol True AxisTick  = '|'
-        getSymbol False AxisTick = '┬'
-        getSymbol True HDRLine   = '-'
-        getSymbol False HDRLine  = '─'
         getHistSymbol :: Int -> Int -> Char
         getHistSymbol x y
             | x == y = getSymbol ascii HistTop
@@ -547,43 +580,6 @@ renderCalCurve (CalCurveBCAD cals uncals sigmas) =
     in header ++ intercalate "\n" body
     where
       makeRow (x,y,z) = show x ++ "\t" ++ show y ++ "\t" ++ show z
-
--- | Read a calibration curve file. The file must adhere to the current version of the
--- .c14 file format (e.g. [here](http://intcal.org/curves/intcal20.14c)). Look
--- [here](http://intcal.org/blurb.html) for other calibration curves
-readCalCurveFromFile :: FilePath -> IO CalCurveBP
-readCalCurveFromFile calCurveFile = do
-    calCurve <- readFile calCurveFile
-    return $ readCalCurve calCurve
-
-readCalCurve :: String -> CalCurveBP
-readCalCurve calCurveString = do
-    case P.runParser parseCalCurve () "" calCurveString of
-        Left p  -> error $ "This should never happen." ++ show p
-        Right x -> CalCurveBP
-            (VU.fromList $ map (\(a,_,_) -> a) x)
-            (VU.fromList $ map (\(_,b,_) -> b) x)
-            (VU.fromList $ map (\(_,_,c) -> c) x)
-
-parseCalCurve :: P.Parser [(YearBP, YearBP, YearRange)]
-parseCalCurve = do
-    P.skipMany comments
-    P.sepEndBy parseCalCurveLine (P.manyTill P.anyToken (P.try P.newline))
-
-parseCalCurveLine :: P.Parser (YearBP, YearBP, YearRange)
-parseCalCurveLine = do
-  calBP <- parseWord
-  _ <- P.oneOf ","
-  bp <- parseWord
-  _ <- P.oneOf ","
-  sigma <- parseWord
-  return (calBP, bp, sigma)
-
-comments :: P.Parser String
-comments = do
-    _ <- P.string "#"
-    _ <- P.manyTill P.anyChar P.newline
-    return ""
 
 -- RandomAgeSamples
 -- | Write 'RandomAgeSamples's to the file system. The output file is a long .tsv file with the following structure:
