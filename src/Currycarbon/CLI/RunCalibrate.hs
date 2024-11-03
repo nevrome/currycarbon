@@ -23,6 +23,8 @@ data CalibrateOptions = CalibrateOptions {
       , _calibrateCalibrationMethod       :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateAllowOutside            :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
       , _calibrateDontInterpolateCalCurve :: Bool -- ^ Don't interpolate the calibration curve
+      , _calibrateDontTrimCalCurve        :: Bool -- ^ Don't trim the calibration curve before the calibration
+      , _calibrateDontTrimOutCalPDF       :: Bool -- ^ Don't trim the output CalPDF
       , _calibrateQuiet                   :: Bool -- ^ Suppress the printing of calibration results to the command line
       , _calibrateStdOutEncoding          :: String -- ^ Encoding of the stdout stream (show TextEncoding)
       , _calibrateBasicFile               :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
@@ -38,7 +40,7 @@ runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (
         CalibrateOptions
             exprs exprFiles
-            calCurveFile method allowOutside noInterpolate
+            calCurveFile method allowOutside noInterpolate noTrimCalCurve noTrimOutCalPDF
             quiet encoding
             basicFile densityFile hdrFile
             ageSampling
@@ -59,6 +61,8 @@ runCalibrate (
         let calConf = defaultCalConf {
               _calConfAllowOutside = allowOutside
             , _calConfInterpolateCalCurve = not noInterpolate
+            , _calConfTrimCalCurveBeforeCalibration = not noTrimCalCurve
+            , _calConfTrimCalPDFAfterCalibration = not noTrimOutCalPDF
             }
         -- handle the special debug cases
         when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do

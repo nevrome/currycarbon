@@ -1,4 +1,6 @@
 - V 0.4.0.0: Another major update:
+    - Added the command line options `--noTrimCalCurve` and `--noTrimOutCalPDF` to allow control over the pre- and post-calibration trimming behaviour for radiocarbon dates.
+    - Changed the way products between calibration expressions are computed in `evalCalExpr`. Input expressions in a multiplication are now calibrated for the entire length of the calibration curve. This allows to compute proper products and not fail in case of non-overlapping output.
     - Changed the way calibration curves are embedded in currycarbon. This now uses the brilliant `file-embed` library.
     - Changed the interface of the core calibration functions. `CalibrateDatesConf` no longer includes the `CalibrationMethod`, so `calibrateDates` and `evalNamedCalExpr` functions need it as an extra argument. `calibrateDateBchron` and `calibrateDateMatrixMult` now take `CalibrateDatesConf` and not its individual elements.
     - Moved from Float to Double for probability densities and all functions that interact with them.

@@ -63,6 +63,8 @@ calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
                                       <*> optParseDontInterpolateCalCurve
+                                      <*> optParseDontTrimCalCurve
+                                      <*> optParseDontTrimOutCalPDF
                                       <*> optParseQuiet
                                       <*> pure "unknown"
                                       <*> optParseBasicFile
@@ -173,19 +175,35 @@ optParseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
     OP.value (Bchron $ StudentTDist 100)
     )
 
-optParseAllowOutside :: OP.Parser (Bool)
+optParseAllowOutside :: OP.Parser Bool
 optParseAllowOutside = OP.switch (
     OP.long "allowOutside" <>
     OP.help "Allow calibrations to run outside the range of the calibration curve."
     )
 
-optParseDontInterpolateCalCurve :: OP.Parser (Bool)
+optParseDontInterpolateCalCurve :: OP.Parser Bool
 optParseDontInterpolateCalCurve = OP.switch (
     OP.long "noInterpolation" <>
     OP.help "Do not interpolate the calibration curve."
     )
 
-optParseQuiet :: OP.Parser (Bool)
+optParseDontTrimCalCurve :: OP.Parser Bool
+optParseDontTrimCalCurve = OP.switch (
+    OP.long "noTrimCalCurve" <>
+    OP.help "Do not trim the calibration curve before the calibration. \
+            \If a probability distribution over the entire range \
+            \of the calibration curve is needed. See also --noTrimOutCalPDF."
+    )
+
+optParseDontTrimOutCalPDF :: OP.Parser Bool
+optParseDontTrimOutCalPDF = OP.switch (
+    OP.long "noTrimOutCalPDF" <>
+    OP.help "Do not trim the output CalPDF. \
+            \If an untrimmed probability distribution is needed. \
+            \See also --noTrimCalCurve."
+    )
+
+optParseQuiet :: OP.Parser Bool
 optParseQuiet = OP.switch (
     OP.long "quiet" <>
     OP.short 'q' <>
