@@ -79,7 +79,8 @@ renderCalDatePretty ascii (calExpr, calPDF, calC14) =
     "CalEXPR: " ++ intercalate "\n" [
           renderNamedCalExpr calExpr
         , renderCalC14 calC14
-        , renderCLIPlotCalCurve ascii 6 50 calPDF
+        , ""
+        , renderCLIPlotCalCurve ascii 8 50 calPDF calExpr
         , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
         ]
 
@@ -469,8 +470,8 @@ splitEvery _ [] = []
 splitEvery n list = first : splitEvery n rest
     where (first,rest) = splitAt n list
 
-renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalPDF -> String
-renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) =
+renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalPDF -> NamedCalExpr -> String
+renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma)))  =
     let startYear = VU.head cals
         stopYear = VU.last cals
         -- TODO: check if punch out has exactly the right cutting points
@@ -481,20 +482,26 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) =
             1 -> 2
             q -> q
         meanUncalcalCurveUncalsAgePerCol = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList calCurveUncals
-        meanYearPerCol = rescaleToRows meanUncalcalCurveUncalsAgePerCol
-        plotRows = map (\x -> replicate 8 ' ' ++ map (getLineSymbol x) meanYearPerCol) [0..rows]
-    in intercalate "\n" plotRows
+        minUncalYear = minimum meanUncalcalCurveUncalsAgePerCol
+        maxUncalYear = maximum meanUncalcalCurveUncalsAgePerCol
+        meanYearPerCol = map (rescaleToRows minUncalYear maxUncalYear) meanUncalcalCurveUncalsAgePerCol
+        uncalAgePlusSigma = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD (yearBP + sigma)
+        uncalAge = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD yearBP
+        uncalAgeMinusSigma = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD (yearBP - sigma)
+        plotRows = map (\x -> replicate 8 ' ' ++ map (getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma x) meanYearPerCol) [0..rows]
+    in  intercalate "\n" plotRows
     where
-        rescaleToRows :: [Double] -> [Int]
-        rescaleToRows xs =
-            let minVal = minimum xs
-                maxVal = maximum xs
-                range  = maxVal - minVal
+        rescaleToRows :: Double -> Double -> Double -> Int
+        rescaleToRows minVal maxVal x =
+            let range  = maxVal - minVal
                 scaler = (fromIntegral rows) / range
-            in map (round . ((*) scaler) . (subtract minVal)) xs
-        getLineSymbol :: Int -> Int -> Char
-        getLineSymbol x y
-            | x == y = '*'
+            in (round . ((*) scaler) . (subtract minVal)) x
+        getLineSymbol :: Int -> Int -> Int -> Int -> Int -> Char
+        getLineSymbol ma a pa x y
+            | x == y = '●'
+            | a == x = '━'
+            | x >= pa && x < a = '─'
+            | x > a && x <= ma = '─'
             | otherwise = ' '
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
