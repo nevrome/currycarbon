@@ -75,6 +75,9 @@ vectorBPToBCAD = VU.map bp2BCAD
 bp2BCAD :: YearBP -> YearBCAD
 bp2BCAD x = -(fromIntegral x) + 1950
 
+bcad2BP :: YearBCAD -> YearBP
+bcad2BP y = 1950 - fromIntegral y
+
 interpolateCalCurve :: CalCurveBP -> CalCurveBP
 interpolateCalCurve (CalCurveBP cals uncals sigmas) =
     let obs = VU.zip3 cals uncals sigmas

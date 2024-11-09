@@ -470,6 +470,15 @@ splitEvery _ [] = []
 splitEvery n list = first : splitEvery n rest
     where (first,rest) = splitAt n list
 
+padString :: Int -> String -> String
+padString l x = replicate (l - length x) ' ' ++ x
+
+roundTo10 :: Int -> Int
+roundTo10 x =
+    let (dec,rest) = quotRem (abs x) 10
+        roundedDec = if rest >= 5 then dec + 1 else dec
+    in roundedDec * 10 * signum x
+
 renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalPDF -> NamedCalExpr -> String
 renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma)))  =
     let startYear = VU.head cals
@@ -477,6 +486,8 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDa
         -- TODO: check if punch out has exactly the right cutting points
         calCurveSegment = punchOutCalCurveBCAD startYear stopYear $ makeBCADCalCurve $ interpolateCalCurve intcal20
         calCurveUncals = VU.map fromIntegral $ _calCurveBCADUnCals calCurveSegment
+        calCurveUncalStart = bcad2BP $ round $ VU.head calCurveUncals
+        calCurveUncalStop = bcad2BP $ round $ VU.last calCurveUncals
         yearsPerCol = case quot (VU.length calCurveUncals) cols of
             0 -> 1 -- relevant for very short PDFs
             1 -> 2
@@ -488,9 +499,15 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDa
         uncalAgePlusSigma = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD (yearBP + sigma)
         uncalAge = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD yearBP
         uncalAgeMinusSigma = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD (yearBP - sigma)
-        plotRows = map (\x -> replicate 8 ' ' ++ map (getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma x) meanYearPerCol) [0..rows]
+        plotRows = map (\x -> pre calCurveUncalStart calCurveUncalStop uncalAge x ++ map (getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma x) meanYearPerCol) [0..rows]
     in  intercalate "\n" plotRows
     where
+        pre :: Word -> Word -> Int -> Int -> String
+        pre ysta ysto a x
+            | a == x = padString 7 (show $ roundTo10 $ fromIntegral yearBP) ++ " "
+            | x == 0 = padString 7 (show $ roundTo10 $ fromIntegral ysta) ++ " "
+            | x == 8 = padString 7 (show $ roundTo10 $ fromIntegral ysto) ++ " "
+            | otherwise = replicate 8 ' '
         rescaleToRows :: Double -> Double -> Double -> Int
         rescaleToRows minVal maxVal x =
             let range  = maxVal - minVal
@@ -525,8 +542,6 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                 meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList dens_
                 maxDens = maximum meanDens
             in map (\x -> round $ (x / maxDens) * scaling) meanDens
-        padString :: Int -> String -> String
-        padString l x = replicate (l - length x) ' ' ++ x
         getHistSymbol :: Int -> Int -> Char
         getHistSymbol x y
             | x == y = getSymbol ascii HistTop
@@ -548,11 +563,6 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                 replicate 8 ' ' ++ hdrOne ++ "\n" ++
                 replicate 8 ' ' ++ hdrTwo
             where
-                roundTo10 :: Int -> Int
-                roundTo10 x =
-                    let (dec,rest) = quotRem (abs x) 10
-                        roundedDec = if rest >= 5 then dec + 1 else dec
-                    in roundedDec * 10 * signum x
                 getAxisSymbol :: Int -> Int -> Int -> Char
                 getAxisSymbol tickFreq colStartYear colStopYear
                     | any (\x -> rem x tickFreq == 0) [colStartYear..colStopYear] = getSymbol ascii AxisTick
