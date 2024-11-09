@@ -494,14 +494,14 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDa
         rescaleToRows :: Double -> Double -> Double -> Int
         rescaleToRows minVal maxVal x =
             let range  = maxVal - minVal
-                scaler = (fromIntegral rows) / range
-            in (round . ((*) scaler) . (subtract minVal)) x
+                scaler = fromIntegral rows / range
+            in (round . (*) scaler . subtract minVal) x
         getLineSymbol :: Int -> Int -> Int -> Int -> Int -> Char
         getLineSymbol ma a pa x y
-            | x == y = '●'
-            | a == x = '━'
-            | x >= pa && x < a = '─'
-            | x > a && x <= ma = '─'
+            | x == y = '┆'
+            | a == x = '┅'
+            | x == pa = '┄'
+            | x == ma = '┄'
             | otherwise = ' '
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
