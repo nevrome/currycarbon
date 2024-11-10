@@ -504,10 +504,10 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDa
     where
         pre :: Word -> Word -> Int -> Int -> String
         pre ysta ysto a x
-            | a == x = padString 7 (show $ roundTo10 $ fromIntegral yearBP) ++ " "
-            | x == 0 = padString 7 (show $ roundTo10 $ fromIntegral ysta) ++ " "
-            | x == 8 = padString 7 (show $ roundTo10 $ fromIntegral ysto) ++ " "
-            | otherwise = replicate 8 ' '
+            | a == x = padString 6 (show $ roundTo10 $ fromIntegral yearBP) ++ " ┤ "
+            | x == 0 = padString 6 (show $ roundTo10 $ fromIntegral ysta) ++ " ┤ "
+            | x == 8 = padString 6 (show $ roundTo10 $ fromIntegral ysto) ++ " ┤ "
+            | otherwise = replicate 6 ' ' ++ " │ "
         rescaleToRows :: Double -> Double -> Double -> Int
         rescaleToRows minVal maxVal x =
             let range  = maxVal - minVal
@@ -532,7 +532,7 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
         -- last bin will often be shorter, which renders the whole plot slightly incorrect for the last column
          meanDensPerCol = calculateMeanDens yearsPerCol dens
          effectiveCols = length meanDensPerCol
-         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getHistSymbol x) meanDensPerCol) $ reverse [0..rows]
+         plotRows = map (replicate 9 ' ' ++) $ map (\x -> map (getHistSymbol x) meanDensPerCol) $ reverse [0..rows]
          xAxis = constructXAxis startYear stopYear effectiveCols yearsPerCol
      in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
@@ -559,9 +559,9 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                 hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14))    colStartYears colStopYears
                 hdrTwo      = zipWith (getHDRSymbol (_calC14HDRTwoSigma c14))    colStartYears colStopYears
             in  startS ++ (" " ++ [getSymbol ascii AxisEnd]) ++ axis ++ ([getSymbol ascii AxisEnd] ++ " ") ++ stopS ++ "\n" ++
-                replicate 8 ' ' ++ simpleRange ++ "\n" ++
-                replicate 8 ' ' ++ hdrOne ++ "\n" ++
-                replicate 8 ' ' ++ hdrTwo
+                replicate 9 ' ' ++ simpleRange ++ "\n" ++
+                replicate 9 ' ' ++ hdrOne ++ "\n" ++
+                replicate 9 ' ' ++ hdrTwo
             where
                 getAxisSymbol :: Int -> Int -> Int -> Char
                 getAxisSymbol tickFreq colStartYear colStopYear
