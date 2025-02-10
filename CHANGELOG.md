@@ -1,4 +1,5 @@
 - V 0.4.0.0: Another major update:
+    - Added a new CLI plot element to the output of individual dates. `renderCLIPlotCalCurve` plots a relevant section of the calibration curve.
     - Added the command line options `--noTrimCalCurve` and `--noTrimOutCalPDF` to allow control over the pre- and post-calibration trimming behaviour for radiocarbon dates.
     - Changed the way products between calibration expressions are computed in `evalCalExpr`. Input expressions in a multiplication are now calibrated for the entire length of the calibration curve. This allows to compute proper products and not fail in case of non-overlapping output.
     - Changed the way calibration curves are embedded in currycarbon. This now uses the brilliant `file-embed` library.
