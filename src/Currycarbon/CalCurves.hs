@@ -10,6 +10,37 @@ import qualified Data.Vector.Unboxed       as VU
 import qualified Text.Parsec               as P
 import qualified Text.Parsec.String        as P
 
+data CalCurveSelection = 
+      IntCal20 | SHCal20 | Marine20
+    | CalCurveFromFile FilePath
+
+instance Show CalCurveSelection where
+    show IntCal20 = "IntCal20"
+    show SHCal20  = "SHCal20"
+    show Marine20 = "Marine20"
+    show (CalCurveFromFile path) = path
+
+readCalCurveSelection :: String -> Either String CalCurveSelection
+readCalCurveSelection s =
+    case P.runParser parseCalCurveSelection () "" s of
+        Left err -> Left $ showParsecErr err
+        Right x  -> Right x
+
+parseCalCurveSelection :: P.Parser CalCurveSelection
+parseCalCurveSelection =  do
+    x <- P.many P.anyChar
+    case x of
+        "IntCal20" -> pure IntCal20
+        "SHCal20"  -> pure SHCal20
+        "Marine20" -> pure Marine20
+        p          -> return $ CalCurveFromFile p
+
+getCalCurve :: CalCurveSelection -> IO CalCurveBP
+getCalCurve IntCal20 = pure intcal20
+getCalCurve SHCal20  = pure shcal20
+getCalCurve Marine20 = pure marine20
+getCalCurve (CalCurveFromFile path) = readCalCurveFromFile path
+
 -- | Read a calibration curve file. The file must adhere to the current version of the
 -- .c14 file format (e.g. [here](http://intcal.org/curves/intcal20.14c)). Look
 -- [here](http://intcal.org/blurb.html) for other calibration curves
@@ -53,3 +84,17 @@ intcal20 :: CalCurveBP
 intcal20 = readCalCurve intcal20String
 intcal20String :: String
 intcal20String = $(FE.embedStringFile "data/intcal20.14c")
+
+-- | The shcal20 calibration curve
+-- (Hogg et al. 2020, doi: [10.1017/RDC.2020.59](https://doi.org/10.1017/RDC.2020.59))
+shcal20 :: CalCurveBP
+shcal20 = readCalCurve shcal20String
+shcal20String :: String
+shcal20String = $(FE.embedStringFile "data/shcal20.14c")
+
+-- | The shcal20 calibration curve
+-- (Heaton et al. 2020, doi: [10.1017/RDC.2020.68](https://doi.org/10.1017/RDC.2020.68))
+marine20 :: CalCurveBP
+marine20 = readCalCurve marine20String
+marine20String :: String
+marine20String = $(FE.embedStringFile "data/marine20.14c")

@@ -6,6 +6,7 @@ import           Currycarbon.Parsers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import           Paths_currycarbon            (version)
+import Currycarbon.CalCurves
 
 import           Control.Exception            (catch)
 import           Data.Version                 (showVersion)
@@ -59,7 +60,7 @@ optParser = CmdCalibrate <$> calibrateOptParser
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
                                       <*> optParseNamedCalExprFromFile
-                                      <*> optParseCalCurveFromFile
+                                      <*> optParseCalCurveSelection
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
                                       <*> optParseDontInterpolateCalCurve
@@ -146,14 +147,15 @@ optParseNamedCalExprFromFile = OP.many (OP.strOption (
             \<sample name>,<mean age BP>,<one sigma standard deviation>."
     ))
 
-optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)
-optParseCalCurveFromFile = OP.option (Just <$> OP.str) (
-    OP.long "calCurveFile" <>
-    OP.metavar "FILE" <>
-    OP.help "Path to an calibration curve file in '.14c' format. \
-            \The calibration curve will be read and used for calibration. \
-            \If no file is provided, currycarbon will use the 'intcal20' curve." <>
-    OP.value Nothing
+optParseCalCurveSelection :: OP.Parser CalCurveSelection
+optParseCalCurveSelection = OP.option (OP.eitherReader readCalCurveSelection) (
+    OP.long "calCurve" <>
+    OP.metavar "IntCal20 | SHCal20 | Marine20 | FILE" <>
+    OP.help "Either one of the included calibration curves, or a \
+            \file path to an calibration curve file in '.14c' format. \
+            \The calibration curve will be read and used for calibration." <>
+    OP.value IntCal20 <>
+    OP.showDefault
     )
 
 optParseCalibrationMethod :: OP.Parser CalibrationMethod

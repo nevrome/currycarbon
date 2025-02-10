@@ -6,9 +6,9 @@ import           Currycarbon.CalCurves         (intcal20)
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
 import           Currycarbon.Utils
+import           Currycarbon.Calibration.Utils
 
 import           Control.Exception             (throwIO)
-import           Currycarbon.Calibration.Utils
 import           Data.List                     (intercalate, transpose)
 import qualified Data.Vector                   as V
 import qualified Data.Vector.Unboxed           as VU

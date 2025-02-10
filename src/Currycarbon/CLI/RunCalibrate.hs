@@ -10,8 +10,7 @@ import           Currycarbon.Utils
 
 import           Control.Exception                   (throwIO)
 import           Control.Monad                       (unless, when)
-import           Data.Maybe                          (fromJust, fromMaybe,
-                                                      isJust)
+import           Data.Maybe                          (fromJust, isJust)
 import           System.IO                           (hPutStrLn, stderr)
 import qualified System.Random                       as R
 
@@ -19,7 +18,7 @@ import qualified System.Random                       as R
 data CalibrateOptions = CalibrateOptions {
         _calibrateExprs                   :: [NamedCalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
       , _calibrateExprFiles               :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
-      , _calibrateCalCurveFile            :: Maybe FilePath -- ^ Path to a .14c file
+      , _calibrateCalCurveFile            :: CalCurveSelection -- ^ Either a preloaded calibration curve or a path to a .14c file
       , _calibrateCalibrationMethod       :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateAllowOutside            :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
       , _calibrateDontInterpolateCalCurve :: Bool -- ^ Don't interpolate the calibration curve
@@ -40,7 +39,7 @@ runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (
         CalibrateOptions
             exprs exprFiles
-            calCurveFile method allowOutside noInterpolate noTrimCalCurve noTrimOutCalPDF
+            calCurveSelection method allowOutside noInterpolate noTrimCalCurve noTrimOutCalPDF
             quiet encoding
             basicFile densityFile hdrFile
             ageSampling
@@ -56,8 +55,8 @@ runCalibrate (
     else do
         -- prep data
         hPutStrLn stderr $ "Method: " ++ show method
-        hPutStrLn stderr $ "Curve: " ++ fromMaybe "IntCal20" calCurveFile
-        calCurve <- maybe (return intcal20) readCalCurveFromFile calCurveFile
+        hPutStrLn stderr $ "Curve: " ++ show calCurveSelection
+        calCurve <- getCalCurve calCurveSelection
         let calConf = defaultCalConf {
               _calConfAllowOutside = allowOutside
             , _calConfInterpolateCalCurve = not noInterpolate

@@ -30,6 +30,8 @@ module Currycarbon (
     CalCurveBP (..),
     CalCurveBCAD (..),
     intcal20,
+    shcal20,
+    marine20,
     readCalCurveFromFile,
 
     -- * Derived output
