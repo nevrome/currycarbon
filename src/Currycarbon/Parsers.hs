@@ -449,21 +449,37 @@ renderCalPDF (CalPDF name cals dens) =
       makeRow (x,y) = name ++ "\t" ++ show x ++ "\t" ++ show y ++ "\n"
 
 -- cli plot
-data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
+data PlotSymbol =
+    -- density histogram
+      HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
+    -- calcurve plot
+    | CalCurve | BPLine | RibbonLine | YAxisLine | YAxisTick
 
 getSymbol :: Bool -> PlotSymbol -> Char
-getSymbol True HistFill  = '*'
-getSymbol False HistFill = '▒'
-getSymbol True HistTop   = '_'
-getSymbol False HistTop  = '▁'
-getSymbol True AxisEnd   = '+'
-getSymbol False AxisEnd  = '┄'
-getSymbol True AxisLine  = '-'
-getSymbol False AxisLine = '─'
-getSymbol True AxisTick  = '|'
-getSymbol False AxisTick = '┬'
-getSymbol True HDRLine   = '-'
-getSymbol False HDRLine  = '─'
+-- density histogram
+getSymbol True  HistFill   = '*'
+getSymbol False HistFill   = '▒'
+getSymbol True  HistTop    = '_'
+getSymbol False HistTop    = '▁'
+getSymbol True  AxisEnd    = '+'
+getSymbol False AxisEnd    = '┄'
+getSymbol True  AxisLine   = '-'
+getSymbol False AxisLine   = '─'
+getSymbol True  AxisTick   = '|'
+getSymbol False AxisTick   = '┬'
+getSymbol True  HDRLine    = '-'
+getSymbol False HDRLine    = '─'
+-- calcurve plot
+getSymbol True CalCurve    = '|'
+getSymbol False CalCurve   = '┆'
+getSymbol True BPLine      = '-'
+getSymbol False BPLine     = '┅'
+getSymbol True RibbonLine  = '-'
+getSymbol False RibbonLine = '┄'
+getSymbol True YAxisLine   = '|'
+getSymbol False YAxisLine  = '│'
+getSymbol True YAxisTick   = '|'
+getSymbol False YAxisTick  = '┤'
 
 splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
 splitEvery _ [] = []
@@ -504,10 +520,10 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDa
     where
         pre :: Word -> Word -> Int -> Int -> String
         pre ysta ysto a x
-            | a == x = padString 6 (show $ roundTo10 $ fromIntegral yearBP) ++ " ┤ "
-            | x == 0 = padString 6 (show $ roundTo10 $ fromIntegral ysta) ++ " ┤ "
-            | x == 8 = padString 6 (show $ roundTo10 $ fromIntegral ysto) ++ " ┤ "
-            | otherwise = replicate 6 ' ' ++ " │ "
+            | a == x = padString 6 (show $ roundTo10 $ fromIntegral yearBP) ++ " " ++ getSymbol ascii YAxisTick : " "
+            | x == 0 = padString 6 (show $ roundTo10 $ fromIntegral ysta) ++ " " ++ getSymbol ascii YAxisTick : " "
+            | x == 8 = padString 6 (show $ roundTo10 $ fromIntegral ysto) ++ " " ++ getSymbol ascii YAxisTick : " "
+            | otherwise = replicate 6 ' ' ++ " " ++ getSymbol ascii YAxisLine : " "
         rescaleToRows :: Double -> Double -> Double -> Int
         rescaleToRows minVal maxVal x =
             let range  = maxVal - minVal
@@ -515,10 +531,10 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDa
             in (round . (*) scaler . subtract minVal) x
         getLineSymbol :: Int -> Int -> Int -> Int -> Int -> Char
         getLineSymbol ma a pa x y
-            | x == y = '┆'
-            | a == x = '┅'
-            | x == pa = '┄'
-            | x == ma = '┄'
+            | x == y = getSymbol ascii CalCurve
+            | a == x = getSymbol ascii BPLine
+            | x == pa = getSymbol ascii RibbonLine
+            | x == ma = getSymbol ascii RibbonLine
             | otherwise = ' '
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
