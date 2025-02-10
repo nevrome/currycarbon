@@ -15,7 +15,10 @@ The Haskell library is available on Hackage [here](https://hackage.haskell.org/p
 
 For stable release versions we automatically prepare statically built binaries that can be downloaded and run directly.
 
-You can download them here: [ [Linux 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux) | [macOS 📥](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS) ]. Older release versions (some with Windows builds) are available [here](https://github.com/nevrome/currycarbon/releases).
+- [📥 Linux](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Linux)
+- [📥 macOS (ARM64)](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS-ARM64)
+- [📥 macOS (X64)](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-macOS-X64)
+- [📥 Windows](https://github.com/nevrome/currycarbon/releases/latest/download/currycarbon-Windows.exe)
 
 So in Linux you can run the following commands to get started:
 
@@ -29,7 +32,7 @@ chmod +x currycarbon-Linux
 ```
 
 ```
-currycarbon v0.3.0.1 (UTF-8)
+currycarbon v0.4.0.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
@@ -37,25 +40,36 @@ CalEXPR: [1] Sample1:4990±30BP
 Calibrated: 3936BC >> 3794BC > 3757BC < 3662BC << 3654BC
 1-sigma: 3794-3707BC, 3666-3662BC
 2-sigma: 3936-3874BC, 3804-3697BC, 3684-3654BC
-                                     ▁▁▁    ▁▁▁▁
-                                   ▁▁▒▒▒▁▁▁▁▒▒▒▒▁
-                                   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒       ▁
-                  ▁▁              ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁     ▁▒
-                ▁▁▒▒▁             ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ▁▒▒▁
-           ▁▁▁▁▁▒▒▒▒▒▁          ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▒▒▒▒▁
-        ▁▁▁▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁
+
+  5120 ┤ ┆
+       │  ┆┆           ┆┆┆┆┆┆┆┆┆┆
+       │    ┆┆┆┆┆┆┆   ┆          ┆┆
+       │ ┄┄┄┄┄┄┄┄┄┄┆┆┆┄┄┄┄┄┄┄┄┄┄┄┄┄┆┆┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+  4990 ┤ ┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┆┆┆┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅
+       │ ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┆┆┆┆┆┆┆┆┆┆┄┄┄┄┄┄┄┆┄┄┄
+       │                                          ┆┆  ┆┆┆ ┆
+       │                                            ┆┆     ┆
+  4870 ┤                                                    ┆
+                                      ▁▁▁    ▁▁▁▁
+                                    ▁▁▒▒▒▁▁▁▁▒▒▒▒▁
+                                    ▒▒▒▒▒▒▒▒▒▒▒▒▒▒       ▁
+                   ▁▁              ▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁     ▁▒
+                 ▁▁▒▒▁             ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ▁▒▒▁
+            ▁▁▁▁▁▒▒▒▒▒▁          ▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▒▒▒▒▁
+         ▁▁▁▒▒▒▒▒▒▒▒▒▒▒▁▁▁▁▁▁▁▁▁▁▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▁
  -3950 ┄─────────┬───────────────┬────────────────┬─────────┄ -3640
-           >                      >     ^               < <
-                                  ────────────────      ─
-           ───────────           ──────────────────  ──────
+            >                      >     ^               < <
+                                   ────────────────      ─
+            ───────────           ──────────────────  ──────
 Done.
 ```
 
 ```
 Usage: currycarbon [--version] [CalEXPRs] [-i|--inputFile FILE]
-                   [--calCurveFile FILE] [--method DSL] [--allowOutside]
-                   [--noInterpolation] [-q|--quiet] [--densityFile FILE]
-                   [--hdrFile FILE]
+                   [--calCurve IntCal20 | SHCal20 | Marine20 | FILE]
+                   [--method DSL] [--allowOutside] [--noInterpolation]
+                   [--noTrimCalCurve] [--noTrimOutCalPDF] [-q|--quiet]
+                   [--basicFile FILE] [--densityFile FILE] [--hdrFile FILE]
                    [[--seed INT] (-n|--nrSamples INT) --samplesFile FILE]
                    [--calCurveSegFile FILE] [--calCurveMatFile FILE]
 
@@ -113,10 +127,11 @@ Available options:
                            simple radiocarbon dates from a headless .csv file
                            with one sample per row: <sample name>,<mean age
                            BP>,<one sigma standard deviation>.
-  --calCurveFile FILE      Path to an calibration curve file in '.14c' format.
-                           The calibration curve will be read and used for
-                           calibration. If no file is provided, currycarbon will
-                           use the 'intcal20' curve.
+  --calCurve IntCal20 | SHCal20 | Marine20 | FILE
+                           Either one of the included calibration curves, or a
+                           file path to an calibration curve file in '.14c'
+                           format. The calibration curve will be read and used
+                           for calibration. (default: IntCal20)
   --method DSL             The calibration algorithm that should be used:
                            '<Method>,<Distribution>,<NumberOfDegreesOfFreedom>'.
                            The default setting is equivalent to
@@ -130,8 +145,18 @@ Available options:
   --allowOutside           Allow calibrations to run outside the range of the
                            calibration curve.
   --noInterpolation        Do not interpolate the calibration curve.
+  --noTrimCalCurve         Do not trim the calibration curve before the
+                           calibration. If a probability distribution over the
+                           entire range of the calibration curve is needed. See
+                           also --noTrimOutCalPDF.
+  --noTrimOutCalPDF        Do not trim the output CalPDF. If an untrimmed
+                           probability distribution is needed. See also
+                           --noTrimCalCurve.
   -q,--quiet               Suppress the printing of calibration results to the
                            command line.
+  --basicFile FILE         Path to an output file to store basic, per-expression
+                           output: The minimum start and maximum end of the high
+                           probability density regions and the median age.
   --densityFile FILE       Path to an output file to store output densities per
                            CalEXPR and calender year.
   --hdrFile FILE           Path to an output file to store the high probability
