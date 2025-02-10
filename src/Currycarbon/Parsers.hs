@@ -2,18 +2,18 @@
 
 module Currycarbon.Parsers where
 
-import           Currycarbon.CalCurves (intcal20)
+import           Currycarbon.CalCurves         (intcal20)
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
-import           Control.Exception              (throwIO)
+import           Control.Exception             (throwIO)
 import           Currycarbon.Calibration.Utils
-import           Data.List                      (intercalate, transpose)
-import qualified Data.Vector                    as V
-import qualified Data.Vector.Unboxed            as VU
-import qualified Text.Parsec                    as P
-import qualified Text.Parsec.String             as P
+import           Data.List                     (intercalate, transpose)
+import qualified Data.Vector                   as V
+import qualified Data.Vector.Unboxed           as VU
+import qualified Text.Parsec                   as P
+import qualified Text.Parsec.String            as P
 
 -- * Parsing, rendering and writing functions
 --
