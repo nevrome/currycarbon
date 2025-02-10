@@ -55,7 +55,7 @@ module Currycarbon (
     RandomAgeSample (..)
     ) where
 
-import           Currycarbon.CalCurves.Intcal20
+import           Currycarbon.CalCurves
 import           Currycarbon.Calibration.Calibration
 import           Currycarbon.Calibration.Utils       (normalizeCalPDF)
 import           Currycarbon.Parsers

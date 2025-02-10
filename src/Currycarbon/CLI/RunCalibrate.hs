@@ -1,7 +1,7 @@
 module Currycarbon.CLI.RunCalibrate
     (CalibrateOptions (..), runCalibrate) where
 
-import           Currycarbon.CalCurves.Intcal20
+import           Currycarbon.CalCurves
 import           Currycarbon.Calibration.Calibration
 import           Currycarbon.Parsers
 import           Currycarbon.SumCalibration

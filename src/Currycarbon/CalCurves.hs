@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Currycarbon.CalCurves.Intcal20 where
+module Currycarbon.CalCurves where
 
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types

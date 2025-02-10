@@ -2,7 +2,7 @@
 
 module Currycarbon.Parsers where
 
-import           Currycarbon.CalCurves.Intcal20 (intcal20)
+import           Currycarbon.CalCurves (intcal20)
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
 import           Currycarbon.Utils

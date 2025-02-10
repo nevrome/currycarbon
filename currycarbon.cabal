@@ -20,7 +20,7 @@ source-repository head
 library
     exposed-modules:
       Currycarbon
-      Currycarbon.CalCurves.Intcal20
+      Currycarbon.CalCurves
       Currycarbon.Calibration.Utils
       Currycarbon.Calibration.MatrixMult
       Currycarbon.Calibration.Bchron
