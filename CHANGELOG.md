@@ -1,4 +1,5 @@
 - V 0.4.0.0: Another major update:
+    - Added more calibration curves next to `intcal20`: `shcal20` and `marine20`. Renamed the `Currycarbon.CalCurves.IntCal20` module to just `Currycarbon.CalCurves`. In the CLI, `--calCurveFile` is now just `--calCurve`, and it allows to either select the different packaged curves or read arbitrary .14c files.
     - Added a new CLI plot element to the output of individual dates. `renderCLIPlotCalCurve` plots a relevant section of the calibration curve.
     - Added the command line options `--noTrimCalCurve` and `--noTrimOutCalPDF` to allow control over the pre- and post-calibration trimming behaviour for radiocarbon dates.
     - Changed the way products between calibration expressions are computed in `evalCalExpr`. Input expressions in a multiplication are now calibrated for the entire length of the calibration curve. This allows to compute proper products and not fail in case of non-overlapping output.
