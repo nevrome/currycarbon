@@ -486,6 +486,9 @@ splitEvery _ [] = []
 splitEvery n list = first : splitEvery n rest
     where (first,rest) = splitAt n list
 
+avg :: [Double] -> Double
+avg x = sum x / fromIntegral (length x)
+
 padString :: Int -> String -> String
 padString l x = replicate (l - length x) ' ' ++ x
 
@@ -501,8 +504,9 @@ renderCLIPlotCalCurve
     (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma))) =
     let startYear = VU.head cals
         stopYear = VU.last cals
-        -- TODO: check if punch out has exactly the right cutting points
-        calCurveSegment = punchOutCalCurveBCAD startYear stopYear $ makeBCADCalCurve $ interpolateCalCurve intcal20
+        -- prepare calcurve
+        calcurvePrep = makeBCADCalCurve $ interpolateCalCurve intcal20
+        calCurveSegment = punchOutCalCurveBCAD startYear stopYear calcurvePrep
         calCurveUncals = VU.map fromIntegral $ _calCurveBCADUnCals calCurveSegment
         calCurveUncalStart = bcad2BP $ round $ VU.head calCurveUncals
         calCurveUncalStop = bcad2BP $ round $ VU.last calCurveUncals
@@ -510,14 +514,20 @@ renderCLIPlotCalCurve
             0 -> 1 -- relevant for very short PDFs
             1 -> 2
             q -> q
-        meanUncalcalCurveUncalsAgePerCol = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList calCurveUncals
-        minUncalYear = minimum meanUncalcalCurveUncalsAgePerCol
-        maxUncalYear = maximum meanUncalcalCurveUncalsAgePerCol
-        meanYearPerCol = map (rescaleToRows minUncalYear maxUncalYear) meanUncalcalCurveUncalsAgePerCol
-        uncalAgePlusSigma = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD (yearBP + sigma)
-        uncalAge = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD yearBP
-        uncalAgeMinusSigma = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD (yearBP - sigma)
-        plotRows = map (\x -> yAxis calCurveUncalStart calCurveUncalStop uncalAge x ++ map (getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma x) meanYearPerCol) [0..rows]
+        meanUncalPerCol = map avg $ splitEvery yearsPerCol $ VU.toList calCurveUncals
+        meanYearsPerCol = map rescale meanUncalPerCol
+        -- rescaling setup for rendering to correct size
+        minUncalYear = minimum meanUncalPerCol
+        maxUncalYear = maximum meanUncalPerCol
+        rescale = rescaleToRows minUncalYear maxUncalYear
+        -- prepare static elements for uncal date
+        uncalAgePlusSigma = rescale $ fromIntegral $ bp2BCAD (yearBP + sigma)
+        uncalAge = rescale $ fromIntegral $ bp2BCAD yearBP
+        uncalAgeMinusSigma = rescale $ fromIntegral $ bp2BCAD (yearBP - sigma)
+        -- perform row-wise rendering
+        renderYAxis = yAxis calCurveUncalStart calCurveUncalStop uncalAge
+        renderRow = getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma
+        plotRows = map (\r -> renderYAxis r ++ map (renderRow r) meanYearsPerCol) [0..rows]
     in  intercalate "\n" plotRows
     where
         yAxis :: Word -> Word -> Int -> Int -> String
