@@ -496,7 +496,9 @@ roundTo10 x =
     in roundedDec * 10 * signum x
 
 renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalPDF -> NamedCalExpr -> String
-renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma)))  =
+renderCLIPlotCalCurve
+    ascii rows cols (CalPDF _ cals _)
+    (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma))) =
     let startYear = VU.head cals
         stopYear = VU.last cals
         -- TODO: check if punch out has exactly the right cutting points
@@ -515,14 +517,14 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDa
         uncalAgePlusSigma = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD (yearBP + sigma)
         uncalAge = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD yearBP
         uncalAgeMinusSigma = rescaleToRows minUncalYear maxUncalYear $ fromIntegral $ bp2BCAD (yearBP - sigma)
-        plotRows = map (\x -> pre calCurveUncalStart calCurveUncalStop uncalAge x ++ map (getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma x) meanYearPerCol) [0..rows]
+        plotRows = map (\x -> yAxis calCurveUncalStart calCurveUncalStop uncalAge x ++ map (getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma x) meanYearPerCol) [0..rows]
     in  intercalate "\n" plotRows
     where
-        pre :: Word -> Word -> Int -> Int -> String
-        pre ysta ysto a x
-            | a == x = padString 6 (show $ roundTo10 $ fromIntegral yearBP) ++ " " ++ getSymbol ascii YAxisTick : " "
-            | x == 0 = padString 6 (show $ roundTo10 $ fromIntegral ysta) ++ " " ++ getSymbol ascii YAxisTick : " "
-            | x == 8 = padString 6 (show $ roundTo10 $ fromIntegral ysto) ++ " " ++ getSymbol ascii YAxisTick : " "
+        yAxis :: Word -> Word -> Int -> Int -> String
+        yAxis ysta ysto a x
+            | a == x = makeTick yearBP
+            | x == 0 = makeTick ysta
+            | x == 8 = makeTick ysto
             | otherwise = replicate 6 ' ' ++ " " ++ getSymbol ascii YAxisLine : " "
         rescaleToRows :: Double -> Double -> Double -> Int
         rescaleToRows minVal maxVal x =
@@ -536,6 +538,9 @@ renderCLIPlotCalCurve ascii rows cols (CalPDF _ cals _) (NamedCalExpr _ (UnCalDa
             | x == pa = getSymbol ascii RibbonLine
             | x == ma = getSymbol ascii RibbonLine
             | otherwise = ' '
+        makeTick :: (Integral n) => n -> String
+        makeTick n = padString 6 (show $ roundTo10 $ fromIntegral n) ++ " " ++ getSymbol ascii YAxisTick : " "
+renderCLIPlotCalCurve _ _ _ _ _ = ""
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =

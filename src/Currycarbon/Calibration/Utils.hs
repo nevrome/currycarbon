@@ -65,9 +65,13 @@ makeBCADCalCurve (CalCurveBP cals uncals sigmas) = CalCurveBCAD (vectorBPToBCAD 
 punchOutCalCurveBCAD :: Int -> Int -> CalCurveBCAD -> CalCurveBCAD
 punchOutCalCurveBCAD start stop (CalCurveBCAD cals uncals sigmas) =
     let startIndex = fromMaybe 0 $ VU.findIndex (>= start) cals
-        stopIndex = (VU.length cals - 1) - fromMaybe 0 (VU.findIndex (<= stop) $ VU.reverse cals)
+        stopIndex = VU.length cals - fromMaybe 0 (VU.findIndex (<= stop) $ VU.reverse cals)
         toIndex = stopIndex - startIndex
-    in CalCurveBCAD (VU.slice startIndex toIndex cals) (VU.slice startIndex toIndex uncals) (VU.slice startIndex toIndex sigmas)
+    --in error $ show $ (start, stop, VU.slice startIndex toIndex cals)
+    in CalCurveBCAD
+       (VU.slice startIndex toIndex cals)
+       (VU.slice startIndex toIndex uncals)
+       (VU.slice startIndex toIndex sigmas)
 
 vectorBPToBCAD :: VU.Vector YearBP -> VU.Vector YearBCAD
 vectorBPToBCAD = VU.map bp2BCAD
