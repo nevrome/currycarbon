@@ -10,14 +10,14 @@ import qualified Data.Vector.Unboxed       as VU
 import qualified Text.Parsec               as P
 import qualified Text.Parsec.String        as P
 
-data CalCurveSelection = 
+data CalCurveSelection =
       IntCal20 | SHCal20 | Marine20
     | CalCurveFromFile FilePath
 
 instance Show CalCurveSelection where
-    show IntCal20 = "IntCal20"
-    show SHCal20  = "SHCal20"
-    show Marine20 = "Marine20"
+    show IntCal20                = "IntCal20"
+    show SHCal20                 = "SHCal20"
+    show Marine20                = "Marine20"
     show (CalCurveFromFile path) = path
 
 readCalCurveSelection :: String -> Either String CalCurveSelection
@@ -36,9 +36,9 @@ parseCalCurveSelection =  do
         p          -> return $ CalCurveFromFile p
 
 getCalCurve :: CalCurveSelection -> IO CalCurveBP
-getCalCurve IntCal20 = pure intcal20
-getCalCurve SHCal20  = pure shcal20
-getCalCurve Marine20 = pure marine20
+getCalCurve IntCal20                = pure intcal20
+getCalCurve SHCal20                 = pure shcal20
+getCalCurve Marine20                = pure marine20
 getCalCurve (CalCurveFromFile path) = readCalCurveFromFile path
 
 -- | Read a calibration curve file. The file must adhere to the current version of the

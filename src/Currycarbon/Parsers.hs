@@ -3,10 +3,10 @@
 module Currycarbon.Parsers where
 
 import           Currycarbon.CalCurves         (intcal20)
+import           Currycarbon.Calibration.Utils
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
 import           Currycarbon.Utils
-import           Currycarbon.Calibration.Utils
 
 import           Control.Exception             (throwIO)
 import           Data.List                     (intercalate, transpose)

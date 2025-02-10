@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import           Currycarbon.CalCurves
 import           Currycarbon.CLI.RunCalibrate (CalibrateOptions (..),
                                                runCalibrate)
 import           Currycarbon.Parsers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import           Paths_currycarbon            (version)
-import Currycarbon.CalCurves
 
 import           Control.Exception            (catch)
 import           Data.Version                 (showVersion)
