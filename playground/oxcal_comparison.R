@@ -1,3 +1,4 @@
+library(magrittr)
 library(ggplot2)
 oxcAAR::quickSetupOxcal()
 
@@ -33,6 +34,20 @@ run_currycarbon <- function(code) {
       density = density/max(density)
     )
 }
+
+# Test 0
+
+oxcal_test0 <- run_oxcal(
+  'R_Date("A",3000,30);'
+)
+
+currycarbon_test0 <- run_currycarbon(
+  "A,3000,30"
+)
+
+ggplot(mapping = aes(x = yearBCAD, y = density)) +
+  geom_line(data = oxcal_test0) +
+  geom_line(data = currycarbon_test0, color = "red")
 
 # Test 1
 
@@ -141,7 +156,8 @@ ggplot(mapping = aes(x = yearBCAD, y = density)) +
     size = 0.1
   )
 
-# oxcal behaves differently with complex models, maybe because of intermediate normalization
+# oxcal behaves differently with a nested expression describing the same model
+# maybe because of intermediate normalization
 ggplot(mapping = aes(x = yearBCAD, y = density)) +
   geom_line(
     data = oxcal_test3b,
@@ -151,3 +167,28 @@ ggplot(mapping = aes(x = yearBCAD, y = density)) +
     color = "green",
     size = 0.1
   )
+
+# Test 4
+
+oxcal_test4 <- run_oxcal(
+  '
+  Combine("A*(B*C)")
+  {
+    R_Date("A",1700,30);
+    Combine("B*C")
+    {
+      R_Date("B",2000,30);
+      R_Date("C",2300,30);
+    };
+  };
+'
+)
+
+currycarbon_test4 <- run_currycarbon(
+  "A,1700,30*(B,2000,30*C,2300,30)"
+)
+
+# here oxcal behaves really odd
+ggplot(mapping = aes(x = yearBCAD, y = density)) +
+  geom_line(data = oxcal_test4) +
+  geom_line(data = currycarbon_test4, color = "red")

@@ -10,21 +10,26 @@ import           Currycarbon.Utils
 import qualified Data.Vector.Unboxed           as VU
 
 -- | Intercept calibration as implemented in the Bchron R package (see 'Bchron')
-calibrateDateBchron :: CalibrationDistribution -> Bool -> Bool -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
-calibrateDateBchron distr allowOutside interpolate calCurve uncalC14@(UncalC14 name age ageSd) =
+calibrateDateBchron :: CalibrationDistribution -> CalibrateDatesConf -> CalCurveBP -> UncalC14 -> Either CurrycarbonException CalPDF
+calibrateDateBchron distr (CalibrateDatesConf allowOutside interpolate trimCurve trimDens) calCurve uncalC14@(UncalC14 name age ageSd) =
     if not allowOutside && isOutsideRangeOfCalCurve calCurve uncalC14
     then Left $ CurrycarbonCalibrationRangeException $ renderUncalC14 uncalC14
     else
-        let rawCalCurveSegment = getRelevantCalCurveSegment uncalC14 calCurve
+        let rawCalCurveSegment = if trimCurve
+                                 then getRelevantCalCurveSegment uncalC14 calCurve
+                                 else calCurve
             CalCurveBCAD cals mus tau1s = prepareCalCurveSegment interpolate rawCalCurveSegment
-            ageFloat = -(fromIntegral age)+1950
-            ageSd2 = ageSd*ageSd
-            ageSd2Float = fromIntegral ageSd2
-            musFloat = VU.map fromIntegral mus
-            tau1sFloat = VU.map fromIntegral tau1s
+            ageDouble = -(fromIntegral age)+1950
+            ageSd2Double = fromIntegral $ ageSd*ageSd
+            musDouble = VU.map fromIntegral mus
+            tau1sDouble = VU.map fromIntegral tau1s
             dens = case distr of
                 NormalDist ->
-                    VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
+                    VU.zipWith (\mu tau1 -> dnorm 0 1 ((ageDouble - mu) / sqrt (ageSd2Double + tau1 * tau1))) musDouble tau1sDouble
                 StudentTDist degreesOfFreedom ->
-                    VU.zipWith (\mu tau1 -> dt degreesOfFreedom ((ageFloat - mu) / sqrt (ageSd2Float + tau1 * tau1))) musFloat tau1sFloat
-        in Right $ trimLowDensityEdgesCalPDF $ normalizeCalPDF $ CalPDF name cals dens
+                    VU.zipWith (\mu tau1 -> dt degreesOfFreedom ((ageDouble - mu) / sqrt (ageSd2Double + tau1 * tau1))) musDouble tau1sDouble
+            calPDF = CalPDF name cals dens
+            res = if trimDens
+                  then trimLowDensityEdgesCalPDF $ normalizeCalPDF calPDF
+                  else normalizeCalPDF calPDF
+        in Right res

@@ -1,10 +1,9 @@
 module GoldenSpec (spec) where
 
-import           Control.Applicative
 import           Control.Monad
 import           System.IO
 import           System.Process
-import           Test.Hspec          (Spec, describe, it, shouldBe)
+import           Test.Hspec     (Spec, describe, it, shouldBe)
 
 spec :: Spec
 spec = goldenTest
@@ -16,7 +15,7 @@ goldenTest =
 
     let stdout_stderr_tests = [
               "single_radiocarbon_date"
-            , "cli_error_behaviour"
+            , "tricky_expressions"
             ]
 
     runStdoutStderrTests stdout_stderr_tests

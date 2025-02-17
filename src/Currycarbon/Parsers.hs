@@ -2,16 +2,18 @@
 
 module Currycarbon.Parsers where
 
+import           Currycarbon.CalCurves         (intcal20)
+import           Currycarbon.Calibration.Utils
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
-import           Control.Exception         (throwIO)
-import           Data.List                 (intercalate, transpose)
-import qualified Data.Vector               as V
-import qualified Data.Vector.Unboxed       as VU
-import qualified Text.Parsec               as P
-import qualified Text.Parsec.String        as P
+import           Control.Exception             (throwIO)
+import           Data.List                     (intercalate, transpose)
+import qualified Data.Vector                   as V
+import qualified Data.Vector.Unboxed           as VU
+import qualified Text.Parsec                   as P
+import qualified Text.Parsec.String            as P
 
 -- * Parsing, rendering and writing functions
 --
@@ -77,6 +79,8 @@ renderCalDatePretty ascii (calExpr, calPDF, calC14) =
     "CalEXPR: " ++ intercalate "\n" [
           renderNamedCalExpr calExpr
         , renderCalC14 calC14
+        , ""
+        , renderCLIPlotCalCurve ascii 8 50 calPDF calExpr
         , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
         ]
 
@@ -269,7 +273,55 @@ parseUncalC14 = P.try record P.<|> P.try long P.<|> short
             return (UncalC14 "" age sigma)
 
 -- CalC14
--- | Write 'CalC14's to the file system. The output file is a long .tsv file with the following structure:
+renderCalC14s :: [CalC14] -> String
+renderCalC14s xs =
+    "Calibrated high density ranges (HDR):\n"
+    ++ intercalate "\n" (map renderCalC14 xs)
+
+renderCalC14 :: CalC14 -> String
+renderCalC14 (CalC14 _ rangeSummary hdrs68 hdrs95) =
+       "Calibrated: " ++ renderCalRangeSummary rangeSummary ++ "\n"
+    ++ "1-sigma: " ++ renderHDRs hdrs68 ++ "\n"
+    ++ "2-sigma: " ++ renderHDRs hdrs95
+
+-- CalC14 - CalRangeSummary
+-- | Write 'CalRangeSummary's to the file system. The output file is a .tsv file with the following structure:
+--
+-- @
+-- id	startTwoSigmaYearBCAD	startOneSigmaYearBCAD	medianYearBCAD	stopOneSigmaYearBCAD	stopTwoSigmaYearBCAD
+-- Sample1	-3941	-3894	-3773	-3709	-3655
+-- Sample3	-2572	-2566	-2527	-2472	-2467
+-- @
+--
+writeCalC14CalRangeSummaries :: FilePath -> [CalC14] -> IO ()
+writeCalC14CalRangeSummaries path calC14s = writeFile path $
+    "id\tstartTwoSigmaYearBCAD\tstartOneSigmaYearBCAD\tmedianYearBCAD\tstopOneSigmaYearBCAD\tstopTwoSigmaYearBCAD\n"
+    ++ intercalate "\n" (map renderCalC14CalRangeSummaryForFile calC14s)
+
+writeCalC14CalRangeSummary :: FilePath -> CalC14 -> IO ()
+writeCalC14CalRangeSummary path calC14 = writeFile path $
+    "id\tstartTwoSigmaYearBCAD\tstartOneSigmaYearBCAD\tmedianYearBCAD\tstopOneSigmaYearBCAD\tstopTwoSigmaYearBCAD\n"
+    ++ renderCalC14CalRangeSummaryForFile calC14
+
+appendCalC14CalRangeSummary :: FilePath -> CalC14 -> IO ()
+appendCalC14CalRangeSummary path calC14 =
+    appendFile path $ "\n" ++ renderCalC14CalRangeSummaryForFile calC14
+
+renderCalC14CalRangeSummaryForFile :: CalC14 -> String
+renderCalC14CalRangeSummaryForFile (CalC14 name (CalRangeSummary start2 start1 median stop1 stop2) _ _) =
+    intercalate "\t" $ name:map show [start2,start1,median,stop1,stop2]
+
+-- CalRangeSummary
+renderCalRangeSummary :: CalRangeSummary -> String
+renderCalRangeSummary s =
+       renderYearBCAD (_calRangeStartTwoSigma s) ++ " >> "
+    ++ renderYearBCAD (_calRangeStartOneSigma s) ++ " > "
+    ++ renderYearBCAD (_calRangeMedian s) ++ " < "
+    ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " << "
+    ++ renderYearBCAD (_calRangeStopTwoSigma s)
+
+-- CalC14 - HDR
+-- | Write 'HDR's to the file system. The output file is a long .tsv file with the following structure:
 --
 -- @
 -- id  hdrSigmaLevel  hdrStartYearBCAD  hdrStopYearBCAD
@@ -287,22 +339,22 @@ parseUncalC14 = P.try record P.<|> P.try long P.<|> short
 -- Sample2	2	-1393	-1334
 -- @
 --
-writeCalC14s :: FilePath -> [CalC14] -> IO ()
-writeCalC14s path calC14s = writeFile path $
+writeCalC14HDRs :: FilePath -> [CalC14] -> IO ()
+writeCalC14HDRs path calC14s = writeFile path $
     "id\thdrSigmaLevel\thdrStartYearBCAD\thdrStopYearBCAD\n"
-    ++ intercalate "\n" (map renderCalC14ForFile calC14s)
+    ++ intercalate "\n" (map renderCalC14HDRForFile calC14s)
 
-writeCalC14 :: FilePath -> CalC14 -> IO ()
-writeCalC14 path calC14 = writeFile path $
+writeCalC14HDR :: FilePath -> CalC14 -> IO ()
+writeCalC14HDR path calC14 = writeFile path $
     "id\thdrSigmaLevel\thdrStartYearBCAD\thdrStopYearBCAD\n"
-    ++ renderCalC14ForFile calC14
+    ++ renderCalC14HDRForFile calC14
 
-appendCalC14 :: FilePath -> CalC14 -> IO ()
-appendCalC14 path calC14 =
-    appendFile path $ "\n" ++ renderCalC14ForFile calC14
+appendCalC14HDR :: FilePath -> CalC14 -> IO ()
+appendCalC14HDR path calC14 =
+    appendFile path $ "\n" ++ renderCalC14HDRForFile calC14
 
-renderCalC14ForFile :: CalC14 -> String
-renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
+renderCalC14HDRForFile :: CalC14 -> String
+renderCalC14HDRForFile (CalC14 name _ hdrs68 hdrs95) =
     intercalate "\n" $
         map renderRow $
         zip3 (repeat name) (repeat "1") (renderHDRsForFile hdrs68) ++
@@ -310,25 +362,6 @@ renderCalC14ForFile (CalC14 name _ hdrs68 hdrs95) =
     where
         renderRow :: (String, String, (String, String)) -> String
         renderRow (a, b, (c, d)) = intercalate "\t" [a,b,c,d]
-
-renderCalC14s :: [CalC14] -> String
-renderCalC14s xs =
-    "Calibrated high density ranges (HDR):\n"
-    ++ intercalate "\n" (map renderCalC14 xs)
-
-renderCalC14 :: CalC14 -> String
-renderCalC14 (CalC14 _ rangeSummary hdrs68 hdrs95) =
-       "Calibrated: " ++ renderCalRangeSummary rangeSummary ++ "\n"
-    ++ "1-sigma: " ++ renderHDRs hdrs68 ++ "\n"
-    ++ "2-sigma: " ++ renderHDRs hdrs95
-
-renderCalRangeSummary :: CalRangeSummary -> String
-renderCalRangeSummary s =
-       renderYearBCAD (_calRangeStartTwoSigma s) ++ " >> "
-    ++ renderYearBCAD (_calRangeStartOneSigma s) ++ " > "
-    ++ renderYearBCAD (_calRangeMedian s) ++ " < "
-    ++ renderYearBCAD (_calRangeStopOneSigma s) ++ " << "
-    ++ renderYearBCAD (_calRangeStopTwoSigma s)
 
 -- BP
 renderYearBP :: YearBP -> String
@@ -342,7 +375,7 @@ renderYearBCAD x
     | x >= 0 = show x ++ "AD"
     | otherwise = error $ "This should never happen: " ++ show x
 
--- HDR
+-- HDR for CLI output
 renderHDRsForFile :: [HDR] -> [(String, String)]
 renderHDRsForFile = map renderHDRForFile
 
@@ -416,7 +449,109 @@ renderCalPDF (CalPDF name cals dens) =
       makeRow (x,y) = name ++ "\t" ++ show x ++ "\t" ++ show y ++ "\n"
 
 -- cli plot
-data PlotSymbol = HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
+data PlotSymbol =
+    -- density histogram
+      HistFill | HistTop | AxisEnd | AxisLine | AxisTick | HDRLine
+    -- calcurve plot
+    | CalCurve | BPLine | RibbonLine | YAxisLine | YAxisTick
+
+getSymbol :: Bool -> PlotSymbol -> Char
+-- density histogram
+getSymbol True  HistFill   = '*'
+getSymbol False HistFill   = '▒'
+getSymbol True  HistTop    = '_'
+getSymbol False HistTop    = '▁'
+getSymbol True  AxisEnd    = '+'
+getSymbol False AxisEnd    = '┄'
+getSymbol True  AxisLine   = '-'
+getSymbol False AxisLine   = '─'
+getSymbol True  AxisTick   = '|'
+getSymbol False AxisTick   = '┬'
+getSymbol True  HDRLine    = '-'
+getSymbol False HDRLine    = '─'
+-- calcurve plot
+getSymbol True CalCurve    = '|'
+getSymbol False CalCurve   = '┆'
+getSymbol True BPLine      = '-'
+getSymbol False BPLine     = '┅'
+getSymbol True RibbonLine  = '-'
+getSymbol False RibbonLine = '┄'
+getSymbol True YAxisLine   = '|'
+getSymbol False YAxisLine  = '│'
+getSymbol True YAxisTick   = '|'
+getSymbol False YAxisTick  = '┤'
+
+splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
+splitEvery _ [] = []
+splitEvery n list = first : splitEvery n rest
+    where (first,rest) = splitAt n list
+
+avg :: [Double] -> Double
+avg x = sum x / fromIntegral (length x)
+
+padString :: Int -> String -> String
+padString l x = replicate (l - length x) ' ' ++ x
+
+roundTo10 :: Int -> Int
+roundTo10 x =
+    let (dec,rest) = quotRem (abs x) 10
+        roundedDec = if rest >= 5 then dec + 1 else dec
+    in roundedDec * 10 * signum x
+
+renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalPDF -> NamedCalExpr -> String
+renderCLIPlotCalCurve
+    ascii rows cols (CalPDF _ cals _)
+    (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma))) =
+    let startYear = VU.head cals
+        stopYear = VU.last cals
+        -- prepare calcurve
+        calcurvePrep = makeBCADCalCurve $ interpolateCalCurve intcal20
+        calCurveSegment = punchOutCalCurveBCAD startYear stopYear calcurvePrep
+        calCurveUncals = VU.map fromIntegral $ _calCurveBCADUnCals calCurveSegment
+        calCurveUncalStart = bcad2BP $ round $ VU.head calCurveUncals
+        calCurveUncalStop = bcad2BP $ round $ VU.last calCurveUncals
+        yearsPerCol = case quot (VU.length calCurveUncals) cols of
+            0 -> 1 -- relevant for very short PDFs
+            1 -> 2
+            q -> q
+        meanUncalPerCol = map avg $ splitEvery yearsPerCol $ VU.toList calCurveUncals
+        meanYearsPerCol = map rescale meanUncalPerCol
+        -- rescaling setup for rendering to correct size
+        minUncalYear = minimum meanUncalPerCol
+        maxUncalYear = maximum meanUncalPerCol
+        rescale = rescaleToRows minUncalYear maxUncalYear
+        -- prepare static elements for uncal date
+        uncalAgePlusSigma = rescale $ fromIntegral $ bp2BCAD (yearBP + sigma)
+        uncalAge = rescale $ fromIntegral $ bp2BCAD yearBP
+        uncalAgeMinusSigma = rescale $ fromIntegral $ bp2BCAD (yearBP - sigma)
+        -- perform row-wise rendering
+        renderYAxis = yAxis calCurveUncalStart calCurveUncalStop uncalAge
+        renderRow = getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma
+        plotRows = map (\r -> renderYAxis r ++ map (renderRow r) meanYearsPerCol) [0..rows]
+        axisUnitLine = replicate 4 ' ' ++ "BP"
+    in  intercalate "\n" $ axisUnitLine:plotRows
+    where
+        yAxis :: Word -> Word -> Int -> Int -> String
+        yAxis ysta ysto a x
+            | a == x = makeTick yearBP
+            | x == 0 = makeTick ysta
+            | x == 8 = makeTick ysto
+            | otherwise = replicate 6 ' ' ++ " " ++ getSymbol ascii YAxisLine : " "
+        rescaleToRows :: Double -> Double -> Double -> Int
+        rescaleToRows minVal maxVal x =
+            let range  = maxVal - minVal
+                scaler = fromIntegral rows / range
+            in (round . (*) scaler . subtract minVal) x
+        getLineSymbol :: Int -> Int -> Int -> Int -> Int -> Char
+        getLineSymbol ma a pa x y
+            | x == y = getSymbol ascii CalCurve
+            | a == x = getSymbol ascii BPLine
+            | x == pa = getSymbol ascii RibbonLine
+            | x == ma = getSymbol ascii RibbonLine
+            | otherwise = ' '
+        makeTick :: (Integral n) => n -> String
+        makeTick n = padString 6 (show $ roundTo10 $ fromIntegral n) ++ " " ++ getSymbol ascii YAxisTick : " "
+renderCLIPlotCalCurve _ _ _ _ _ = ""
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
@@ -429,35 +564,16 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
         -- last bin will often be shorter, which renders the whole plot slightly incorrect for the last column
          meanDensPerCol = calculateMeanDens yearsPerCol dens
          effectiveCols = length meanDensPerCol
-         plotRows = map (replicate 8 ' ' ++) $ map (\x -> map (getHistSymbol x) meanDensPerCol) $ reverse [0..rows]
+         plotRows = map (replicate 9 ' ' ++) $ map (\x -> map (getHistSymbol x) meanDensPerCol) $ reverse [0..rows]
          xAxis = constructXAxis startYear stopYear effectiveCols yearsPerCol
      in intercalate "\n" plotRows ++ "\n" ++ xAxis
      where
-        calculateMeanDens :: Int -> VU.Vector Float -> [Int]
+        calculateMeanDens :: Int -> VU.Vector Double -> [Int]
         calculateMeanDens yearsPerCol dens_ =
             let scaling = fromIntegral rows
                 meanDens = map (\x -> sum x / fromIntegral (length x)) $ splitEvery yearsPerCol $ VU.toList dens_
                 maxDens = maximum meanDens
             in map (\x -> round $ (x / maxDens) * scaling) meanDens
-        splitEvery :: Int -> [a] -> [[a]] -- https://stackoverflow.com/a/8681226/3216883
-        splitEvery _ [] = []
-        splitEvery n list = first : splitEvery n rest
-            where (first,rest) = splitAt n list
-        padString :: Int -> String -> String
-        padString l x = replicate (l - length x) ' ' ++ x
-        getSymbol :: Bool -> PlotSymbol -> Char
-        getSymbol True HistFill  = '*'
-        getSymbol False HistFill = '▒'
-        getSymbol True HistTop   = '_'
-        getSymbol False HistTop  = '▁'
-        getSymbol True AxisEnd   = '+'
-        getSymbol False AxisEnd  = '┄'
-        getSymbol True AxisLine  = '-'
-        getSymbol False AxisLine = '─'
-        getSymbol True AxisTick  = '|'
-        getSymbol False AxisTick = '┬'
-        getSymbol True HDRLine   = '-'
-        getSymbol False HDRLine  = '─'
         getHistSymbol :: Int -> Int -> Char
         getHistSymbol x y
             | x == y = getSymbol ascii HistTop
@@ -475,15 +591,10 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                 hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14))    colStartYears colStopYears
                 hdrTwo      = zipWith (getHDRSymbol (_calC14HDRTwoSigma c14))    colStartYears colStopYears
             in  startS ++ (" " ++ [getSymbol ascii AxisEnd]) ++ axis ++ ([getSymbol ascii AxisEnd] ++ " ") ++ stopS ++ "\n" ++
-                replicate 8 ' ' ++ simpleRange ++ "\n" ++
-                replicate 8 ' ' ++ hdrOne ++ "\n" ++
-                replicate 8 ' ' ++ hdrTwo
+                replicate 4 ' ' ++ getADBC startYear ++ "   " ++ simpleRange ++ " " ++ getADBC stopYear ++ "\n" ++
+                replicate 9 ' ' ++ hdrOne ++ "\n" ++
+                replicate 9 ' ' ++ hdrTwo
             where
-                roundTo10 :: Int -> Int
-                roundTo10 x =
-                    let (dec,rest) = quotRem (abs x) 10
-                        roundedDec = if rest >= 5 then dec + 1 else dec
-                    in roundedDec * 10 * signum x
                 getAxisSymbol :: Int -> Int -> Int -> Char
                 getAxisSymbol tickFreq colStartYear colStopYear
                     | any (\x -> rem x tickFreq == 0) [colStartYear..colStopYear] = getSymbol ascii AxisTick
@@ -505,6 +616,10 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                         doesOverlap a b h =
                             let ha = _hdrstart h; hb = _hdrstop h
                             in (a >= ha && a <= hb) || (b >= ha && b <= hb) || (a <= ha && b >= hb)
+                getADBC :: Int -> String
+                getADBC y
+                    | y < 0 = "BC"
+                    | otherwise = "AD"
 
 -- CalCurve
 writeCalCurve :: FilePath -> CalCurveBCAD -> IO ()
@@ -518,43 +633,6 @@ renderCalCurve (CalCurveBCAD cals uncals sigmas) =
     in header ++ intercalate "\n" body
     where
       makeRow (x,y,z) = show x ++ "\t" ++ show y ++ "\t" ++ show z
-
--- | Read a calibration curve file. The file must adhere to the current version of the
--- .c14 file format (e.g. [here](http://intcal.org/curves/intcal20.14c)). Look
--- [here](http://intcal.org/blurb.html) for other calibration curves
-readCalCurveFromFile :: FilePath -> IO CalCurveBP
-readCalCurveFromFile calCurveFile = do
-    calCurve <- readFile calCurveFile
-    return $ readCalCurve calCurve
-
-readCalCurve :: String -> CalCurveBP
-readCalCurve calCurveString = do
-    case P.runParser parseCalCurve () "" calCurveString of
-        Left p  -> error $ "This should never happen." ++ show p
-        Right x -> CalCurveBP
-            (VU.fromList $ map (\(a,_,_) -> a) x)
-            (VU.fromList $ map (\(_,b,_) -> b) x)
-            (VU.fromList $ map (\(_,_,c) -> c) x)
-
-parseCalCurve :: P.Parser [(YearBP, YearBP, YearRange)]
-parseCalCurve = do
-    P.skipMany comments
-    P.sepEndBy parseCalCurveLine (P.manyTill P.anyToken (P.try P.newline))
-
-parseCalCurveLine :: P.Parser (YearBP, YearBP, YearRange)
-parseCalCurveLine = do
-  calBP <- parseWord
-  _ <- P.oneOf ","
-  bp <- parseWord
-  _ <- P.oneOf ","
-  sigma <- parseWord
-  return (calBP, bp, sigma)
-
-comments :: P.Parser String
-comments = do
-    _ <- P.string "#"
-    _ <- P.manyTill P.anyChar P.newline
-    return ""
 
 -- RandomAgeSamples
 -- | Write 'RandomAgeSamples's to the file system. The output file is a long .tsv file with the following structure:

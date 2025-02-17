@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import           Currycarbon.CalCurves
 import           Currycarbon.CLI.RunCalibrate (CalibrateOptions (..),
                                                runCalibrate)
 import           Currycarbon.Parsers
@@ -59,12 +60,15 @@ optParser = CmdCalibrate <$> calibrateOptParser
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
                                       <*> optParseNamedCalExprFromFile
-                                      <*> optParseCalCurveFromFile
+                                      <*> optParseCalCurveSelection
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
                                       <*> optParseDontInterpolateCalCurve
+                                      <*> optParseDontTrimCalCurve
+                                      <*> optParseDontTrimOutCalPDF
                                       <*> optParseQuiet
                                       <*> pure "unknown"
+                                      <*> optParseBasicFile
                                       <*> optParseDensityFile
                                       <*> optParseHDRFile
                                       <*> optParseAgeSamplingSettings
@@ -143,14 +147,15 @@ optParseNamedCalExprFromFile = OP.many (OP.strOption (
             \<sample name>,<mean age BP>,<one sigma standard deviation>."
     ))
 
-optParseCalCurveFromFile :: OP.Parser (Maybe FilePath)
-optParseCalCurveFromFile = OP.option (Just <$> OP.str) (
-    OP.long "calCurveFile" <>
-    OP.metavar "FILE" <>
-    OP.help "Path to an calibration curve file in '.14c' format. \
-            \The calibration curve will be read and used for calibration. \
-            \If no file is provided, currycarbon will use the 'intcal20' curve." <>
-    OP.value Nothing
+optParseCalCurveSelection :: OP.Parser CalCurveSelection
+optParseCalCurveSelection = OP.option (OP.eitherReader readCalCurveSelection) (
+    OP.long "calCurve" <>
+    OP.metavar "IntCal20 | SHCal20 | Marine20 | FILE" <>
+    OP.help "Either one of the included calibration curves, or a \
+            \file path to an calibration curve file in '.14c' format. \
+            \The calibration curve will be read and used for calibration." <>
+    OP.value IntCal20 <>
+    OP.showDefault
     )
 
 optParseCalibrationMethod :: OP.Parser CalibrationMethod
@@ -172,23 +177,49 @@ optParseCalibrationMethod = OP.option (OP.eitherReader readCalibrationMethod) (
     OP.value (Bchron $ StudentTDist 100)
     )
 
-optParseAllowOutside :: OP.Parser (Bool)
+optParseAllowOutside :: OP.Parser Bool
 optParseAllowOutside = OP.switch (
     OP.long "allowOutside" <>
     OP.help "Allow calibrations to run outside the range of the calibration curve."
     )
 
-optParseDontInterpolateCalCurve :: OP.Parser (Bool)
+optParseDontInterpolateCalCurve :: OP.Parser Bool
 optParseDontInterpolateCalCurve = OP.switch (
     OP.long "noInterpolation" <>
     OP.help "Do not interpolate the calibration curve."
     )
 
-optParseQuiet :: OP.Parser (Bool)
+optParseDontTrimCalCurve :: OP.Parser Bool
+optParseDontTrimCalCurve = OP.switch (
+    OP.long "noTrimCalCurve" <>
+    OP.help "Do not trim the calibration curve before the calibration. \
+            \If a probability distribution over the entire range \
+            \of the calibration curve is needed. See also --noTrimOutCalPDF."
+    )
+
+optParseDontTrimOutCalPDF :: OP.Parser Bool
+optParseDontTrimOutCalPDF = OP.switch (
+    OP.long "noTrimOutCalPDF" <>
+    OP.help "Do not trim the output CalPDF. \
+            \If an untrimmed probability distribution is needed. \
+            \See also --noTrimCalCurve."
+    )
+
+optParseQuiet :: OP.Parser Bool
 optParseQuiet = OP.switch (
     OP.long "quiet" <>
     OP.short 'q' <>
     OP.help "Suppress the printing of calibration results to the command line."
+    )
+
+optParseBasicFile :: OP.Parser (Maybe FilePath)
+optParseBasicFile = OP.option (Just <$> OP.str) (
+    OP.long "basicFile" <>
+    OP.metavar "FILE" <>
+    OP.help "Path to an output file to store basic, per-expression output: \
+            \The minimum start and maximum end of \
+            \the high probability density regions and the median age." <>
+    OP.value Nothing
     )
 
 optParseDensityFile :: OP.Parser (Maybe FilePath)

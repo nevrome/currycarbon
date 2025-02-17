@@ -1,8 +1,9 @@
 module Currycarbon.CLI.RunCalibrate
     (CalibrateOptions (..), runCalibrate) where
 
-import           Currycarbon.CalCurves.Intcal20
+import           Currycarbon.CalCurves
 import           Currycarbon.Calibration.Calibration
+import           Currycarbon.Calibration.Utils
 import           Currycarbon.Parsers
 import           Currycarbon.SumCalibration
 import           Currycarbon.Types
@@ -10,8 +11,7 @@ import           Currycarbon.Utils
 
 import           Control.Exception                   (throwIO)
 import           Control.Monad                       (unless, when)
-import           Data.Maybe                          (fromJust, fromMaybe,
-                                                      isJust)
+import           Data.Maybe                          (fromJust, isJust)
 import           System.IO                           (hPutStrLn, stderr)
 import qualified System.Random                       as R
 
@@ -19,13 +19,16 @@ import qualified System.Random                       as R
 data CalibrateOptions = CalibrateOptions {
         _calibrateExprs                   :: [NamedCalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
       , _calibrateExprFiles               :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
-      , _calibrateCalCurveFile            :: Maybe FilePath -- ^ Path to a .14c file
+      , _calibrateCalCurveFile            :: CalCurveSelection -- ^ Either a preloaded calibration curve or a path to a .14c file
       , _calibrateCalibrationMethod       :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateAllowOutside            :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
       , _calibrateDontInterpolateCalCurve :: Bool -- ^ Don't interpolate the calibration curve
+      , _calibrateDontTrimCalCurve        :: Bool -- ^ Don't trim the calibration curve before the calibration
+      , _calibrateDontTrimOutCalPDF       :: Bool -- ^ Don't trim the output CalPDF
       , _calibrateQuiet                   :: Bool -- ^ Suppress the printing of calibration results to the command line
       , _calibrateStdOutEncoding          :: String -- ^ Encoding of the stdout stream (show TextEncoding)
-      , _calibrateDensityFile             :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
+      , _calibrateBasicFile               :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
+      , _calibrateDensityFile             :: Maybe FilePath -- ^ Path to an output file
       , _calibrateHDRFile                 :: Maybe FilePath -- ^ Path to an output file
       , _calibrateAgeSampling             :: Maybe (Maybe Word, Word, FilePath) -- ^ Settings for the age sampling
       , _calibrateCalCurveSegmentFile     :: Maybe FilePath -- ^ Path to an output file
@@ -37,9 +40,9 @@ runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (
         CalibrateOptions
             exprs exprFiles
-            calCurveFile method allowOutside noInterpolate
+            calCurveSelection method allowOutside noInterpolate noTrimCalCurve noTrimOutCalPDF
             quiet encoding
-            densityFile hdrFile
+            basicFile densityFile hdrFile
             ageSampling
             calCurveSegmentFile calCurveMatrixFile
         ) = do
@@ -53,12 +56,15 @@ runCalibrate (
     else do
         -- prep data
         hPutStrLn stderr $ "Method: " ++ show method
-        hPutStrLn stderr $ "Curve: " ++ fromMaybe "IntCal20" calCurveFile
-        calCurve <- maybe (return intcal20) readCalCurveFromFile calCurveFile
+        hPutStrLn stderr $ "Curve: " ++ show calCurveSelection
+        calCurve <- getCalCurve calCurveSelection
         let calConf = defaultCalConf {
-              _calConfMethod = method
-            , _calConfAllowOutside = allowOutside
+              _calConfAllowOutside = allowOutside
             , _calConfInterpolateCalCurve = not noInterpolate
+            , _calConfTrimCalCurveBeforeCalibration = not noTrimCalCurve
+            -- previously set to: not noTrimOutCalPDF
+            -- but for the command line app it's better to always do this later (see below!)
+            , _calConfTrimCalPDFAfterCalibration = False
             }
         -- handle the special debug cases
         when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
@@ -77,7 +83,11 @@ runCalibrate (
                         \a single uncalibrated radiocarbon date."
         -- run calibration
         hPutStrLn stderr "Calibrating..."
-        let errorOrCalPDFs = map (evalNamedCalExpr calConf calCurve) exprsRenamed
+        let errorOrCalPDFs = map (evalNamedCalExpr method calConf calCurve) exprsRenamed
+        -- trim output
+            calRes = if not noTrimOutCalPDF
+                     then map (mapEither id trimLowDensityEdgesCalPDF) errorOrCalPDFs
+                     else errorOrCalPDFs
         -- prepare random number generator for age sampling
         maybeRNG <- case ageSampling of
             Nothing -> pure Nothing
@@ -85,7 +95,7 @@ runCalibrate (
                 Nothing   -> Just <$> R.initStdGen
                 Just seed -> return $ Just $ R.mkStdGen (fromIntegral seed)
         -- prepare and write the output per expression
-        handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed errorOrCalPDFs
+        handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed calRes
     where
 
         -- loop over first and subsequent expressions
@@ -105,7 +115,7 @@ runCalibrate (
                     handleExprs _ascii True calCurve maybeRNG otherDates
                 (namedCalExpr, Right cPDF) -> do
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii namedCalExpr cPDF sampleSeed writeCalPDF writeCalC14 writeRandomAgeSample
+                    flexOut _ascii namedCalExpr cPDF sampleSeed writeCalPDF writeCalC14CalRangeSummary writeCalC14HDR writeRandomAgeSample
                     handleExprs _ascii False calCurve newRNG otherDates
         -- subsequent expression
         handleExprs _ascii False calCurve maybeRNG (nextDate:otherDates) =
@@ -115,7 +125,7 @@ runCalibrate (
                     handleExprs _ascii False calCurve maybeRNG otherDates
                 (namedCalExpr, Right cPDF) -> do
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii namedCalExpr cPDF sampleSeed appendCalPDF appendCalC14 appendRandomAgeSample
+                    flexOut _ascii namedCalExpr cPDF sampleSeed appendCalPDF appendCalC14CalRangeSummary appendCalC14HDR appendRandomAgeSample
                     handleExprs _ascii False calCurve newRNG otherDates
 
         printE :: CurrycarbonException -> IO ()
@@ -132,21 +142,26 @@ runCalibrate (
             -> Maybe Int
             -> (FilePath -> CalPDF -> IO ())
             -> (FilePath -> CalC14 -> IO ())
+            -> (FilePath -> CalC14 -> IO ())
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        flexOut _ascii namedCalExpr calPDF maybeSeed calPDFToFile calC14ToFile randomAgeSampleToFile = do
+        flexOut _ascii namedCalExpr calPDF maybeSeed calPDFToFile calC14CalRangeSummaryToFile calC14HDRToFile randomAgeSampleToFile = do
             case refineCalDate calPDF of
                 Left e -> do
                     unless quiet $ do
                         putStrLn ("CalEXPR: " ++ renderNamedCalExpr namedCalExpr)
                         printE e
+                    when (isJust basicFile) $ unless quiet $
+                        hPutStrLn stderr "<!> Error: Can not create --basicFile"
                     when (isJust hdrFile) $ unless quiet $
                         hPutStrLn stderr "<!> Error: Can not create --hdrFile"
                 Right calC14 -> do
                     unless quiet $ do
                         putStrLn (renderCalDatePretty _ascii (namedCalExpr, calPDF, calC14))
+                    when (isJust basicFile) $
+                        calC14CalRangeSummaryToFile (fromJust basicFile) calC14
                     when (isJust hdrFile) $
-                        calC14ToFile (fromJust hdrFile) calC14
+                        calC14HDRToFile (fromJust hdrFile) calC14
             when (isJust ageSampling && isJust maybeSeed) $ do
                 let (_, nrOfSamples, path) = fromJust ageSampling
                     rng = R.mkStdGen (fromJust maybeSeed)

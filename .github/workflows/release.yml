@@ -21,13 +21,13 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: true
 
-  build_artifact:
+  build_normal_artifacts:
     needs: [create_release]
     name: ${{ matrix.os }}/${{ github.ref }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macOS-latest]
+        os: [ubuntu-22.04, macOS-13, macOS-14, windows-latest]
 
     steps:
       - name: Check out code
@@ -40,21 +40,34 @@ jobs:
           tagRegex: "v(.*)"
           tagRegexGroup: 1
 
+      - name: Install stack on macOS, where it is not present (https://github.com/freckle/stack-action/issues/80)
+        if: ${{ runner.os == 'macOS' }}
+        run: curl -sSL https://get.haskellstack.org/ | sh
+
       - name: Build executable
         uses: freckle/stack-action@v5
         id: stack
         with:
-          stack-arguments: --copy-bins
+          test: false
+          stack-build-arguments: --copy-bins --ghc-options="-O2"
 
       - name: Set binary path name
         id: binarypath
         run: |
-          currentEXE="${{ steps.stack.outputs.local-bin }}/currycarbon"
-          newEXE="currycarbon-$RUNNER_OS"
-          mv $currentEXE $newEXE
-          echo "BINARY_PATH=$newEXE" >> $GITHUB_OUTPUT
+             if [ "$RUNNER_OS" == "Windows" ]; then
+                 newEXE="currycarbon-$RUNNER_OS.exe"
+             elif [ "$RUNNER_OS" == "macOS" ]; then
+                 newEXE="currycarbon-$RUNNER_OS-$RUNNER_ARCH"
+             else
+                 newEXE="currycarbon-$RUNNER_OS"
+             fi
+             currentEXE="${{ steps.stack.outputs.local-bin }}/currycarbon"
+             mv $currentEXE $newEXE
+             echo "BINARY_PATH=$newEXE" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Compress binary
+        if: ${{ runner.os != 'macOS' }} # upx is crashing for macOS Ventura or above!
         uses: svenstaro/upx-action@v2
         with:
           files: ${{ steps.binarypath.outputs.BINARY_PATH }}

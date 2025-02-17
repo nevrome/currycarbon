@@ -8,6 +8,11 @@ import           Data.Maybe            (fromMaybe)
 import qualified Data.Vector.Unboxed   as VU
 import           Numeric.SpecFunctions (logBeta)
 
+-- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
+mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
+mapEither f _ (Left x)  = Left (f x)
+mapEither _ f (Right x) = Right (f x)
+
 -- | Rescale a CalPDF so that the sum of the densities is approx. 1.0
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) =
@@ -16,7 +21,7 @@ normalizeCalPDF (CalPDF name cals dens) =
       s   -> CalPDF name cals $ VU.map (/s) dens
 
 -- | get the density of a normal distribution at a point x
-dnorm :: Float -> Float -> Float -> Float
+dnorm :: Double -> Double -> Double -> Double
 dnorm mu sigma x =
     let a = recip (sqrt (2 * pi * sigma2))
         b = exp (-c2 / (2 * sigma2))
@@ -29,7 +34,7 @@ dnorm mu sigma x =
     -- realToFrac $ density (normalDistr (realToFrac mu) (realToFrac sigma)) (realToFrac x)
 
 -- | get the density of student's-t distribution at a point x
-dt :: Double -> Float -> Float
+dt :: Double -> Double -> Double
 dt dof x =
     let xDouble = realToFrac x
         logDensityUnscaled = log (dof / (dof + xDouble*xDouble)) * (0.5 * (1 + dof)) - logBeta 0.5 (0.5 * dof)
@@ -62,11 +67,25 @@ prepareCalCurveSegment interpolate calCurve =
 makeBCADCalCurve :: CalCurveBP -> CalCurveBCAD
 makeBCADCalCurve (CalCurveBP cals uncals sigmas) = CalCurveBCAD (vectorBPToBCAD cals) (vectorBPToBCAD uncals) sigmas
 
+punchOutCalCurveBCAD :: Int -> Int -> CalCurveBCAD -> CalCurveBCAD
+punchOutCalCurveBCAD start stop (CalCurveBCAD cals uncals sigmas) =
+    let startIndex = fromMaybe 0 $ VU.findIndex (>= start) cals
+        stopIndex = VU.length cals - fromMaybe 0 (VU.findIndex (<= stop) $ VU.reverse cals)
+        toIndex = stopIndex - startIndex
+    --in error $ show $ (start, stop, VU.slice startIndex toIndex cals)
+    in CalCurveBCAD
+       (VU.slice startIndex toIndex cals)
+       (VU.slice startIndex toIndex uncals)
+       (VU.slice startIndex toIndex sigmas)
+
 vectorBPToBCAD :: VU.Vector YearBP -> VU.Vector YearBCAD
 vectorBPToBCAD = VU.map bp2BCAD
 
 bp2BCAD :: YearBP -> YearBCAD
 bp2BCAD x = -(fromIntegral x) + 1950
+
+bcad2BP :: YearBCAD -> YearBP
+bcad2BP y = 1950 - fromIntegral y
 
 interpolateCalCurve :: CalCurveBP -> CalCurveBP
 interpolateCalCurve (CalCurveBP cals uncals sigmas) =
@@ -90,7 +109,7 @@ interpolateCalCurve (CalCurveBP cals uncals sigmas) =
         getInBetweenPointsInt (x1,y1) (x2,y2) xPred =
             let (_,yPred) = getInBetweenPoints (fromIntegral x1,fromIntegral y1) (fromIntegral x2,fromIntegral y2) $ fromIntegral xPred
             in (xPred, round yPred)
-        getInBetweenPoints :: (Float, Float) -> (Float, Float) -> Float -> (Float, Float)
+        getInBetweenPoints :: (Double, Double) -> (Double, Double) -> Double -> (Double, Double)
         getInBetweenPoints (x1,y1) (x2,y2) xPred =
             let yDiff = y2 - y1
                 xDiff = abs $ x1 - x2

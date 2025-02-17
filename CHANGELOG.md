@@ -1,3 +1,15 @@
+- V 0.4.0.0: Another major update:
+    - Added more calibration curves next to `intcal20`: `shcal20` and `marine20`. Renamed the `Currycarbon.CalCurves.IntCal20` module to just `Currycarbon.CalCurves`. In the CLI, `--calCurveFile` is now just `--calCurve`, and it allows to either select the different packaged curves or read arbitrary .14c files.
+    - Added a new CLI plot element to the output of individual dates. `renderCLIPlotCalCurve` plots a relevant section of the calibration curve.
+    - Added the command line options `--noTrimCalCurve` and `--noTrimOutCalPDF` to allow control over the pre- and post-calibration trimming behaviour for radiocarbon dates.
+    - Changed the way products between calibration expressions are computed in `evalCalExpr`. Input expressions in a multiplication are now calibrated for the entire length of the calibration curve. This allows to compute proper products and not fail in case of non-overlapping output.
+    - Changed the way calibration curves are embedded in currycarbon. This now uses the brilliant `file-embed` library.
+    - Changed the interface of the core calibration functions. `CalibrateDatesConf` no longer includes the `CalibrationMethod`, so `calibrateDates` and `evalNamedCalExpr` functions need it as an extra argument. `calibrateDateBchron` and `calibrateDateMatrixMult` now take `CalibrateDatesConf` and not its individual elements.
+    - Moved from Float to Double for probability densities and all functions that interact with them.
+    - Added a new output option `--basicFile` to the CLI to enable simple per-expression output: The minimum start and maximum end of the high probability density regions and the median age. In this context `writeCalC14` was split into `writeCalC14HDR` and `writeCalC14CalRangeSummary` in the library.
+    - Added little axis labels (BC/AD) to the command line plot to improve readability.
+    - Changed the release pipeline: Now again with a windows executable. currycarbon-macOS was replaced by currycarbon-macOS-X64 and currycarbon-macOS-ARM64.
+    - Switched to a new GHC version (v9.6.6) and stackage resolver version (lts-22.43).
 - V 0.3.0.1: The golden tests can not run on stackage as it stands, so I hid them behind an environment variable.
 - V 0.3.0.0: Major update with multiple breaking changes and new features:
 	- Added a new mechanism to draw random age samples from a CalPDF (`sampleAgesFromCalPDF :: AgeSamplingConf -> CalPDF -> RandomAgeSample`). This is available from the command line with the options `samplesFile`, `--seed`, and `-n`/`--nrSamples`.

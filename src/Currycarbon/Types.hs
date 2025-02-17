@@ -12,14 +12,15 @@ import qualified Data.Vector.Unboxed as VU
 -- This module defines the relevant data types for handling radiocarbon dates
 
 -- | Different calibration algorithms implemented in currycarbon. Currently two distinct
--- implementations are available, although both of them are similar [Intercept calibration](https://en.wikipedia.org/wiki/Radiocarbon_calibration#Intercept)
--- algorithms. Maybe more algorithms will be added in the future
+-- implementations are available, although both of them are similar.
+-- Maybe more algorithms will be added in the future.
+-- A good default is 'Bchron { distribution = StudentTDist 100 }'
 data CalibrationMethod =
   -- | A matrix multiplication method generally following [this blog post by Martin Hinz](https://www.martinhinz.info/jekyll/update/blog/2016/06/03/simple_calibration.html).
   -- This method is slower and the underlying code more verbose than 'Bchron', but it
   -- has some advantages regarding didactics and the inspection of intermediate data
   -- products for debugging.
-  -- Using this method is thus generally not advisable, except for specific applications,
+  -- Using this method is generally not advisable, except for specific applications,
   -- where a more technical insight into C14 calibration is needed
     MatrixMultiplication
   -- | A fast and reliable calibration algorithm very similar to the implementation in the
@@ -28,6 +29,38 @@ data CalibrationMethod =
   -- Student's t-distribution ('StudentTDist'), which is recommended
   | Bchron { distribution :: CalibrationDistribution }
   deriving (Show, Eq)
+
+-- | A data type to cover the configuration options of the calibrateDates function
+data CalibrateDatesConf = CalibrateDatesConf {
+      -- | Allow calibration to run outside of the range of the calibration curve
+        _calConfAllowOutside                  :: Bool
+      -- | Interpolate the calibration curve before calibration.
+      -- This is a simple linear interpolation only to increase the output
+      -- resolution for earlier time periods, where the typical calibration
+      -- curves are less dense by default. With the interpolation, the output
+      -- will be a per-year density. The mechanism is inspired by the
+      -- [implementation in the Bchron R package](https://github.com/andrewcparnell/Bchron/blob/b202d18550319b488e676a8b542aba55853f6fa3/R/BchronCalibrate.R#L118-L119)
+      , _calConfInterpolateCalCurve           :: Bool
+      -- | Trim the calibration curve before the calibration.
+      -- Reduces the calibration curve to a segment around the mean of the
+      -- uncalibrated date +/- six times its standard deviation.
+      -- This speeds up calibration.
+      , _calConfTrimCalCurveBeforeCalibration :: Bool
+      -- | Trim the output CalPDF with a fixed threshold.
+      -- Years before/after the first/the last probability density of
+      -- 0.00001 get removed.
+      , _calConfTrimCalPDFAfterCalibration    :: Bool
+    } deriving (Show, Eq)
+
+-- | A default configuration that should yield almost identical calibration results
+-- to the [Bchron R package](https://github.com/andrewcparnell/Bchron)
+defaultCalConf :: CalibrateDatesConf
+defaultCalConf = CalibrateDatesConf {
+        _calConfAllowOutside = False
+      , _calConfInterpolateCalCurve = True
+      , _calConfTrimCalCurveBeforeCalibration = True
+      , _calConfTrimCalPDFAfterCalibration = True
+    }
 
 -- | Statistical distributions to be used with the 'CalibrationMethod' 'Bchron'
 data CalibrationDistribution =
@@ -66,7 +99,7 @@ data UncalPDF = UncalPDF {
     -- | Years BP
     , _uncalPDFUnCals :: VU.Vector YearBP
     -- | Probability densities
-    , _uncalPDFDens   :: VU.Vector Float
+    , _uncalPDFDens   :: VU.Vector Double
     } deriving Show
 
 -- | A data type to represent a calibration curve with 'YearBP'
@@ -96,7 +129,7 @@ data CalCurveMatrix = CalCurveMatrix {
     -- | Column names of the calibration curve matrix: Years calBCAD
     , _calCurveMatrixCals   :: VU.Vector YearBCAD
     -- | Matrix (as a list of columns) with the probability densities
-    , _calCurveMatrixDens   :: V.Vector (VU.Vector Float)
+    , _calCurveMatrixDens   :: V.Vector (VU.Vector Double)
     } deriving Show
 
 -- | A data type to represent a year-wise probability density for calibrated dates.
@@ -107,7 +140,7 @@ data CalPDF = CalPDF {
     -- | Years calBCAD
     , _calPDFCals :: VU.Vector YearBCAD
     -- | Probability densities for each year in '_calPDFCals'
-    , _calPDFDens :: VU.Vector Float
+    , _calPDFDens :: VU.Vector Double
     } deriving (Show, Eq)
 
 -- | A data type for named calibration expressions

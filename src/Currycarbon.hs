@@ -9,9 +9,9 @@ module Currycarbon (
     -- $calibration
     calibrateDates,
     -- ** Configuration
+    CalibrationMethod (..),
     CalibrateDatesConf (..),
     defaultCalConf,
-    CalibrationMethod (..),
     -- ** Input
     UncalC14 (..),
     readUncalC14FromFile,
@@ -30,13 +30,16 @@ module Currycarbon (
     CalCurveBP (..),
     CalCurveBCAD (..),
     intcal20,
+    shcal20,
+    marine20,
     readCalCurveFromFile,
 
     -- * Derived output
     -- $derivedOutput
     refineCalDates,
     CalC14 (..),
-    writeCalC14s,
+    writeCalC14CalRangeSummaries,
+    writeCalC14HDRs,
     renderCalDatePretty,
 
     -- * Sum (and product) calibration
@@ -54,7 +57,7 @@ module Currycarbon (
     RandomAgeSample (..)
     ) where
 
-import           Currycarbon.CalCurves.Intcal20
+import           Currycarbon.CalCurves
 import           Currycarbon.Calibration.Calibration
 import           Currycarbon.Calibration.Utils       (normalizeCalPDF)
 import           Currycarbon.Parsers
