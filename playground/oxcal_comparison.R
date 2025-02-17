@@ -35,6 +35,20 @@ run_currycarbon <- function(code) {
     )
 }
 
+# Test 0
+
+oxcal_test0 <- run_oxcal(
+  'R_Date("A",3000,30);'
+)
+
+currycarbon_test0 <- run_currycarbon(
+  "A,3000,30"
+)
+
+ggplot(mapping = aes(x = yearBCAD, y = density)) +
+  geom_line(data = oxcal_test0) +
+  geom_line(data = currycarbon_test0, color = "red")
+
 # Test 1
 
 oxcal_test1 <- run_oxcal(
