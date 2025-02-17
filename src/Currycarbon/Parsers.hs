@@ -528,7 +528,8 @@ renderCLIPlotCalCurve
         renderYAxis = yAxis calCurveUncalStart calCurveUncalStop uncalAge
         renderRow = getLineSymbol uncalAgeMinusSigma uncalAge uncalAgePlusSigma
         plotRows = map (\r -> renderYAxis r ++ map (renderRow r) meanYearsPerCol) [0..rows]
-    in  intercalate "\n" plotRows
+        axisUnitLine = replicate 4 ' ' ++ "BP"
+    in  intercalate "\n" $ axisUnitLine:plotRows
     where
         yAxis :: Word -> Word -> Int -> Int -> String
         yAxis ysta ysto a x
@@ -590,7 +591,7 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                 hdrOne      = zipWith (getHDRSymbol (_calC14HDROneSigma c14))    colStartYears colStopYears
                 hdrTwo      = zipWith (getHDRSymbol (_calC14HDRTwoSigma c14))    colStartYears colStopYears
             in  startS ++ (" " ++ [getSymbol ascii AxisEnd]) ++ axis ++ ([getSymbol ascii AxisEnd] ++ " ") ++ stopS ++ "\n" ++
-                replicate 9 ' ' ++ simpleRange ++ "\n" ++
+                replicate 4 ' ' ++ getADBC startYear ++ "   " ++ simpleRange ++ " " ++ getADBC stopYear ++ "\n" ++
                 replicate 9 ' ' ++ hdrOne ++ "\n" ++
                 replicate 9 ' ' ++ hdrTwo
             where
@@ -615,6 +616,10 @@ renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
                         doesOverlap a b h =
                             let ha = _hdrstart h; hb = _hdrstop h
                             in (a >= ha && a <= hb) || (b >= ha && b <= hb) || (a <= ha && b >= hb)
+                getADBC :: Int -> String
+                getADBC y
+                    | y < 0 = "BC"
+                    | otherwise = "AD"
 
 -- CalCurve
 writeCalCurve :: FilePath -> CalCurveBCAD -> IO ()
