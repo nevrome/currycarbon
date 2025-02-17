@@ -3,6 +3,7 @@ module Currycarbon.CLI.RunCalibrate
 
 import           Currycarbon.CalCurves
 import           Currycarbon.Calibration.Calibration
+import           Currycarbon.Calibration.Utils
 import           Currycarbon.Parsers
 import           Currycarbon.SumCalibration
 import           Currycarbon.Types
@@ -61,7 +62,9 @@ runCalibrate (
               _calConfAllowOutside = allowOutside
             , _calConfInterpolateCalCurve = not noInterpolate
             , _calConfTrimCalCurveBeforeCalibration = not noTrimCalCurve
-            , _calConfTrimCalPDFAfterCalibration = not noTrimOutCalPDF
+            -- previously set to: not noTrimOutCalPDF
+            -- but for the command line app it's better to always do this later (see below!)
+            , _calConfTrimCalPDFAfterCalibration = False
             }
         -- handle the special debug cases
         when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
@@ -81,6 +84,10 @@ runCalibrate (
         -- run calibration
         hPutStrLn stderr "Calibrating..."
         let errorOrCalPDFs = map (evalNamedCalExpr method calConf calCurve) exprsRenamed
+        -- trim output
+            calRes = if not noTrimOutCalPDF
+                     then map (mapEither id trimLowDensityEdgesCalPDF) errorOrCalPDFs
+                     else errorOrCalPDFs
         -- prepare random number generator for age sampling
         maybeRNG <- case ageSampling of
             Nothing -> pure Nothing
@@ -88,7 +95,7 @@ runCalibrate (
                 Nothing   -> Just <$> R.initStdGen
                 Just seed -> return $ Just $ R.mkStdGen (fromIntegral seed)
         -- prepare and write the output per expression
-        handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed errorOrCalPDFs
+        handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed calRes
     where
 
         -- loop over first and subsequent expressions

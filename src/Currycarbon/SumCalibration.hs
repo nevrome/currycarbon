@@ -19,7 +19,9 @@ evalNamedCalExpr method conf curve (NamedCalExpr exprID expr) =
         Right calPDF -> Right calPDF { _calPDFid = exprID }
 
 -- | Evaluate a dating expression by calibrating the individual dates and forming the respective
---   sums and products of post-calibration density distributions
+--   sums and products of post-calibration density distributions.
+--   Note that expressions are evaluated top-to-bottom. That renders it possible to perform trimming
+--   and normalization selectively in the right order
 evalCalExpr :: CalibrationMethod -> CalibrateDatesConf -> CalCurveBP -> CalExpr -> Either CurrycarbonException CalPDF
 evalCalExpr method conf curve calExpr = norm $ evalE conf calExpr
     where
@@ -33,20 +35,14 @@ evalCalExpr method conf curve calExpr = norm $ evalE conf calExpr
         -- sums must not be normalized
         evalE c (SumCal a b)     = eitherCombinePDFs (+) 0 (evalE c a) (evalE c b)
         -- products must be normalized (and their input, in case it's a sum)
-        evalE c (ProductCal a b) = trim $ norm $ eitherCombinePDFs (*) 1 (productOne c a) (productOne c b)
+        evalE c (ProductCal a b) = norm $ eitherCombinePDFs (*) 1 (productOne c a) (productOne c b)
+        -- products between expressions can only be computed if the PDFs are not trimmed
         productOne c x = norm $ evalE (
-           -- products between expressions can only be computed if the PDFs are not trimmed
-           c {_calConfTrimCalCurveBeforeCalibration = False, _calConfTrimCalPDFAfterCalibration = False}
+             c {_calConfTrimCalCurveBeforeCalibration = False, _calConfTrimCalPDFAfterCalibration = False}
            ) x
         -- helper functions
-        trim :: Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF
-        trim = mapEither id trimLowDensityEdgesCalPDF
         norm :: Either CurrycarbonException CalPDF -> Either CurrycarbonException CalPDF
         norm = mapEither id normalizeCalPDF
-        -- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
-        mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
-        mapEither f _ (Left x)  = Left (f x)
-        mapEither _ f (Right x) = Right (f x)
 
 eitherCombinePDFs ::
     (Double -> Double -> Double) -> Double ->

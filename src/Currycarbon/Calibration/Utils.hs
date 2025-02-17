@@ -8,6 +8,11 @@ import           Data.Maybe            (fromMaybe)
 import qualified Data.Vector.Unboxed   as VU
 import           Numeric.SpecFunctions (logBeta)
 
+-- https://hackage.haskell.org/package/either-5.0.2/docs/Data-Either-Combinators.html
+mapEither :: (a -> c) -> (b -> d) -> Either a b -> Either c d
+mapEither f _ (Left x)  = Left (f x)
+mapEither _ f (Right x) = Right (f x)
+
 -- | Rescale a CalPDF so that the sum of the densities is approx. 1.0
 normalizeCalPDF :: CalPDF -> CalPDF
 normalizeCalPDF (CalPDF name cals dens) =
