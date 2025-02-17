@@ -7,6 +7,7 @@
     - Changed the interface of the core calibration functions. `CalibrateDatesConf` no longer includes the `CalibrationMethod`, so `calibrateDates` and `evalNamedCalExpr` functions need it as an extra argument. `calibrateDateBchron` and `calibrateDateMatrixMult` now take `CalibrateDatesConf` and not its individual elements.
     - Moved from Float to Double for probability densities and all functions that interact with them.
     - Added a new output option `--basicFile` to the CLI to enable simple per-expression output: The minimum start and maximum end of the high probability density regions and the median age. In this context `writeCalC14` was split into `writeCalC14HDR` and `writeCalC14CalRangeSummary` in the library.
+    - Added little axis labels (BC/AD) to the command line plot to improve readability.
     - Changed the release pipeline: Now again with a windows executable. currycarbon-macOS was replaced by currycarbon-macOS-X64 and currycarbon-macOS-ARM64.
     - Switched to a new GHC version (v9.6.6) and stackage resolver version (lts-22.43).
 - V 0.3.0.1: The golden tests can not run on stackage as it stands, so I hid them behind an environment variable.
