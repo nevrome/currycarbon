@@ -195,6 +195,20 @@ CURRY_RUN_GOLDEN=true stack test --pedantic
 
 Just calling `stack test --pedantic` without this variable will skip any test with the pattern `"Golden"` in their descriptors.
 
+#### Upload to Hackage
+
+See the documentation here:
+- https://hackage.haskell.org/upload
+- https://docs.haskellstack.org/en/stable/commands/upload_command
+
+`stack` allows to upload a release candidate with
+
+```
+stack upload . --test-tarball --candidate --no-save-hackage-creds
+```
+
+using my Hackage credentials.
+
 #### Preparing a new stable release
 
 The Github Actions script in `.github/workflows/release.yml` registers a new draft release and automatically builds and uploads currycarbon binaries when a new Git tag with the prefix `v*` is pushed. 

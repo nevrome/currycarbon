@@ -81,18 +81,18 @@ comments = do
 intcal20 :: CalCurveBP
 intcal20 = readCalCurve intcal20String
 intcal20String :: String
-intcal20String = $(FE.embedStringFile "data/intcal20.14c")
+intcal20String = $(FE.makeRelativeToProject "data/intcal20.14c" >>= FE.embedStringFile)
 
 -- | The shcal20 calibration curve
 -- (Hogg et al. 2020, doi: [10.1017/RDC.2020.59](https://doi.org/10.1017/RDC.2020.59))
 shcal20 :: CalCurveBP
 shcal20 = readCalCurve shcal20String
 shcal20String :: String
-shcal20String = $(FE.embedStringFile "data/shcal20.14c")
+shcal20String = $(FE.makeRelativeToProject "data/shcal20.14c" >>= FE.embedStringFile)
 
 -- | The shcal20 calibration curve
 -- (Heaton et al. 2020, doi: [10.1017/RDC.2020.68](https://doi.org/10.1017/RDC.2020.68))
 marine20 :: CalCurveBP
 marine20 = readCalCurve marine20String
 marine20String :: String
-marine20String = $(FE.embedStringFile "data/marine20.14c")
+marine20String = $(FE.makeRelativeToProject "data/marine20.14c" >>= FE.embedStringFile)
