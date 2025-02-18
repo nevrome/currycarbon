@@ -204,7 +204,8 @@ See the documentation here:
 `stack` allows to upload a release candidate with
 
 ```
-stack upload . --test-tarball --candidate --no-save-hackage-creds
+stack haddock --haddock-for-hackage
+stack upload . --test-tarball --candidate --documentation --no-save-hackage-creds
 ```
 
 using my Hackage credentials.
