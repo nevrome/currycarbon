@@ -41,9 +41,7 @@ getCalCurve SHCal20                 = pure shcal20
 getCalCurve Marine20                = pure marine20
 getCalCurve (CalCurveFromFile path) = readCalCurveFromFile path
 
--- | Read a calibration curve file. The file must adhere to the current version of the
--- .c14 file format (e.g. [here](http://intcal.org/curves/intcal20.14c)). Look
--- [here](http://intcal.org/blurb.html) for other calibration curves
+-- | Read a calibration curve file. The file must adhere to the .14c file format.
 readCalCurveFromFile :: FilePath -> IO CalCurveBP
 readCalCurveFromFile calCurveFile = do
     calCurve <- readFile calCurveFile

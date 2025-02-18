@@ -11,10 +11,9 @@ import qualified Data.Vector.Unboxed as VU
 --
 -- This module defines the relevant data types for handling radiocarbon dates
 
--- | Different calibration algorithms implemented in currycarbon. Currently two distinct
--- implementations are available, although both of them are similar.
--- Maybe more algorithms will be added in the future.
--- A good default is 'Bchron { distribution = StudentTDist 100 }'
+-- | currycarbon includes different calibration algorithms. Currently two distinct
+-- implementations are available. Maybe more algorithms will be added in the future.
+-- A good default is @Bchron { distribution = StudentTDist 100 }@.
 data CalibrationMethod =
   -- | A matrix multiplication method generally following [this blog post by Martin Hinz](https://www.martinhinz.info/jekyll/update/blog/2016/06/03/simple_calibration.html).
   -- This method is slower and the underlying code more verbose than 'Bchron', but it
@@ -47,7 +46,7 @@ data CalibrateDatesConf = CalibrateDatesConf {
       -- This speeds up calibration.
       , _calConfTrimCalCurveBeforeCalibration :: Bool
       -- | Trim the output CalPDF with a fixed threshold.
-      -- Years before/after the first/the last probability density of
+      -- Years before or after the first or the last density value of
       -- 0.00001 get removed.
       , _calConfTrimCalPDFAfterCalibration    :: Bool
     } deriving (Show, Eq)

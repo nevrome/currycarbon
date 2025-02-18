@@ -49,6 +49,7 @@ module Currycarbon (
     addPDFs,
     multiplyPDFs,
     normalizeCalPDF,
+    trimLowDensityEdgesCalPDF,
 
     -- * Drawing random samples from CalPDFs
     -- $randsamp
@@ -59,7 +60,8 @@ module Currycarbon (
 
 import           Currycarbon.CalCurves
 import           Currycarbon.Calibration.Calibration
-import           Currycarbon.Calibration.Utils       (normalizeCalPDF)
+import           Currycarbon.Calibration.Utils       (normalizeCalPDF,
+                                                      trimLowDensityEdgesCalPDF)
 import           Currycarbon.Parsers
 import           Currycarbon.SumCalibration
 import           Currycarbon.Types
@@ -73,17 +75,18 @@ curve and some configuration options.
 * For the input dates there is a dedicated data type 'UncalC14'.
 These can be read from a .csv file with 'readUncalC14FromFile'.
 
-* Calibration curves are covered with the data type 'Calcurve'.
-Only one curve is embedded in the package ('incal20'), others
+* Calibration curves are covered with the data type 'CalCurveBP'.
+Various curves are embedded in the package (e.g. 'intcal20'), others
 can be read at runtime with 'readCalCurveFromFile'.
 
-* The configuration options are managed in 'CalibrateDatesConf',
-within which 'CalibrationMethod' is most important. For a solid
-default I suggest to use 'defaultCalConf'.
+* The configuration options for the calibration are managed in
+'CalibrateDatesConf', within which 'CalibrationMethod' is most
+important. For a solid default I suggest to use 'defaultCalConf'.
 
-'calibrateDates' returns a list of calibrated dates in the rough
-'CalPDF' format, which can be written to a file with 'writeCalPDFs'.
-See the Derived output section below for more pretty output formats.
+'calibrateDates' returns a list of calibrated dates in the 'CalPDF'
+type, which can be written to a file with 'writeCalPDFs'.
+See the Derived output section below for more pretty
+output formats.
 -}
 
 {- $yearDataTypes
@@ -104,8 +107,8 @@ Currycarbon features two separate data types for calibration curves:
 'CalCurveBP' and 'CalCurveBCAD' to distinguish between versions with
 'YearBP' and 'YearBCAD'.
 
-The library only comes with one curve: 'intcal20'. At runtime curves
-can be read and used with 'readCalCurveFromFile'.
+The library has various relevant curves already embedded.
+At runtime curves can be read and used with 'readCalCurveFromFile'.
 -}
 
 {- $derivedOutput
@@ -134,8 +137,9 @@ models, to be evaluated to a single 'CalPDF' with 'evalCalExpr'.
 
 A more basic interface is available with 'addPDFs' and 'multiplyPDFs',
 which allow to combine two 'CalPDF's with the respective operation.
-Depending on the application, 'normalizeCalPDF' will come in handy here,
-to normalize the output density distributions.
+Depending on the application, you will probably want to call 'normalizeCalPDF'
+and 'trimLowDensityEdgesCalPDF' on the result.
+
 -}
 
 {- $randsamp

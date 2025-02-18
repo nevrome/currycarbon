@@ -119,6 +119,7 @@ interpolateCalCurve (CalCurveBP cals uncals sigmas) =
         uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)
         uncurry3 f ~(a,b,c) = f a b c
 
+-- | Subset the calibration curve to the non-zero density range. The threshold is set to 0.00001.
 trimLowDensityEdgesCalPDF :: CalPDF -> CalPDF
 trimLowDensityEdgesCalPDF (CalPDF name cals dens) =
     let firstAboveThreshold = fromMaybe 0 (VU.findIndex (> 0.00001) dens)
