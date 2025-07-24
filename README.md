@@ -74,7 +74,7 @@ Usage: currycarbon [--version] [CalEXPRs] [-i|--inputFile FILE]
                    [[--seed INT] (-n|--nrSamples INT) --samplesFile FILE]
                    [--calCurveSegFile FILE] [--calCurveMatFile FILE]
 
-  Intercept calibration of radiocarbon dates
+  currycarbon calibrates radiocarbon dates
 
 Available options:
   -h,--help                Show this help text

@@ -47,8 +47,7 @@ runCmd enc o = case o of
 
 optParserInfo :: OP.ParserInfo Options
 optParserInfo = OP.info (OP.helper <*> versionOption <*> optParser) (
-    OP.briefDesc <>
-    OP.progDesc "Intercept calibration of radiocarbon dates"
+    OP.progDesc "currycarbon calibrates radiocarbon dates"
     )
 
 versionOption :: OP.Parser (a -> a)

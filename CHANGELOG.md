@@ -1,3 +1,4 @@
+- V 0.4.0.2: Support for `optparse-applicative-0.19.0.0`.
 - V 0.4.0.1: Support for `random-1.3`. Now possible, because MonadRandom supports it as well (https://github.com/byorgey/MonadRandom/blob/master/CHANGES.markdown#062-5-march-2025).
 - V 0.4.0.0: Another major update:
     - Added more calibration curves next to `intcal20`: `shcal20` and `marine20`. Renamed the `Currycarbon.CalCurves.IntCal20` module to just `Currycarbon.CalCurves`. In the CLI, `--calCurveFile` is now just `--calCurve`, and it allows to either select the different packaged curves or read arbitrary .14c files.
