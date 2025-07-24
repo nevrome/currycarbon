@@ -32,7 +32,7 @@ chmod +x currycarbon-Linux
 ```
 
 ```
-currycarbon v0.4.0.0 (UTF-8)
+currycarbon v0.4.0.2 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
