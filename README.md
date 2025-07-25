@@ -207,9 +207,13 @@ See the documentation here:
 stack upload . --test-tarball --candidate --no-save-hackage-creds
 ```
 
-using my Hackage credentials.
+using my Hackage credentials. It can then be published at https://hackage.haskell.org/package/currycarbon/candidates
 
-It can then be published at https://hackage.haskell.org/package/currycarbon/candidates
+The building of the haddock documentation can be tested with
+
+```
+stack haddock --haddock-for-hackage
+```
 
 #### Preparing a new stable release
 
