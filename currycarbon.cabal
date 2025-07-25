@@ -1,5 +1,5 @@
 name:                currycarbon
-version:             0.4.0.2
+version:             0.5.0.0
 synopsis:            A package for simple, fast radiocarbon calibration
 description:         Radiocarbon calibration library and command line tool.
 homepage:            https://github.com/nevrome/currycarbon

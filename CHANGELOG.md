@@ -1,3 +1,6 @@
+- V 0.5.0.0: Cleaned up parser error behaviour:
+    - Parsing errors are now more helpful with better positional information, using a modified `showParsecErr` and a new `showParsecErrOneLine`.
+    - Breaking change: The type of `readCalCurve` changed. It is now safe, returning `Either String CalCurveBP`. The old version is preserved in `readCalCurveUnsafe`.
 - V 0.4.0.2: Support for `optparse-applicative-0.19.0.0`.
 - V 0.4.0.1: Support for `random-1.3`. Now possible, because MonadRandom supports it as well (https://github.com/byorgey/MonadRandom/blob/master/CHANGES.markdown#062-5-march-2025).
 - V 0.4.0.0: Another major update:
