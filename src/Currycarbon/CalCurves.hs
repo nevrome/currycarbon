@@ -4,13 +4,13 @@ module Currycarbon.CalCurves where
 
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
-import Currycarbon.Utils
+import           Currycarbon.Utils
 
+import           Control.Exception         (throwIO)
 import qualified Data.FileEmbed            as FE
 import qualified Data.Vector.Unboxed       as VU
 import qualified Text.Parsec               as P
 import qualified Text.Parsec.String        as P
-import Control.Exception (throwIO)
 
 data CalCurveSelection =
       IntCal20 | SHCal20 | Marine20
@@ -49,7 +49,7 @@ readCalCurveFromFile calCurveFile = do
     calCurveString <- readFile calCurveFile
     case readCalCurve calCurveString of
         Left err -> throwIO $ CurrycarbonCLIParsingException err
-        Right x -> return x
+        Right x  -> return x
 
 readCalCurve :: String -> Either String CalCurveBP
 readCalCurve calCurveString = do
