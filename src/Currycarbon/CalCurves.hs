@@ -25,7 +25,7 @@ instance Show CalCurveSelection where
 readCalCurveSelection :: String -> Either String CalCurveSelection
 readCalCurveSelection s =
     case P.runParser parseCalCurveSelection () s s of
-        Left err -> Left $ showParsecErr err
+        Left err -> Left $ showParsecErrOneLine err
         Right x  -> Right x
 
 parseCalCurveSelection :: P.Parser CalCurveSelection

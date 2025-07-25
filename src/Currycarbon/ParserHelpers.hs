@@ -159,9 +159,22 @@ parseNumber = P.many1 P.digit
 showParsecErr :: P.ParseError -> String
 showParsecErr err =
     let pos = P.errorPos err
-        posStr = P.sourceName pos ++ ":" ++ show (P.sourceLine pos) ++ ":" ++ show (P.sourceColumn pos)
-        errMsg = P.showErrorMessages
-            "or" "unknown parse error"
-            "expecting" "unexpected" "end of input"
-            (P.errorMessages err)
-    in posStr ++ ": " ++ errMsg
+        posStr = P.sourceName pos ++
+                     " (issue in line " ++ show (P.sourceLine pos) ++
+                     ", column " ++ show (P.sourceColumn pos) ++
+                     ")"
+    in posStr ++ ": " ++ cleanParsecErr err
+
+showParsecErrOneLine :: P.ParseError -> String
+showParsecErrOneLine err =
+    let pos = P.errorPos err
+        posStr = P.sourceName pos ++
+                     " (issue in column " ++ show (P.sourceColumn pos) ++ ")"
+    in posStr ++ ": " ++ cleanParsecErr err
+
+cleanParsecErr :: P.ParseError -> String
+cleanParsecErr err =
+    P.showErrorMessages
+        "or" "unknown parse error"
+        "expecting" "unexpected" "end of input"
+        (P.errorMessages err)

@@ -26,8 +26,8 @@ import qualified Text.Parsec.String            as P
 
 readCalibrationMethod :: String -> Either String CalibrationMethod
 readCalibrationMethod s =
-    case P.runParser parseCalibrationMethod () "" s of
-        Left err -> Left $ showParsecErr err
+    case P.runParser parseCalibrationMethod () s s of
+        Left err -> Left $ showParsecErrOneLine err
         Right x  -> Right x
 
 parseCalibrationMethod :: P.Parser CalibrationMethod
@@ -201,8 +201,8 @@ namedExpr = P.try nameBeforeColon P.<|> P.try record P.<|> onlyExpr
 
 readNamedCalExprs :: String -> Either String [NamedCalExpr]
 readNamedCalExprs s =
-    case P.runParser parseCalExprSepBySemicolon () "" s of
-        Left err -> Left $ showParsecErr err
+    case P.runParser parseCalExprSepBySemicolon () s s of
+        Left err -> Left $ showParsecErrOneLine err
         Right x  -> Right x
         where
         parseCalExprSepBySemicolon :: P.Parser [NamedCalExpr]
@@ -210,8 +210,8 @@ readNamedCalExprs s =
 
 readOneNamedCalExpr :: String -> Either String NamedCalExpr
 readOneNamedCalExpr s =
-    case P.runParser namedExpr () "" s of
-        Left err -> Left $ showParsecErr err
+    case P.runParser namedExpr () s s of
+        Left err -> Left $ showParsecErrOneLine err
         Right x  -> Right x
 
 readNamedCalExprsFromFile :: FilePath -> IO [NamedCalExpr]
@@ -244,7 +244,7 @@ renderUncalC14 (UncalC14 name bp sigma) = name ++ ":" ++ show bp ++ "±" ++ show
 readUncalC14FromFile :: FilePath -> IO [UncalC14]
 readUncalC14FromFile uncalFile = do
     s <- readFile uncalFile
-    case P.runParser uncalC14SepByNewline () "" s of
+    case P.runParser uncalC14SepByNewline () uncalFile s of
         Left err -> throwIO $ CurrycarbonCLIParsingException $ showParsecErr err
         Right x  -> return x
     where
@@ -253,8 +253,8 @@ readUncalC14FromFile uncalFile = do
 
 readUncalC14 :: String -> Either String [UncalC14]
 readUncalC14 s =
-    case P.runParser uncalC14SepBySemicolon () "" s of
-        Left err -> Left $ showParsecErr err
+    case P.runParser uncalC14SepBySemicolon () s s of
+        Left err -> Left $ showParsecErrOneLine err
         Right x  -> Right x
     where
         uncalC14SepBySemicolon :: P.Parser [UncalC14]
