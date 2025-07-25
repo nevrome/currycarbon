@@ -204,11 +204,12 @@ See the documentation here:
 `stack` allows to upload a release candidate with
 
 ```
-stack haddock --haddock-for-hackage
-stack upload . --test-tarball --candidate --documentation --no-save-hackage-creds
+stack upload . --test-tarball --candidate --no-save-hackage-creds
 ```
 
 using my Hackage credentials.
+
+It can then be published at https://hackage.haskell.org/package/currycarbon/candidates
 
 #### Preparing a new stable release
 
