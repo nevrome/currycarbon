@@ -12,7 +12,7 @@ jobs:
     env:
       CURRY_RUN_GOLDEN: true # run golden tests, see the README for more info
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: freckle/stack-action@v5
         with:
           stack-arguments: --coverage
