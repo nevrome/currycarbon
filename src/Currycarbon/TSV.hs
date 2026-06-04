@@ -24,9 +24,15 @@ tsv2NamedCalExprs :: TSV -> [NamedCalExpr]
 tsv2NamedCalExprs (TSV _ _ rows) = V.toList $ V.map tsvRow2NamedCalExprs rows
 
 tsvRow2NamedCalExprs :: TSVRow -> NamedCalExpr
+tsvRow2NamedCalExprs (TSVRow (Just (ListColumn lcs)) (Just (ListColumn bps)) (Just (ListColumn errs)) _ _ _ _) |
+    (length lcs == length bps) && (length bps == length errs) =
+    NamedCalExpr "" $ foldCalExpr $ zip3 lcs bps errs
 tsvRow2NamedCalExprs (TSVRow _ _ _ (Just start) _ (Just stop) _) =
     NamedCalExpr "" $  WindowBCAD (TimeWindowBCAD "" start stop)
 tsvRow2NamedCalExprs (TSVRow _ _ _ _ _ _ _) = undefined
+
+foldCalExpr :: [(T.Text, Word, Word)] -> CalExpr
+foldCalExpr xs = foldl1 SumCal $ map (\(lc,bp,err) -> UnCalDate $ UncalC14 (T.unpack lc) bp err) xs
 
 data TSV = TSV {
       _tsvFile :: FilePath
@@ -36,8 +42,8 @@ data TSV = TSV {
 
 data TSVRow = TSVRow {
       _dateC14Labnr      :: Maybe (ListColumn T.Text)
-    , _dateC14UncalBP    :: Maybe (ListColumn Int)
-    , _dateC14UncalBPErr :: Maybe (ListColumn Int)
+    , _dateC14UncalBP    :: Maybe (ListColumn Word)
+    , _dateC14UncalBPErr :: Maybe (ListColumn Word)
     , _dateBCADStart     :: Maybe Int
     , _dateBCADMedian    :: Maybe Int
     , _dateBCADStop      :: Maybe Int
