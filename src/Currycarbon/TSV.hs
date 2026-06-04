@@ -41,13 +41,13 @@ data TSV = TSV {
 
 data TSVRow = TSVRow {
       _tsvRowID            :: String
-    , _tsvRowC14Labnr      :: Maybe (ListColumn String)
-    , _tsvRowC14UncalBP    :: Maybe (ListColumn Word)
-    , _tsvRowC14UncalBPErr :: Maybe (ListColumn Word)
-    , _tsvRowBCADStart     :: Maybe Int
-    , _tsvRowBCADMedian    :: Maybe Int
-    , _tsvRowBCADStop      :: Maybe Int
-    , _otherColumns      :: Csv.NamedRecord
+    , _tsvRowDateC14Labnr      :: Maybe (ListColumn String)
+    , _tsvRowDateC14UncalBP    :: Maybe (ListColumn Word)
+    , _tsvRowDateC14UncalBPErr :: Maybe (ListColumn Word)
+    , _tsvRowDateBCADStart     :: Maybe Int
+    , _tsvRowDateBCADMedian    :: Maybe Int
+    , _tsvRowDateBCADStop      :: Maybe Int
+    , _tsvRowAllColumns    :: Csv.NamedRecord
     }
     deriving Show
 
@@ -62,13 +62,13 @@ instance Csv.FromNamedRecord TSVRow where
         stop       <- filterLookupOptional m "Date_BC_AD_Stop"
         pure $ TSVRow {
               _tsvRowID            = i
-            , _tsvRowC14Labnr      = labnr
-            , _tsvRowC14UncalBP    = uncalBP
-            , _tsvRowC14UncalBPErr = uncalBPErr
-            , _tsvRowBCADStart     = start
-            , _tsvRowBCADMedian    = median
-            , _tsvRowBCADStop      = stop
-            , _otherColumns      = m
+            , _tsvRowDateC14Labnr      = labnr
+            , _tsvRowDateC14UncalBP    = uncalBP
+            , _tsvRowDateC14UncalBPErr = uncalBPErr
+            , _tsvRowDateBCADStart     = start
+            , _tsvRowDateBCADMedian    = median
+            , _tsvRowDateBCADStop      = stop
+            , _tsvRowAllColumns    = m
             }
 
 filterLookup :: Csv.FromField a => Csv.NamedRecord -> B8.ByteString -> Csv.Parser a
@@ -102,13 +102,13 @@ jannoHeader = []
         
 instance Csv.ToNamedRecord TSVRow where
     toNamedRecord j = explicitNA $ Csv.namedRecord [
-          "Date_C14_Labnr"                  Csv..= _tsvRowC14Labnr j
-        , "Date_C14_Uncal_BP"               Csv..= _tsvRowC14UncalBP j
-        , "Date_C14_Uncal_BP_Err"           Csv..= _tsvRowC14UncalBPErr j
-        , "Date_BC_AD_Start"                Csv..= _tsvRowBCADStart j
-        , "Date_BC_AD_Median"               Csv..= _tsvRowBCADMedian j
-        , "Date_BC_AD_Stop"                 Csv..= _tsvRowBCADStop j
-        ] `HM.union` _otherColumns j
+          "Date_BC_AD_Start"      Csv..= _tsvRowDateBCADStart j
+        , "Date_BC_AD_Median"     Csv..= _tsvRowDateBCADMedian j
+        , "Date_BC_AD_Stop"       Csv..= _tsvRowDateBCADStop j
+        ] `HM.union` _tsvRowAllColumns j
+        -- from the unordered-containers documentation:
+        -- If a key occurs in both maps, the mapping from the first will be the mapping in the result.
+        -- that means that the input values will be overwritten by these values
 
 explicitNA :: Csv.NamedRecord -> Csv.NamedRecord
 explicitNA = HM.map (\x -> if B8.null x then "n/a" else x)
