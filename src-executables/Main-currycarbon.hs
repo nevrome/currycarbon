@@ -59,6 +59,7 @@ optParser = CmdCalibrate <$> calibrateOptParser
 calibrateOptParser :: OP.Parser CalibrateOptions
 calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
                                       <*> optParseNamedCalExprFromFile
+                                      <*> optParseTSVFile
                                       <*> optParseCalCurveSelection
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -144,6 +145,14 @@ optParseNamedCalExprFromFile = OP.many (OP.strOption (
             \Note that syntactic sugar allows to read simple radiocarbon dates from \
             \a headless .csv file with one sample per row: \
             \<sample name>,<mean age BP>,<one sigma standard deviation>."
+    ))
+
+optParseTSVFile :: OP.Parser [FilePath]
+optParseTSVFile = OP.many (OP.strOption (
+    OP.long "inputTSVFile" <>
+    OP.short 't' <>
+    OP.metavar "FILE" <>
+    OP.help "..."
     ))
 
 optParseCalCurveSelection :: OP.Parser CalCurveSelection

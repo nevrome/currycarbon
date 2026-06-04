@@ -8,6 +8,7 @@ import           Currycarbon.Parsers
 import           Currycarbon.SumCalibration
 import           Currycarbon.Types
 import           Currycarbon.Utils
+import Currycarbon.TSV
 
 import           Control.Exception                   (throwIO)
 import           Control.Monad                       (unless, when)
@@ -19,6 +20,7 @@ import qualified System.Random                       as R
 data CalibrateOptions = CalibrateOptions {
         _calibrateExprs                   :: [NamedCalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
       , _calibrateExprFiles               :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
+      , _calibrateTSVFiles                :: [FilePath] -- ^ List of files with uncalibrated dates in .tsv format
       , _calibrateCalCurveFile            :: CalCurveSelection -- ^ Either a preloaded calibration curve or a path to a .14c file
       , _calibrateCalibrationMethod       :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateAllowOutside            :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
@@ -39,7 +41,7 @@ data CalibrateOptions = CalibrateOptions {
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (
         CalibrateOptions
-            exprs exprFiles
+            exprs exprFiles tsvFiles
             calCurveSelection method allowOutside noInterpolate noTrimCalCurve noTrimOutCalPDF
             quiet encoding
             basicFile densityFile hdrFile
@@ -48,8 +50,9 @@ runCalibrate (
         ) = do
     let ascii = encoding /= "UTF-8"
     -- compile dates
-    exprsFromFile <- mapM readNamedCalExprsFromFile exprFiles
-    let exprsCombined = exprs ++ concat exprsFromFile
+    exprsFromFiles <- mapM readNamedCalExprsFromFile exprFiles
+    exprsFromTSVFiles <- mapM (fmap tsv2NamedCalExprs . readTSV) tsvFiles
+    let exprsCombined = exprs ++ concat exprsFromFiles ++ concat exprsFromTSVFiles
         exprsRenamed = replaceEmptyNames exprsCombined
     if null exprsRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"
