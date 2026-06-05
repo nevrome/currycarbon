@@ -2,6 +2,7 @@
 
 import           Currycarbon.CalCurves
 import           Currycarbon.CLI.RunCalibrate (CalibrateOptions (..),
+                                               CalibrateInput (..),
                                                runCalibrate)
 import           Currycarbon.Parsers
 import           Currycarbon.Types
@@ -57,9 +58,7 @@ optParser :: OP.Parser Options
 optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
-                                      <*> optParseNamedCalExprFromFile
-                                      <*> optParseTSVFile
+calibrateOptParser = CalibrateOptions <$> optParseCalibrateInput
                                       <*> optParseCalCurveSelection
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -80,6 +79,11 @@ calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
 -- $inputParsing
 --
 -- These functions define and handle the CLI input arguments
+optParseCalibrateInput :: OP.Parser CalibrateInput
+optParseCalibrateInput =
+           (CalibrateExprs <$> optParseNamedCalExprString)
+    OP.<|> (CalibrateExprFile <$> optParseNamedCalExprFromFile)
+    OP.<|> (CalibrateTSVFile <$> optParseTSVFile)
 
 optParseNamedCalExprString :: OP.Parser [NamedCalExpr]
 optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readNamedCalExprs) (
@@ -133,27 +137,25 @@ optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader re
 s2d :: String -> OH.Doc
 s2d str = OH.fillSep $ map OH.pretty $ words str
 
-optParseNamedCalExprFromFile :: OP.Parser [FilePath]
-optParseNamedCalExprFromFile = OP.many (OP.strOption (
-    OP.long "inputFile" <>
+optParseNamedCalExprFromFile :: OP.Parser FilePath
+optParseNamedCalExprFromFile = OP.strOption (
+    OP.long "inputExprFile" <>
     OP.short 'i' <>
     OP.metavar "FILE" <>
     OP.help "A file with a list of calibration expressions. \
             \Formatted just as CalEXPRs, but with a new line for each input expression. \
-            \CalEXPRs and --inputFile can be combined and you can provide multiple \
-            \instances of --inputFile. \
             \Note that syntactic sugar allows to read simple radiocarbon dates from \
             \a headless .csv file with one sample per row: \
             \<sample name>,<mean age BP>,<one sigma standard deviation>."
-    ))
+    )
 
-optParseTSVFile :: OP.Parser [FilePath]
-optParseTSVFile = OP.many (OP.strOption (
+optParseTSVFile :: OP.Parser FilePath
+optParseTSVFile = OP.strOption (
     OP.long "inputTSVFile" <>
     OP.short 't' <>
     OP.metavar "FILE" <>
     OP.help "..."
-    ))
+    )
 
 optParseCalCurveSelection :: OP.Parser CalCurveSelection
 optParseCalCurveSelection = OP.option (OP.eitherReader readCalCurveSelection) (

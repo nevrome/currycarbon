@@ -1,5 +1,5 @@
 module Currycarbon.CLI.RunCalibrate
-    (CalibrateOptions (..), runCalibrate) where
+    (CalibrateOptions (..), CalibrateInput (..), runCalibrate) where
 
 import           Currycarbon.CalCurves
 import           Currycarbon.Calibration.Calibration
@@ -18,9 +18,7 @@ import qualified System.Random                       as R
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
-        _calibrateExprs                   :: [NamedCalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
-      , _calibrateExprFiles               :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
-      , _calibrateTSVFiles                :: [FilePath] -- ^ List of files with uncalibrated dates in .tsv format
+        _calibrateInput                   :: CalibrateInput
       , _calibrateCalCurveFile            :: CalCurveSelection -- ^ Either a preloaded calibration curve or a path to a .14c file
       , _calibrateCalibrationMethod       :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateAllowOutside            :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
@@ -37,11 +35,17 @@ data CalibrateOptions = CalibrateOptions {
       , _calibrateCalCurveMatrixFile      :: Maybe FilePath -- ^ Path to an output file
     }
 
+-- | A data type with input options for the calibration
+data CalibrateInput =
+      CalibrateExprs [NamedCalExpr] -- ^ String listing the uncalibrated dates in CalExpr format that should be calibrated
+    | CalibrateExprFile FilePath -- ^ A file with uncalibrated dates in CalExpr to be calibrated
+    | CalibrateTSVFile FilePath -- ^ A file with uncalibrated dates in .tsv format to be calibrated
+
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (
         CalibrateOptions
-            exprs exprFiles tsvFiles
+            input
             calCurveSelection method allowOutside noInterpolate noTrimCalCurve noTrimOutCalPDF
             quiet encoding
             basicFile densityFile hdrFile
@@ -50,10 +54,11 @@ runCalibrate (
         ) = do
     let ascii = encoding /= "UTF-8"
     -- compile dates
-    exprsFromFiles <- mapM readNamedCalExprsFromFile exprFiles
-    exprsFromTSVFiles <- mapM (fmap tsv2NamedCalExprs . readTSV) tsvFiles
-    let exprsCombined = exprs ++ concat exprsFromFiles ++ concat exprsFromTSVFiles
-        exprsRenamed = replaceEmptyNames exprsCombined
+    exprs <- case input of
+        CalibrateExprs exprs -> pure exprs
+        CalibrateExprFile exprFile -> readNamedCalExprsFromFile exprFile
+        CalibrateTSVFile tsvFile -> tsv2NamedCalExprs <$> readTSV tsvFile
+    let exprsRenamed = replaceEmptyNames exprs
     if null exprsRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"
     else do
