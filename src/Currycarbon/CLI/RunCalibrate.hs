@@ -28,6 +28,7 @@ data CalibrateOptions = CalibrateOptions {
       , _calibrateQuiet                   :: Bool -- ^ Suppress the printing of calibration results to the command line
       , _calibrateStdOutEncoding          :: String -- ^ Encoding of the stdout stream (show TextEncoding)
       , _calibrateBasicFile               :: Maybe FilePath -- ^ Path to an output file (see CLI documentation)
+      , _calibrateTSVFile                 :: Maybe FilePath -- ^ Path to an output file
       , _calibrateDensityFile             :: Maybe FilePath -- ^ Path to an output file
       , _calibrateHDRFile                 :: Maybe FilePath -- ^ Path to an output file
       , _calibrateAgeSampling             :: Maybe (Maybe Word, Word, FilePath) -- ^ Settings for the age sampling
@@ -48,16 +49,22 @@ runCalibrate (
             input
             calCurveSelection method allowOutside noInterpolate noTrimCalCurve noTrimOutCalPDF
             quiet encoding
-            basicFile densityFile hdrFile
+            basicFile tsvFile densityFile hdrFile
             ageSampling
             calCurveSegmentFile calCurveMatrixFile
         ) = do
     let ascii = encoding /= "UTF-8"
     -- compile dates
-    exprs <- case input of
-        CalibrateExprs exprs -> pure exprs
-        CalibrateExprFile exprFile -> readNamedCalExprsFromFile exprFile
-        CalibrateTSVFile tsvFile -> tsv2NamedCalExprs <$> readTSV tsvFile
+    (exprs,_) <- case input of
+        CalibrateExprs exprs -> do
+            return (exprs, Nothing)
+        CalibrateExprFile path -> do
+            exprs <- readNamedCalExprsFromFile path
+            return (exprs, Nothing)
+        CalibrateTSVFile path -> do
+            tsv <- readTSV path
+            let exprs = tsv2NamedCalExprs tsv
+            return (exprs, Just tsv)
     let exprsRenamed = replaceEmptyNames exprs
     if null exprsRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"

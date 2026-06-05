@@ -68,6 +68,7 @@ calibrateOptParser = CalibrateOptions <$> optParseCalibrateInput
                                       <*> optParseQuiet
                                       <*> pure "unknown"
                                       <*> optParseBasicFile
+                                      <*> optParseOutputTSVFile
                                       <*> optParseDensityFile
                                       <*> optParseHDRFile
                                       <*> optParseAgeSamplingSettings
@@ -83,7 +84,7 @@ optParseCalibrateInput :: OP.Parser CalibrateInput
 optParseCalibrateInput =
            (CalibrateExprs <$> optParseNamedCalExprString)
     OP.<|> (CalibrateExprFile <$> optParseNamedCalExprFromFile)
-    OP.<|> (CalibrateTSVFile <$> optParseTSVFile)
+    OP.<|> (CalibrateTSVFile <$> optParseInputTSVFile)
 
 optParseNamedCalExprString :: OP.Parser [NamedCalExpr]
 optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readNamedCalExprs) (
@@ -149,8 +150,8 @@ optParseNamedCalExprFromFile = OP.strOption (
             \<sample name>,<mean age BP>,<one sigma standard deviation>."
     )
 
-optParseTSVFile :: OP.Parser FilePath
-optParseTSVFile = OP.strOption (
+optParseInputTSVFile :: OP.Parser FilePath
+optParseInputTSVFile = OP.strOption (
     OP.long "inputTSVFile" <>
     OP.short 't' <>
     OP.metavar "FILE" <>
@@ -229,6 +230,14 @@ optParseBasicFile = OP.option (Just <$> OP.str) (
     OP.help "Path to an output file to store basic, per-expression output: \
             \The minimum start and maximum end of \
             \the high probability density regions and the median age." <>
+    OP.value Nothing
+    )
+
+optParseOutputTSVFile :: OP.Parser (Maybe FilePath)
+optParseOutputTSVFile = OP.option (Just <$> OP.str) (
+    OP.long "tsvFile" <>
+    OP.metavar "FILE" <>
+    OP.help "..." <>
     OP.value Nothing
     )
 
