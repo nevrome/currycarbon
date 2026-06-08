@@ -15,9 +15,14 @@ import           Data.Char              (ord)
 readTSV :: FilePath -> IO TSV
 readTSV path = do
     bs <- BL.readFile path
-    case Csv.decodeByNameWith (Csv.DecodeOptions $ fromIntegral (ord '\t')) bs of
+    case Csv.decodeByNameWith decodingOptions bs of
       Left err -> fail err
       Right (header, rows) -> return (TSV path header rows)
+
+decodingOptions :: Csv.DecodeOptions
+decodingOptions = Csv.defaultDecodeOptions {
+    Csv.decDelimiter = fromIntegral (ord '\t')
+}
 
 tsv2NamedCalExprs :: TSV -> [NamedCalExpr]
 tsv2NamedCalExprs (TSV _ _ rows) = V.toList $ V.map tsvRow2NamedCalExprs rows
@@ -33,11 +38,33 @@ tsvRow2NamedCalExprs (TSVRow _ _ _ _ _ _ _ _) = undefined
 foldCalExpr :: [(String, Word, Word)] -> CalExpr
 foldCalExpr xs = foldl1 SumCal $ map (\(lc,bp,err) -> UnCalDate $ UncalC14 lc bp err) xs
 
+writeTSVFile :: FilePath -> Maybe Csv.Header -> V.Vector TSVRow -> IO ()
+writeTSVFile path maybeHeader rows = do
+    let rowsAsBytestring = Csv.encodeByNameWith encodingOptions (makeHeader maybeHeader) $ V.toList rows
+    BL.writeFile path rowsAsBytestring
+
+encodingOptions :: Csv.EncodeOptions
+encodingOptions = Csv.defaultEncodeOptions {
+      Csv.encDelimiter = fromIntegral (ord '\t')
+    , Csv.encUseCrLf = False
+    , Csv.encIncludeHeader = True
+    , Csv.encQuoting = Csv.QuoteMinimal
+}
+
+makeHeader :: Maybe Csv.Header -> Csv.Header
+makeHeader Nothing = V.fromList [
+      "Date_ID",
+      "Date_C14_Labnr", "Date_C14_Uncal_BP", "Date_C14_Uncal_BP_Err"
+    , "Date_BC_AD_Start", "Date_BC_AD_Median", "Date_BC_AD_Stop"
+    ]
+
 data TSV = TSV {
       _tsvFile :: FilePath
     , _tsvHeader :: Csv.Header
     , _tsvRows :: V.Vector TSVRow
     }
+
+calPDF2TSVRow :: CalC14 -> TSVRow
 
 data TSVRow = TSVRow {
       _tsvRowID            :: String
