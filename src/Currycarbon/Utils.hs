@@ -16,6 +16,10 @@ data CurrycarbonException =
     | CurrycarbonInvalidCalPDFException String
     -- | An exception for any issues with the CLI
     | CurrycarbonCLIException String
+    -- | An exception for issues with the .tsv file parsing
+    | CurrycarbonTSVParsingException String
+    -- | An exception for incomplete rows in .tsv files
+    | CurrycarbonTSV2CalExprException String
     deriving (Show)
 
 instance Exception CurrycarbonException
@@ -30,4 +34,7 @@ renderCurrycarbonException (CurrycarbonInvalidCalPDFException o) =
     ", either because all densities are 0 or one density is > 1"
 renderCurrycarbonException (CurrycarbonCLIException s) =
     "<!> Error: " ++ s
-
+renderCurrycarbonException (CurrycarbonTSVParsingException s) =
+    "<!> Error: " ++ s
+renderCurrycarbonException (CurrycarbonTSV2CalExprException i) =
+    "<!> Error: Incomplete information in .tsv entry " ++ show i

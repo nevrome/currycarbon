@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import           Currycarbon.CalCurves
-import           Currycarbon.CLI.RunCalibrate (CalibrateOptions (..),
-                                               CalibrateInput (..),
+import           Currycarbon.CLI.RunCalibrate (CalibrateInput (..),
+                                               CalibrateOptions (..),
                                                runCalibrate)
 import           Currycarbon.Parsers
 import           Currycarbon.Types
@@ -68,7 +68,6 @@ calibrateOptParser = CalibrateOptions <$> optParseCalibrateInput
                                       <*> optParseQuiet
                                       <*> pure "unknown"
                                       <*> optParseBasicFile
-                                      <*> optParseOutputTSVFile
                                       <*> optParseDensityFile
                                       <*> optParseHDRFile
                                       <*> optParseAgeSamplingSettings
@@ -230,14 +229,6 @@ optParseBasicFile = OP.option (Just <$> OP.str) (
     OP.help "Path to an output file to store basic, per-expression output: \
             \The minimum start and maximum end of \
             \the high probability density regions and the median age." <>
-    OP.value Nothing
-    )
-
-optParseOutputTSVFile :: OP.Parser (Maybe FilePath)
-optParseOutputTSVFile = OP.option (Just <$> OP.str) (
-    OP.long "tsvFile" <>
-    OP.metavar "FILE" <>
-    OP.help "..." <>
     OP.value Nothing
     )
 
