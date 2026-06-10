@@ -2,6 +2,8 @@
 
 module Currycarbon.Types where
 
+import           Currycarbon.Utils
+
 import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as VU
 
@@ -164,8 +166,18 @@ data CalExpr =
 data TimeWindowBP = TimeWindowBP String YearBP YearBP
     deriving (Show, Eq)
 
+makeTimeWindowBP :: String -> YearBP -> YearBP -> Either CurrycarbonException TimeWindowBP
+makeTimeWindowBP n start stop
+  | start < stop = Left $ CurrycarbonMakeCalExprException "start age younger than stop age"
+  | otherwise = Right $ TimeWindowBP n start stop
+
 data TimeWindowBCAD = TimeWindowBCAD String YearBCAD YearBCAD
     deriving (Show, Eq)
+
+makeTimeWindowBCAD :: String -> YearBCAD -> YearBCAD -> Either CurrycarbonException TimeWindowBCAD
+makeTimeWindowBCAD n start stop
+  | start > stop = Left $ CurrycarbonMakeCalExprException "start age younger than stop age"
+  | otherwise = Right $ TimeWindowBCAD n start stop
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {

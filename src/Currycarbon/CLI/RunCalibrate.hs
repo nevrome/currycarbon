@@ -7,9 +7,9 @@ import           Currycarbon.Calibration.Calibration
 import           Currycarbon.Calibration.Utils
 import           Currycarbon.Parsers
 import           Currycarbon.SumCalibration
+import           Currycarbon.TSV
 import           Currycarbon.Types
 import           Currycarbon.Utils
-import Currycarbon.TSV
 
 import           Control.Exception                   (throwIO)
 import           Control.Monad                       (unless, when)

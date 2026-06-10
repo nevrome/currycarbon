@@ -20,6 +20,8 @@ data CurrycarbonException =
     | CurrycarbonTSVParsingException String
     -- | An exception for incomplete rows in .tsv files
     | CurrycarbonTSV2CalExprException String
+    -- | An exception for issues when making CalEXPRs
+    | CurrycarbonMakeCalExprException String
     deriving (Show)
 
 instance Exception CurrycarbonException
@@ -38,3 +40,5 @@ renderCurrycarbonException (CurrycarbonTSVParsingException s) =
     "<!> Error: " ++ s
 renderCurrycarbonException (CurrycarbonTSV2CalExprException i) =
     "<!> Error: Incomplete information in .tsv entry " ++ show i
+renderCurrycarbonException (CurrycarbonMakeCalExprException s) =
+    "<!> Error: Issue when making CalExpr: " ++ s

@@ -34,7 +34,7 @@ tsvRow2NamedCalExprs
     Right $ NamedCalExpr i $ foldC14 $ zip3 (repeat "") bps errs
 -- Contextual age
 tsvRow2NamedCalExprs (TSVRow i _ _ _ (Just start) (Just stop)) =
-    Right $ NamedCalExpr i $  WindowBCAD (TimeWindowBCAD "" start stop)
+   NamedCalExpr i . WindowBCAD <$> makeTimeWindowBCAD "" start stop
 -- Error case if nothing fits
 tsvRow2NamedCalExprs (TSVRow i _ _ _ _ _) =
     Left $ CurrycarbonTSV2CalExprException i
@@ -49,7 +49,7 @@ readTSV :: FilePath -> IO TSV
 readTSV path = do
     bs <- BL.readFile path
     case Csv.decodeByNameWith decodingOptions bs of
-      Left s -> throwIO $ CurrycarbonTSVParsingException s
+      Left s               -> throwIO $ CurrycarbonTSVParsingException s
       Right (header, rows) -> return (TSV path header rows)
 
 decodingOptions :: Csv.DecodeOptions
