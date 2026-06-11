@@ -51,8 +51,9 @@ isOutsideRangeOfCalCurve (CalCurveBP _ uncals _) (UncalC14 _ age _) =
 -- the relevant segment of the calibration curve
 getRelevantCalCurveSegment :: UncalC14 -> CalCurveBP -> CalCurveBP
 getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurveBP cals uncals sigmas) =
-    let start = mean+6*std
-        stop = mean-6*std
+    let std' = max std 10
+        start = mean+6*std'
+        stop = mean-6*std'
         startIndex = fromMaybe 0 $ VU.findIndex (<= start) uncals
         stopIndex = (VU.length uncals - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse uncals)
         toIndex = stopIndex - startIndex

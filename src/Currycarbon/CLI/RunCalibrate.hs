@@ -119,7 +119,7 @@ runCalibrate (
         if null errors
         then do
             hPutStrLn stderr "---"
-            hPutStrLn stderr "No issues."
+            hPutStrLn stderr "No breaking issues."
             exitSuccess
         else do
             hPutStrLn stderr "---"
