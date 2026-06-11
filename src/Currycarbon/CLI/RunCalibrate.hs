@@ -113,9 +113,9 @@ runCalibrate (
                 Nothing   -> Just <$> R.initStdGen
                 Just seed -> return $ Just $ R.mkStdGen (fromIntegral seed)
         -- prepare and write the output per expression
-        handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed calRes
+        handleExprs ascii True calCurve maybeRNG $ zip3 [1..] exprsRenamed calRes
         -- final conclusion
-        let errors = filter (isLeft . snd) $ zip [0..] calRes
+        let errors = filter (isLeft . snd) $ zip [1..] calRes
         if null errors
         then do
             hPutStrLn stderr "---"
@@ -129,7 +129,7 @@ runCalibrate (
 
     where
         finalOutput :: (Integer, Either CurrycarbonException CalPDF) -> IO ()
-        finalOutput (i, Left e) = hPutStrLn stderr $ show i ++ ": " ++ renderCurrycarbonException e
+        finalOutput (i, Left e) = printE i e
         finalOutput _ = error "can not happen"
 
         -- loop over first and subsequent expressions
@@ -138,34 +138,36 @@ runCalibrate (
             -> Bool -- is this expression the first in the list of expressions?
             -> CalCurveBP
             -> Maybe R.StdGen -- rng for the age sampling seeds
-            -> [(Either CurrycarbonException NamedCalExpr, Either CurrycarbonException CalPDF)]
+            -> [(Integer, Either CurrycarbonException NamedCalExpr, Either CurrycarbonException CalPDF)]
             -> IO ()
         handleExprs _ _ _ _ [] = hPutStrLn stderr "Done."
         -- first expression
         handleExprs _ascii True calCurve maybeRNG (firstDate:otherDates) =
             case firstDate of
-                (Right ex, Right cPDF) -> do
+                (i, Right ex, Right cPDF) -> do
+                    unless quiet $ hPutStrLn stderr $ "--- " ++ show i ++ " ---"
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii ex cPDF sampleSeed writeCalPDF writeCalC14CalRangeSummary writeCalC14HDR writeRandomAgeSample
+                    flexOut _ascii i ex cPDF sampleSeed writeCalPDF writeCalC14CalRangeSummary writeCalC14HDR writeRandomAgeSample
                     handleExprs _ascii False calCurve newRNG otherDates
-                (_, Left e) -> do
-                    printE e
+                (i, _, Left e) -> do
+                    printE i e
                     handleExprs _ascii True calCurve maybeRNG otherDates
-                (_,_) -> error "can not happen"
+                _ -> error "can not happen"
         -- subsequent expression
         handleExprs _ascii False calCurve maybeRNG (nextDate:otherDates) =
             case nextDate of
-                (Right ex, Right cPDF) -> do
+                (i, Right ex, Right cPDF) -> do
+                    unless quiet $ hPutStrLn stderr $ "--- " ++ show i ++ " ---"
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii ex cPDF sampleSeed appendCalPDF appendCalC14CalRangeSummary appendCalC14HDR appendRandomAgeSample
+                    flexOut _ascii i ex cPDF sampleSeed appendCalPDF appendCalC14CalRangeSummary appendCalC14HDR appendRandomAgeSample
                     handleExprs _ascii False calCurve newRNG otherDates
-                (_, Left e) -> do
-                    printE e
+                (i, _, Left e) -> do
+                    printE i e
                     handleExprs _ascii False calCurve maybeRNG otherDates
-                (_,_) -> error "can not happen"
+                _ -> error "can not happen"
 
-        printE :: CurrycarbonException -> IO ()
-        printE e = hPutStrLn stderr $ renderCurrycarbonException e
+        printE :: Integer -> CurrycarbonException -> IO ()
+        printE i e = hPutStrLn stderr $ show i ++ ": " ++ renderCurrycarbonException e
 
         drawSeed :: Maybe R.StdGen -> (Maybe Int, Maybe R.StdGen)
         drawSeed maybeRNG = (\x -> (fromIntegral . fst <$> x, snd <$> x)) (R.genWord32 <$> maybeRNG)
@@ -173,6 +175,7 @@ runCalibrate (
         -- flexible expression handler
         flexOut ::
                Bool
+            -> Integer
             -> NamedCalExpr
             -> CalPDF
             -> Maybe Int
@@ -181,12 +184,12 @@ runCalibrate (
             -> (FilePath -> CalC14 -> IO ())
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        flexOut _ascii namedCalExpr calPDF maybeSeed calPDFToFile calC14CalRangeSummaryToFile calC14HDRToFile randomAgeSampleToFile = do
+        flexOut _ascii i namedCalExpr calPDF maybeSeed calPDFToFile calC14CalRangeSummaryToFile calC14HDRToFile randomAgeSampleToFile = do
             case refineCalDate calPDF of
                 Left e -> do
                     unless quiet $ do
                         putStrLn ("CalEXPR: " ++ renderNamedCalExpr namedCalExpr)
-                        printE e
+                        printE i e
                     when (isJust basicFile) $ unless quiet $
                         hPutStrLn stderr "<!> Error: Can not create --basicFile"
                     when (isJust hdrFile) $ unless quiet $
@@ -205,7 +208,7 @@ runCalibrate (
                 case sampleAgesFromCalPDF conf calPDF of
                     Left e -> do
                         unless quiet $ do
-                            printE e
+                            printE i e
                             hPutStrLn stderr "<!> Error: Can not create --samplesFile"
                     Right res -> randomAgeSampleToFile path res
             when (isJust densityFile) $

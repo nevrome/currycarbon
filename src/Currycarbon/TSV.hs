@@ -12,12 +12,11 @@ import qualified Data.ByteString.Lazy  as BL
 import           Data.Char             (ord)
 import qualified Data.Csv              as Csv
 import qualified Data.HashMap.Strict   as HM
+import           Data.Maybe            (catMaybes)
 import qualified Data.Vector           as V
 
 
 -- turn .tsv files to NamedCalExprs for further processing
-
-
 tsv2NamedCalExprs :: TSV -> [Either CurrycarbonException NamedCalExpr]
 tsv2NamedCalExprs (TSV _ _ rows) = V.toList $ V.map tsvRow2NamedCalExprs rows
 
@@ -75,7 +74,7 @@ data TSVRow = TSVRow {
 
 instance Csv.FromNamedRecord TSVRow where
     parseNamedRecord m = do
-        i          <- filterLookup m "Date_ID"
+        i          <- filterLookupMulti m ["Date_ID", "Poseidon_ID"]
         labnr      <- filterLookupOptional m "Date_C14_Labnr"
         uncalBP    <- filterLookupOptional m "Date_C14_Uncal_BP"
         uncalBPErr <- filterLookupOptional m "Date_C14_Uncal_BP_Err"
@@ -92,12 +91,26 @@ instance Csv.FromNamedRecord TSVRow where
             --, _tsvRowAllColumns        = m
             }
 
+-- | Lookup column by name
 filterLookup :: Csv.FromField a => Csv.NamedRecord -> B8.ByteString -> Csv.Parser a
 filterLookup m name = maybe empty Csv.parseField $ cleanInput $ HM.lookup name m
 
+-- | Lookup optional column by name
 filterLookupOptional :: Csv.FromField a => Csv.NamedRecord -> B8.ByteString -> Csv.Parser (Maybe a)
 filterLookupOptional m name = maybe (pure Nothing) (\bs -> Just <$> Csv.parseField bs) $
                               cleanInput $ HM.lookup name m
+
+-- Lookup column by multiple different names and keep the first match
+filterLookupMulti :: Csv.FromField a => Csv.NamedRecord -> [B8.ByteString] -> Csv.Parser a
+filterLookupMulti m names =
+    maybe empty Csv.parseField $ cleanInput $ lookupMulti names
+    where
+        lookupMulti :: [B8.ByteString] -> Maybe B8.ByteString
+        lookupMulti ns =
+            let vals = map (`HM.lookup` m) ns
+            in case catMaybes vals of
+                []    -> Nothing
+                (x:_) -> Just x
 
 cleanInput :: Maybe B8.ByteString -> Maybe B8.ByteString
 cleanInput Nothing           = Nothing
