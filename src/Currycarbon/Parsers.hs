@@ -117,15 +117,11 @@ parseTimeWindowBP = parseRecordType "rangeBP" $ P.try long P.<|> short
             name  <- parseArgument "id" parseAnyString
             start <- parseArgument "start" parseWord
             stop  <- parseArgument "stop" parseWord
-            construct name start stop
+            eitherToFail $ makeTimeWindowBP name start stop
         short = do
             start <- parseArgument "start" parseWord
             stop  <- parseArgument "stop" parseWord
-            construct "" start stop
-        construct name start stop = do
-            if start >= stop
-            then return (TimeWindowBP name start stop)
-            else fail "the BP stop date can not be larger than the start date"
+            eitherToFail $ makeTimeWindowBP "" start stop
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
 parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ P.try long P.<|> short
@@ -134,15 +130,11 @@ parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ P.try long P.<|> short
             name  <- parseArgument "id" parseAnyString
             start <- parseArgument "start" parseInt
             stop  <- parseArgument "stop" parseInt
-            construct name start stop
+            eitherToFail $ makeTimeWindowBCAD name start stop
         short = do
             start <- parseArgument "start" parseInt
             stop  <- parseArgument "stop" parseInt
-            construct "" start stop
-        construct name start stop = do
-            if start <= stop
-            then return (TimeWindowBCAD name start stop)
-            else fail "the BC/AD stop date can not be smaller than the start date"
+            eitherToFail $ makeTimeWindowBCAD "" start stop
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 addFun :: P.Parser CalExpr

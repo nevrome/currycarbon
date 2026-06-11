@@ -168,7 +168,7 @@ data TimeWindowBP = TimeWindowBP String YearBP YearBP
 
 makeTimeWindowBP :: String -> YearBP -> YearBP -> Either CurrycarbonException TimeWindowBP
 makeTimeWindowBP n start stop
-  | start < stop = Left $ CurrycarbonMakeCalExprException "start age younger than stop age"
+  | start < stop = Left $ CurrycarbonMakeCalExprException  "the BP start age can not be younger than stop age"
   | otherwise = Right $ TimeWindowBP n start stop
 
 data TimeWindowBCAD = TimeWindowBCAD String YearBCAD YearBCAD
@@ -176,8 +176,12 @@ data TimeWindowBCAD = TimeWindowBCAD String YearBCAD YearBCAD
 
 makeTimeWindowBCAD :: String -> YearBCAD -> YearBCAD -> Either CurrycarbonException TimeWindowBCAD
 makeTimeWindowBCAD n start stop
-  | start > stop = Left $ CurrycarbonMakeCalExprException "start age younger than stop age"
+  | start > stop = Left $ CurrycarbonMakeCalExprException "the BC/AD start age can not be younger than the stop age"
   | otherwise = Right $ TimeWindowBCAD n start stop
+
+eitherToFail :: MonadFail m => Either CurrycarbonException b -> m b
+eitherToFail (Left e) = fail $ renderCurrycarbonException e
+eitherToFail (Right x) = return x
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date
 data CalC14 = CalC14 {
