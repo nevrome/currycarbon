@@ -1,0 +1,1 @@
+currycarbon -t input_data/simple.tsv --basicFile actual_data/tsv_file_reading.tsv
