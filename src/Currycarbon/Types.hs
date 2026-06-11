@@ -180,7 +180,7 @@ makeTimeWindowBCAD n start stop
   | otherwise = Right $ TimeWindowBCAD n start stop
 
 eitherToFail :: MonadFail m => Either CurrycarbonException b -> m b
-eitherToFail (Left e) = fail $ renderCurrycarbonException e
+eitherToFail (Left e)  = fail $ renderCurrycarbonException e
 eitherToFail (Right x) = return x
 
 -- | A data type to represent a human readable summary of a calibrated radiocarbon date

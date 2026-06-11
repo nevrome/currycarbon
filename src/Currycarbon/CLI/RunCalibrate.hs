@@ -13,7 +13,9 @@ import           Currycarbon.Utils
 
 import           Control.Exception                   (throwIO)
 import           Control.Monad                       (unless, when)
+import           Data.Either                         (isLeft)
 import           Data.Maybe                          (fromJust, isJust)
+import           System.Exit                         (exitFailure, exitSuccess)
 import           System.IO                           (hPutStrLn, stderr)
 import qualified System.Random                       as R
 
@@ -112,7 +114,23 @@ runCalibrate (
                 Just seed -> return $ Just $ R.mkStdGen (fromIntegral seed)
         -- prepare and write the output per expression
         handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed calRes
+        -- final conclusion
+        let errors = filter (isLeft . snd) $ zip [0..] calRes
+        if null errors
+        then do
+            hPutStrLn stderr "---"
+            hPutStrLn stderr "No issues."
+            exitSuccess
+        else do
+            hPutStrLn stderr "---"
+            hPutStrLn stderr "Failed expressions:"
+            mapM_ finalOutput errors
+            exitFailure
+
     where
+        finalOutput :: (Integer, Either CurrycarbonException CalPDF) -> IO ()
+        finalOutput (i, Left e) = hPutStrLn stderr $ show i ++ ": " ++ renderCurrycarbonException e
+        finalOutput _ = error "can not happen"
 
         -- loop over first and subsequent expressions
         handleExprs ::
