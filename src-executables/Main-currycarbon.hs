@@ -154,8 +154,19 @@ optParseInputTSVFile = OP.strOption (
     OP.long "inputTSVFile" <>
     OP.short 't' <>
     OP.metavar "FILE" <>
-    OP.help "..."
-    )
+    OP.helpDoc ( Just (
+            s2d "A tab separated file with dates to calibrate. Can read Poseidon .janno files. \
+            \Upon reading, calibration expressions are constructed from the rows based on \
+            \the provided columns:"
+        <> OH.hardline <>
+            s2d "<Date_ID> (or <Poseidon_ID>): \
+            \Mandatory identifier, used in calExpr(id = <Date_ID>, ...)."
+        <> OH.hardline <>
+            s2d "<Date_C14_Labnr> <Date_C14_Uncal_BP> <Date_C14_Uncal_BP_Err>: \
+            \Transformed to uncalC14(id = <Date_C14_Labnr>, yearBP =  <Date_C14_Uncal_BP>, \
+            \sigma = <Date_C14_Uncal_BP_Err>). Each of these columns can be list columns with \
+            \multiple entries separated by ;. Multiple entries are then interpreted as products."
+   )))
 
 optParseCalCurveSelection :: OP.Parser CalCurveSelection
 optParseCalCurveSelection = OP.option (OP.eitherReader readCalCurveSelection) (

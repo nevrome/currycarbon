@@ -31,10 +31,10 @@ tsvRow2NamedCalExprs
     (TSVRow i _ (Just (ListColumn bps)) (Just (ListColumn errs)) _ _) |
     length bps == length errs =
     Right $ NamedCalExpr i $ foldC14 $ zip3 (repeat "") bps errs
--- Contextual age
+-- contextual age
 tsvRow2NamedCalExprs (TSVRow i _ _ _ (Just start) (Just stop)) =
    NamedCalExpr i . WindowBCAD <$> makeTimeWindowBCAD "" start stop
--- Error case if nothing fits
+-- error case if nothing fits
 tsvRow2NamedCalExprs (TSVRow i _ _ _ _ _) =
     Left $ CurrycarbonTSV2CalExprException i
 
@@ -42,8 +42,6 @@ foldC14 :: [(String, Word, Word)] -> CalExpr
 foldC14 xs = foldl1 SumCal $ map (\(lc,bp,err) -> UnCalDate $ UncalC14 lc bp err) xs
 
 -- reading .tsv files
-
-
 readTSV :: FilePath -> IO TSV
 readTSV path = do
     bs <- BL.readFile path

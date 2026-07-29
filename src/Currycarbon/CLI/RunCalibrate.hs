@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+
 module Currycarbon.CLI.RunCalibrate
     (CalibrateOptions (..), CalibrateInput (..), runCalibrate) where
 
