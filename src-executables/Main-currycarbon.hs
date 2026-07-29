@@ -155,17 +155,24 @@ optParseInputTSVFile = OP.strOption (
     OP.short 't' <>
     OP.metavar "FILE" <>
     OP.helpDoc ( Just (
-            s2d "A tab separated file with dates to calibrate. Can read Poseidon .janno files. \
-            \Upon reading, calibration expressions are constructed from the rows based on \
-            \the provided columns:"
+            s2d "A tab-separated file with dates to calibrate. Can read Poseidon .janno files, \
+            \which inspire this input format. The rows are transformed to calibration expressions \
+            \upon reading, following a priority order based on the provided columns:"
         <> OH.hardline <>
-            s2d "<Date_ID> (or <Poseidon_ID>): \
-            \Mandatory identifier, used in calExpr(id = <Date_ID>, ...)."
+            s2d "<Date_ID> (or <Poseidon_ID>):"
         <> OH.hardline <>
-            s2d "<Date_C14_Labnr> <Date_C14_Uncal_BP> <Date_C14_Uncal_BP_Err>: \
-            \Transformed to uncalC14(id = <Date_C14_Labnr>, yearBP =  <Date_C14_Uncal_BP>, \
-            \sigma = <Date_C14_Uncal_BP_Err>). Each of these columns can be list columns with \
-            \multiple entries separated by ;. Multiple entries are then interpreted as products."
+            s2d "Mandatory identifier, used in calExpr(id = <Date_ID>, ...)."
+        <> OH.hardline <>
+            s2d "<Date_C14_Labnr> <Date_C14_Uncal_BP> <Date_C14_Uncal_BP_Err>:"
+        <> OH.hardline <>
+            s2d "Transformed to uncalC14(id = <Date_C14_Labnr>, yearBP = <Date_C14_Uncal_BP>, \
+            \sigma = <Date_C14_Uncal_BP_Err>). \
+            \Each of these columns can be list columns with multiple entries separated by ;. \
+            \Multiple uncalibrated dates are then combined as products."
+        <> OH.hardline <>
+            s2d "<Date_BC_AD_Start> <Date_BC_AD_Stop>:"
+        <> OH.hardline <>
+            s2d "Transformed to rangeBCAD(start = <Date_BC_AD_Start>, stop = <Date_BC_AD_Stop>)."
    )))
 
 optParseCalCurveSelection :: OP.Parser CalCurveSelection
