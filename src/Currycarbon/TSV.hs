@@ -2,44 +2,68 @@
 
 module Currycarbon.TSV where
 
+import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
-import           Control.Applicative   (empty)
-import           Control.Exception     (throwIO)
-import qualified Data.ByteString.Char8 as B8
-import qualified Data.ByteString.Lazy  as BL
-import           Data.Char             (ord)
-import qualified Data.Csv              as Csv
-import qualified Data.HashMap.Strict   as HM
-import           Data.Maybe            (catMaybes)
-import qualified Data.Vector           as V
-
+import           Control.Applicative       (empty)
+import           Control.Exception         (throwIO)
+import qualified Data.ByteString.Char8     as B8
+import qualified Data.ByteString.Lazy      as BL
+import           Data.Char                 (ord)
+import qualified Data.Csv                  as Csv
+import qualified Data.HashMap.Strict       as HM
+import           Data.Maybe                (catMaybes)
+import qualified Data.Vector               as V
+import qualified Text.Parsec               as P
+import qualified Text.Parsec.String        as P
 
 -- turn .tsv files to NamedCalExprs for further processing
-tsv2NamedCalExprs :: TSV -> [Either CurrycarbonException NamedCalExpr]
-tsv2NamedCalExprs (TSV _ _ rows) = V.toList $ V.map tsvRow2NamedCalExprs rows
+tsv2NamedCalExprs :: CombinationStrategy -> TSV -> [Either CurrycarbonException NamedCalExpr]
+tsv2NamedCalExprs combStrat (TSV _ _ rows) = V.toList $ V.map (tsvRow2NamedCalExprs combStrat) rows
 
-tsvRow2NamedCalExprs :: TSVRow -> Either CurrycarbonException NamedCalExpr
+tsvRow2NamedCalExprs :: CombinationStrategy -> TSVRow -> Either CurrycarbonException NamedCalExpr
 -- C14 age with n dates and a labcode
-tsvRow2NamedCalExprs
+tsvRow2NamedCalExprs combStrat
     (TSVRow i (Just (ListColumn lcs)) (Just (ListColumn bps)) (Just (ListColumn errs)) _ _) |
     (length lcs == length bps) && (length bps == length errs) =
-    Right $ NamedCalExpr i $ foldC14 $ zip3 lcs bps errs
+    Right $ NamedCalExpr i $ foldC14 combStrat $ zip3 lcs bps errs
 -- C14 age with n dates and no labcode
-tsvRow2NamedCalExprs
+tsvRow2NamedCalExprs combStrat
     (TSVRow i _ (Just (ListColumn bps)) (Just (ListColumn errs)) _ _) |
     length bps == length errs =
-    Right $ NamedCalExpr i $ foldC14 $ zip3 (repeat "") bps errs
+    Right $ NamedCalExpr i $ foldC14 combStrat $ zip3 (repeat "") bps errs
 -- contextual age
-tsvRow2NamedCalExprs (TSVRow i _ _ _ (Just start) (Just stop)) =
+tsvRow2NamedCalExprs _ (TSVRow i _ _ _ (Just start) (Just stop)) =
    NamedCalExpr i . WindowBCAD <$> makeTimeWindowBCAD "" start stop
 -- error case if nothing fits
-tsvRow2NamedCalExprs (TSVRow i _ _ _ _ _) =
+tsvRow2NamedCalExprs _ (TSVRow i _ _ _ _ _) =
     Left $ CurrycarbonTSV2CalExprException i
 
-foldC14 :: [(String, Word, Word)] -> CalExpr
-foldC14 xs = foldl1 SumCal $ map (\(lc,bp,err) -> UnCalDate $ UncalC14 lc bp err) xs
+-- data type for the strategy to combine multiple C14 dates
+data CombinationStrategy = CombSum | CombProduct
+
+instance Show CombinationStrategy where
+    show CombSum     = "Sum"
+    show CombProduct = "Product"
+
+readCombinationStrategy :: String -> Either String CombinationStrategy
+readCombinationStrategy s =
+    case P.runParser parseCombinationStrategy () s s of
+        Left err -> Left $ showParsecErrOneLine err
+        Right x  -> Right x
+
+parseCombinationStrategy :: P.Parser CombinationStrategy
+parseCombinationStrategy =  do
+    x <- P.many P.anyChar
+    case x of
+        "Sum"     -> pure CombSum
+        "Product" -> pure CombProduct
+        _         -> fail "must be either Sum or Product"
+
+foldC14 :: CombinationStrategy -> [(String, Word, Word)] -> CalExpr
+foldC14 CombSum xs     = foldl1 SumCal     $ map (\(lc,bp,err) -> UnCalDate $ UncalC14 lc bp err) xs
+foldC14 CombProduct xs = foldl1 ProductCal $ map (\(lc,bp,err) -> UnCalDate $ UncalC14 lc bp err) xs
 
 -- reading .tsv files
 readTSV :: FilePath -> IO TSV
@@ -89,11 +113,11 @@ instance Csv.FromNamedRecord TSVRow where
             --, _tsvRowAllColumns        = m
             }
 
--- | Lookup column by name
+-- lookup column by name
 filterLookup :: Csv.FromField a => Csv.NamedRecord -> B8.ByteString -> Csv.Parser a
 filterLookup m name = maybe empty Csv.parseField $ cleanInput $ HM.lookup name m
 
--- | Lookup optional column by name
+-- lookup optional column by name
 filterLookupOptional :: Csv.FromField a => Csv.NamedRecord -> B8.ByteString -> Csv.Parser (Maybe a)
 filterLookupOptional m name = maybe (pure Nothing) (\bs -> Just <$> Csv.parseField bs) $
                               cleanInput $ HM.lookup name m

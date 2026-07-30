@@ -5,6 +5,7 @@ import           Currycarbon.CLI.RunCalibrate (CalibrateInput (..),
                                                CalibrateOptions (..),
                                                runCalibrate)
 import           Currycarbon.Parsers
+import           Currycarbon.TSV
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import           Paths_currycarbon            (version)
@@ -83,7 +84,7 @@ optParseCalibrateInput :: OP.Parser CalibrateInput
 optParseCalibrateInput =
            (CalibrateExprs <$> optParseNamedCalExprString)
     OP.<|> (CalibrateExprFile <$> optParseNamedCalExprFromFile)
-    OP.<|> (CalibrateTSVFile <$> optParseInputTSVFile)
+    OP.<|> (CalibrateTSVFile <$> optParseInputTSVFile <*> optParseCombStrat)
 
 optParseNamedCalExprString :: OP.Parser [NamedCalExpr]
 optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readNamedCalExprs) (
@@ -159,21 +160,31 @@ optParseInputTSVFile = OP.strOption (
             \which inspire this input format. The rows are transformed to calibration expressions \
             \upon reading, following a priority order based on the provided columns:"
         <> OH.hardline <>
-            s2d "<Date_ID> (or <Poseidon_ID>):"
+            s2d "- <Date_ID> (or <Poseidon_ID>):"
         <> OH.hardline <>
-            s2d "Mandatory identifier, used in calExpr(id = <Date_ID>, ...)."
+            s2d "Mandatory identifier, used in calExpr(id = <id>)."
         <> OH.hardline <>
-            s2d "<Date_C14_Labnr> <Date_C14_Uncal_BP> <Date_C14_Uncal_BP_Err>:"
+            s2d "- <Date_C14_Labnr> <Date_C14_Uncal_BP> <Date_C14_Uncal_BP_Err>:"
         <> OH.hardline <>
-            s2d "Transformed to uncalC14(id = <Date_C14_Labnr>, yearBP = <Date_C14_Uncal_BP>, \
-            \sigma = <Date_C14_Uncal_BP_Err>). \
-            \Each of these columns can be list columns with multiple entries separated by ;. \
-            \Multiple uncalibrated dates are then combined as products."
+            s2d "Gets transformed to uncalC14(id = <labnr>, yearBP = <bp>, sigma = <err>). \
+            \Each of these columns can be a list column with multiple entries separated by ;. \
+            \Multiple uncalibrated dates are then combined with the strategy set in --combStrat \
+            \when they are evaluated."
         <> OH.hardline <>
-            s2d "<Date_BC_AD_Start> <Date_BC_AD_Stop>:"
+            s2d "- <Date_BC_AD_Start> <Date_BC_AD_Stop>:"
         <> OH.hardline <>
-            s2d "Transformed to rangeBCAD(start = <Date_BC_AD_Start>, stop = <Date_BC_AD_Stop>)."
+            s2d "Gets transformed to rangeBCAD(start = <start>, stop = <stop>)."
    )))
+
+optParseCombStrat :: OP.Parser CombinationStrategy
+optParseCombStrat = OP.option (OP.eitherReader readCombinationStrategy) (
+    OP.long "combStrat" <>
+    OP.metavar "Sum | Product" <>
+    OP.help "Strategy that should be applied to combine multiple C14 ages (uncalC14) \
+            \from one row when reading from --inputTSVFile." <>
+    OP.value CombProduct <>
+    OP.showDefault
+    )
 
 optParseCalCurveSelection :: OP.Parser CalCurveSelection
 optParseCalCurveSelection = OP.option (OP.eitherReader readCalCurveSelection) (

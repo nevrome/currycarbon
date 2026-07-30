@@ -43,7 +43,8 @@ data CalibrateOptions = CalibrateOptions {
 data CalibrateInput =
       CalibrateExprs [NamedCalExpr] -- ^ String listing the uncalibrated dates in CalExpr format that should be calibrated
     | CalibrateExprFile FilePath -- ^ A file with uncalibrated dates in CalExpr to be calibrated
-    | CalibrateTSVFile FilePath -- ^ A file with uncalibrated dates in .tsv format to be calibrated
+    | CalibrateTSVFile FilePath CombinationStrategy -- ^ A file with uncalibrated dates in .tsv format to be calibrated and
+                                                    -- a strategy to combine multiple C14 ages
 
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
@@ -64,9 +65,9 @@ runCalibrate (
         CalibrateExprFile path -> do
             exprs <- readNamedCalExprsFromFile path
             return (map Right exprs, Nothing)
-        CalibrateTSVFile path -> do
+        CalibrateTSVFile path combStrat -> do
             tsv <- readTSV path
-            let exprs = tsv2NamedCalExprs tsv
+            let exprs = tsv2NamedCalExprs combStrat tsv
             return (exprs, Just tsv)
     let exprsRenamed = replaceEmptyNames errOrExprs
     if null exprsRenamed
@@ -131,7 +132,7 @@ runCalibrate (
     where
         finalOutput :: (Integer, Either CurrycarbonException CalPDF) -> IO ()
         finalOutput (i, Left e) = printE i e
-        finalOutput _ = error "can not happen"
+        finalOutput _           = error "can not happen"
 
         -- loop over first and subsequent expressions
         handleExprs ::
