@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Create Release
         id: create_release
@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set tag name
         uses: olegtarasov/get-tag@v2.1
@@ -68,7 +68,7 @@ jobs:
 
       - name: Compress binary
         if: ${{ runner.os != 'macOS' }} # upx is crashing for macOS Ventura or above!
-        uses: svenstaro/upx-action@v2
+        uses: svenstaro/upx-action@v3
         with:
           files: ${{ steps.binarypath.outputs.BINARY_PATH }}
 

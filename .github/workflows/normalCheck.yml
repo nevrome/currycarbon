@@ -12,7 +12,7 @@ jobs:
     env:
       CURRY_RUN_GOLDEN: true # run golden tests, see the README for more info
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: freckle/stack-action@v5
         with:
           stack-arguments: --coverage
@@ -20,6 +20,6 @@ jobs:
       - uses: 8c6794b6/hpc-codecov-action@v4
         with:
           target: stack:spec
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # set in organization settings
