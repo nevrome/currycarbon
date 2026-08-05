@@ -1,3 +1,9 @@
+- V 0.6.0.0:
+    - New input method: Read .tsv files in a Poseidon .janno file-inspired format.
+    - Simplified CLI input options: Either read calibration expressions directly from the command line, or read them from one expression file (now called `--inputExprFile`), or read them from one .tsv file (`--inputTSVFile`). Combining the input methods or reading from multiple files is not possible any more.
+    - Added a lower limit for the size of the calibration curve segment in `getRelevantCalCurveSegment`.
+    - Added a mechanism to collect and show calibration errors at the end of a sequence of dates.
+    - Separated command line output with visual separators of the form `--- 1 ---`, `--- 2 ---`, etc.
 - V 0.5.0.0: Cleaned up parser error behaviour:
     - Parsing errors are now more helpful with better positional information, using a modified `showParsecErr` and a new `showParsecErrOneLine`.
     - Breaking change: The type of `readCalCurve` changed. It is now safe, returning `Either String CalCurveBP`. The old version is preserved in `readCalCurveUnsafe`.
