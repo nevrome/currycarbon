@@ -164,4 +164,4 @@ sampleAgesFromCalPDF (AgeSamplingConf rng n) calPDF@(CalPDF calPDFid cals dens) 
             where m = sequence . repeat . CMR.fromList $ weights
 
 isInvalidCalPDF :: CalPDF -> Bool
-isInvalidCalPDF (CalPDF _ _ dens) = VU.sum dens == 0 || VU.any (>= 1.0) dens
+isInvalidCalPDF (CalPDF _ _ dens) = VU.sum dens == 0 || VU.any (> 1.0) dens
