@@ -14,7 +14,6 @@ import           Currycarbon.Utils
 
 import           Control.Exception                   (throwIO)
 import           Control.Monad                       (unless, when)
-import           Data.Either                         (isLeft)
 import           Data.Maybe                          (fromJust, isJust)
 import           System.Exit                         (exitFailure, exitSuccess)
 import           System.IO                           (hPutStrLn, stderr)
@@ -117,7 +116,16 @@ runCalibrate (
         -- prepare and write the output per expression
         handleExprs ascii True calCurve maybeRNG $ zip3 [1..] exprsRenamed calRes
         -- final conclusion
-        let errors = filter (isLeft . snd) $ zip [1..] calRes
+        let calibrationErrors =
+                [ (i, e)
+                | (i, Left e) <- zip [1..] calRes
+                ]
+            refinementErrors =
+                [ (i, e)
+                | (i, Right calPDF) <- zip [1..] calRes
+                , Left e <- [validateCalPDF calPDF]
+                ]
+            errors = calibrationErrors ++ refinementErrors
         if null errors
         then do
             hPutStrLn stderr "---"
@@ -126,14 +134,11 @@ runCalibrate (
         else do
             hPutStrLn stderr "---"
             hPutStrLn stderr "Failed expressions:"
-            mapM_ finalOutput errors
+            mapM_ (uncurry printE) errors
             exitFailure
 
-    where
-        finalOutput :: (Integer, Either CurrycarbonException CalPDF) -> IO ()
-        finalOutput (i, Left e) = printE i e
-        finalOutput _           = error "can not happen"
 
+        where
         -- loop over first and subsequent expressions
         handleExprs ::
                Bool -- encoding

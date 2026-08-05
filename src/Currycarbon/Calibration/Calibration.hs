@@ -14,6 +14,7 @@ module Currycarbon.Calibration.Calibration
       , calibrateDates
       , refineCalDates
       , refineCalDate
+      , validateCalPDF
       , CalibrateDatesConf (..)
       , defaultCalConf
       , AgeSamplingConf (..)
@@ -56,21 +57,28 @@ calibrateDate ::    CalibrationMethod -- ^ Calibration method to use
                                                         -- calibration failed for some reason, or a 'CalPDF'
 calibrateDate method config calCurve uncalDate = head $ calibrateDates method config calCurve [uncalDate]
 
+validateCalPDF :: CalPDF -> Either CurrycarbonException ()
+validateCalPDF calPDF
+    | isInvalidCalPDF calPDF = Left $ CurrycarbonInvalidCalPDFException "refinement"
+    | otherwise = Right ()
+
 -- | Transforms the raw, calibrated probability density table to a meaningful representation of a
 -- calibrated radiocarbon date
 refineCalDates :: [CalPDF] -> [Either CurrycarbonException CalC14]
 refineCalDates = map refineCalDate
 
 refineCalDate :: CalPDF -> Either CurrycarbonException CalC14
-refineCalDate calPDF@(CalPDF name cals dens)
-    -- don't calculate CalC14, if it's not meaningful
-    | isInvalidCalPDF calPDF =
-        Left $ CurrycarbonInvalidCalPDFException "refinement"
+refineCalDate calPDF = do
+    validateCalPDF calPDF
+    pure (refineValidCalDate calPDF)
+
+refineValidCalDate :: CalPDF -> CalC14
+refineValidCalDate (CalPDF name cals dens)
     -- for simple uniform age ranges
     | VU.length (VU.uniq dens) == 1 =
         let start = VU.head cals
             stop  = VU.last cals
-        in Right $ CalC14 {
+        in CalC14 {
           _calC14id           = name
         , _calC14RangeSummary = CalRangeSummary {
               _calRangeStartTwoSigma = start
@@ -84,7 +92,7 @@ refineCalDate calPDF@(CalPDF name cals dens)
         }
     -- for normal post-calibration probability distributions
     | otherwise =
-        Right $ CalC14 {
+        CalC14 {
           _calC14id           = name
         , _calC14RangeSummary = CalRangeSummary {
               _calRangeStartTwoSigma = _hdrstart $ head hdrs95
