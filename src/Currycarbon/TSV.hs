@@ -70,8 +70,8 @@ foldC14 CombProduct xs = foldl1 ProductCal $ map (\(lc,bp,err) -> UnCalDate $ Un
 -- | Read calibration expressions from a .tsv file. The file should have the following columns:
 --
 -- @
--- Date_ID	Date_C14_Labnr	Date_C14_Uncal_BP	Date_C14_Uncal_BP_Err	Date_BC_AD_Start	Date_BC_AD_Median	Date_BC_AD_Stop
--- Sample1				-200		100
+-- Date_ID	Date_C14_Labnr	Date_C14_Uncal_BP	Date_C14_Uncal_BP_Err	Date_BC_AD_Start	Date_BC_AD_Stop
+-- Sample1				-200	100
 -- Sample2	TEST-1	1000	30
 -- Sample3	TEST-2;TEST-3	3000;3200	30;50
 -- @
