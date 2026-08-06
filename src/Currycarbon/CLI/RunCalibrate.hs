@@ -114,7 +114,7 @@ runCalibrate (
                 Nothing   -> Just <$> R.initStdGen
                 Just seed -> return $ Just $ R.mkStdGen (fromIntegral seed)
         -- prepare and write the output per expression
-        handleExprs ascii True calCurve maybeRNG $ zip3 [1..] exprsRenamed calRes
+        handleExprs ascii True maybeRNG calCurve $ zip3 [1..] exprsRenamed calRes
         -- final conclusion
         let calibrationErrors =
                 [ (i, e)
@@ -143,34 +143,34 @@ runCalibrate (
         handleExprs ::
                Bool -- encoding
             -> Bool -- is this expression the first in the list of expressions?
-            -> CalCurveBP
             -> Maybe R.StdGen -- rng for the age sampling seeds
+            -> CalCurveBP
             -> [(Integer, Either CurrycarbonException NamedCalExpr, Either CurrycarbonException CalPDF)]
             -> IO ()
         handleExprs _ _ _ _ [] = hPutStrLn stderr "Done."
         -- first expression
-        handleExprs _ascii True calCurve maybeRNG (firstDate:otherDates) =
+        handleExprs _ascii True maybeRNG calCurve (firstDate:otherDates) =
             case firstDate of
                 (i, Right ex, Right cPDF) -> do
                     unless quiet $ hPutStrLn stderr $ "--- " ++ show i ++ " ---"
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii i ex cPDF sampleSeed writeCalPDF writeCalC14CalRangeSummary writeCalC14HDR writeRandomAgeSample
-                    handleExprs _ascii False calCurve newRNG otherDates
+                    flexOut _ascii calCurve i ex cPDF sampleSeed writeCalPDF writeCalC14CalRangeSummary writeCalC14HDR writeRandomAgeSample
+                    handleExprs _ascii False newRNG calCurve otherDates
                 (i, _, Left e) -> do
                     printE i e
-                    handleExprs _ascii True calCurve maybeRNG otherDates
+                    handleExprs _ascii True maybeRNG calCurve otherDates
                 _ -> error "can not happen"
         -- subsequent expression
-        handleExprs _ascii False calCurve maybeRNG (nextDate:otherDates) =
+        handleExprs _ascii False maybeRNG calCurve (nextDate:otherDates) =
             case nextDate of
                 (i, Right ex, Right cPDF) -> do
                     unless quiet $ hPutStrLn stderr $ "--- " ++ show i ++ " ---"
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii i ex cPDF sampleSeed appendCalPDF appendCalC14CalRangeSummary appendCalC14HDR appendRandomAgeSample
-                    handleExprs _ascii False calCurve newRNG otherDates
+                    flexOut _ascii calCurve i ex cPDF sampleSeed appendCalPDF appendCalC14CalRangeSummary appendCalC14HDR appendRandomAgeSample
+                    handleExprs _ascii False newRNG calCurve otherDates
                 (i, _, Left e) -> do
                     printE i e
-                    handleExprs _ascii False calCurve maybeRNG otherDates
+                    handleExprs _ascii False maybeRNG calCurve otherDates
                 _ -> error "can not happen"
 
         printE :: Integer -> CurrycarbonException -> IO ()
@@ -182,6 +182,7 @@ runCalibrate (
         -- flexible expression handler
         flexOut ::
                Bool
+            -> CalCurveBP
             -> Integer
             -> NamedCalExpr
             -> CalPDF
@@ -191,7 +192,7 @@ runCalibrate (
             -> (FilePath -> CalC14 -> IO ())
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        flexOut _ascii i namedCalExpr calPDF maybeSeed calPDFToFile calC14CalRangeSummaryToFile calC14HDRToFile randomAgeSampleToFile = do
+        flexOut _ascii calCurve i namedCalExpr calPDF maybeSeed calPDFToFile calC14CalRangeSummaryToFile calC14HDRToFile randomAgeSampleToFile = do
             case refineCalDate calPDF of
                 Left e -> do
                     unless quiet $ do
@@ -203,7 +204,7 @@ runCalibrate (
                         hPutStrLn stderr "<!> Error: Can not create --hdrFile"
                 Right calC14 -> do
                     unless quiet $ do
-                        putStrLn (renderCalDatePretty _ascii (namedCalExpr, calPDF, calC14))
+                        putStrLn (renderCalDatePretty _ascii calCurve (not noInterpolate) (namedCalExpr, calPDF, calC14))
                     when (isJust basicFile) $
                         calC14CalRangeSummaryToFile (fromJust basicFile) calC14
                     when (isJust hdrFile) $

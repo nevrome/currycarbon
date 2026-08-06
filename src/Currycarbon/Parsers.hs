@@ -2,7 +2,6 @@
 
 module Currycarbon.Parsers where
 
-import           Currycarbon.CalCurves         (intcal20)
 import           Currycarbon.Calibration.Utils
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
@@ -75,14 +74,16 @@ parseCalibrationMethod = do
 --
 renderCalDatePretty ::
        Bool -- ^ Should the CLI plot be restricted to (boring) ASCII symbols?
+    -> CalCurveBP
+    -> Bool
     -> (NamedCalExpr, CalPDF, CalC14)
     -> String
-renderCalDatePretty ascii (calExpr, calPDF, calC14) =
+renderCalDatePretty ascii calCurve interpolate (calExpr, calPDF, calC14) =
     "CalEXPR: " ++ intercalate "\n" [
           renderNamedCalExpr calExpr
         , renderCalC14 calC14
         , ""
-        , renderCLIPlotCalCurve ascii 8 50 calPDF calExpr
+        , renderCLIPlotCalCurve ascii 8 50 calCurve interpolate calPDF calExpr
         , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
         ]
 
@@ -492,14 +493,18 @@ roundTo10 x =
         roundedDec = if rest >= 5 then dec + 1 else dec
     in roundedDec * 10 * signum x
 
-renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalPDF -> NamedCalExpr -> String
+renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalCurveBP -> Bool -> CalPDF -> NamedCalExpr -> String
 renderCLIPlotCalCurve
-    ascii rows cols (CalPDF _ cals _)
+    ascii rows cols
+    calCurve interpolate
+    (CalPDF _ cals _)
     (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma))) =
     let startYear = VU.head cals
         stopYear = VU.last cals
         -- prepare calcurve
-        calcurvePrep = makeBCADCalCurve $ interpolateCalCurve intcal20
+        calcurvePrep = makeBCADCalCurve $ if interpolate
+                                          then interpolateCalCurve calCurve
+                                          else calCurve
         calCurveSegment = punchOutCalCurveBCAD startYear stopYear calcurvePrep
         calCurveUncals = VU.map fromIntegral $ _calCurveBCADUnCals calCurveSegment
         calCurveUncalStart = bcad2BP $ round $ VU.head calCurveUncals
@@ -545,7 +550,7 @@ renderCLIPlotCalCurve
             | otherwise = ' '
         makeTick :: (Integral n) => n -> String
         makeTick n = padString 6 (show $ roundTo10 $ fromIntegral n) ++ " " ++ getSymbol ascii YAxisTick : " "
-renderCLIPlotCalCurve _ _ _ _ _ = ""
+renderCLIPlotCalCurve _ _ _ _ _ _ _ = ""
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
