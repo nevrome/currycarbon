@@ -2,6 +2,7 @@
 
 module Currycarbon.Parsers where
 
+import           Currycarbon.CalCurves         (interpolateCalCurve)
 import           Currycarbon.Calibration.Utils
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
