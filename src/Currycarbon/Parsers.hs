@@ -80,13 +80,20 @@ renderCalDatePretty ::
     -> (NamedCalExpr, CalPDF, CalC14)
     -> String
 renderCalDatePretty ascii calCurve interpolate (calExpr, calPDF, calC14) =
-    "CalEXPR: " ++ intercalate "\n" [
+    "CalEXPR: " ++ intercalate "" [
           renderNamedCalExpr calExpr
+        , "\n"
         , renderCalC14 calC14
-        , ""
-        , renderCLIPlotCalCurve ascii 8 50 calCurve interpolate calPDF calExpr
-        , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
-        ]
+        , "\n"
+        ] ++
+        if interpolate
+        then intercalate "" [
+              "\n"
+            , renderCLIPlotCalCurve ascii 8 50 calCurve calPDF calExpr
+            , "\n"
+            , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
+            ]
+        else []
 
 -- write and read calibration expressions
 
@@ -494,18 +501,16 @@ roundTo10 x =
         roundedDec = if rest >= 5 then dec + 1 else dec
     in roundedDec * 10 * signum x
 
-renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalCurveBP -> Bool -> CalPDF -> NamedCalExpr -> String
+renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalCurveBP -> CalPDF -> NamedCalExpr -> String
 renderCLIPlotCalCurve
     ascii rows cols
-    calCurve interpolate
+    calCurve
     (CalPDF _ cals _)
     (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma))) =
     let startYear = VU.head cals
         stopYear = VU.last cals
         -- prepare calcurve
-        calcurvePrep = makeBCADCalCurve $ if interpolate
-                                          then interpolateCalCurve calCurve
-                                          else calCurve
+        calcurvePrep = makeBCADCalCurve $ interpolateCalCurve calCurve
         calCurveSegment = punchOutCalCurveBCAD startYear stopYear calcurvePrep
         calCurveUncals = VU.map fromIntegral $ _calCurveBCADUnCals calCurveSegment
         calCurveUncalStart = bcad2BP $ round $ VU.head calCurveUncals
@@ -551,7 +556,7 @@ renderCLIPlotCalCurve
             | otherwise = ' '
         makeTick :: (Integral n) => n -> String
         makeTick n = padString 6 (show $ roundTo10 $ fromIntegral n) ++ " " ++ getSymbol ascii YAxisTick : " "
-renderCLIPlotCalCurve _ _ _ _ _ _ _ = ""
+renderCLIPlotCalCurve _ _ _ _ _ _ = ""
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =
