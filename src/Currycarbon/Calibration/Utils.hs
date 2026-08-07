@@ -2,6 +2,7 @@
 
 module Currycarbon.Calibration.Utils where
 
+import           Currycarbon.CalCurves (interpolateCalCurve)
 import           Currycarbon.Types
 
 import           Data.Maybe            (fromMaybe)
@@ -51,8 +52,9 @@ isOutsideRangeOfCalCurve (CalCurveBP _ uncals _) (UncalC14 _ age _) =
 -- the relevant segment of the calibration curve
 getRelevantCalCurveSegment :: UncalC14 -> CalCurveBP -> CalCurveBP
 getRelevantCalCurveSegment (UncalC14 _ mean std) (CalCurveBP cals uncals sigmas) =
-    let start = mean+6*std
-        stop = mean-6*std
+    let std' = max std 10
+        start = mean+6*std'
+        stop = mean-6*std'
         startIndex = fromMaybe 0 $ VU.findIndex (<= start) uncals
         stopIndex = (VU.length uncals - 1) - fromMaybe 0 (VU.findIndex (>= stop) $ VU.reverse uncals)
         toIndex = stopIndex - startIndex
@@ -86,38 +88,6 @@ bp2BCAD x = -(fromIntegral x) + 1950
 
 bcad2BP :: YearBCAD -> YearBP
 bcad2BP y = 1950 - fromIntegral y
-
-interpolateCalCurve :: CalCurveBP -> CalCurveBP
-interpolateCalCurve (CalCurveBP cals uncals sigmas) =
-    let obs = VU.zip3 cals uncals sigmas
-        timeWindows = getTimeWindows obs
-        obsFilled = VU.concatMap fillTimeWindows timeWindows
-    in uncurry3 CalCurveBP $ VU.unzip3 obsFilled
-    where
-        getTimeWindows :: VU.Vector (YearBP,YearBP,YearRange) -> VU.Vector ((YearBP,YearBP,YearRange),(YearBP,YearBP,YearRange))
-        getTimeWindows xs = VU.zipWith (,) (VU.init xs) (VU.tail xs)
-        fillTimeWindows :: ((YearBP,YearBP,YearRange),(YearBP,YearBP,YearRange)) -> VU.Vector (YearBP,YearBP,YearRange)
-        fillTimeWindows ((calbp1,bp1,sigma1),(calbp2,bp2,sigma2)) =
-            if calbp1 == calbp2 || calbp1+1 == calbp2 || calbp1-1 == calbp2
-            then VU.singleton (calbp1,bp1,sigma1)
-            else
-                let newCals = VU.fromList [calbp1,calbp1-1..calbp2+1] -- range definition like this to trigger counting down
-                    newBPs = VU.map (snd . getInBetweenPointsInt (calbp1,bp1) (calbp2,bp2)) newCals
-                    newSigmas = VU.map (snd . getInBetweenPointsInt (calbp1,sigma1) (calbp2,sigma2)) newCals
-                in VU.zip3 newCals newBPs newSigmas
-        getInBetweenPointsInt :: (Word, Word) -> (Word, Word) -> Word -> (Word, Word)
-        getInBetweenPointsInt (x1,y1) (x2,y2) xPred =
-            let (_,yPred) = getInBetweenPoints (fromIntegral x1,fromIntegral y1) (fromIntegral x2,fromIntegral y2) $ fromIntegral xPred
-            in (xPred, round yPred)
-        getInBetweenPoints :: (Double, Double) -> (Double, Double) -> Double -> (Double, Double)
-        getInBetweenPoints (x1,y1) (x2,y2) xPred =
-            let yDiff = y2 - y1
-                xDiff = abs $ x1 - x2
-                yDiffPerxDiff = yDiff/xDiff
-                xPredRel = x1 - xPred
-            in (xPred, y1 + xPredRel * yDiffPerxDiff)
-        uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)
-        uncurry3 f ~(a,b,c) = f a b c
 
 -- | Subset the calibration curve to the non-zero density range. The threshold is set to 0.00001.
 trimLowDensityEdgesCalPDF :: CalPDF -> CalPDF

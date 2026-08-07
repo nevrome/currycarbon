@@ -1,24 +1,27 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Currycarbon.CLI.RunCalibrate
-    (CalibrateOptions (..), runCalibrate) where
+    (CalibrateOptions (..), CalibrateInput (..), runCalibrate) where
 
 import           Currycarbon.CalCurves
 import           Currycarbon.Calibration.Calibration
 import           Currycarbon.Calibration.Utils
 import           Currycarbon.Parsers
 import           Currycarbon.SumCalibration
+import           Currycarbon.TSV
 import           Currycarbon.Types
 import           Currycarbon.Utils
 
 import           Control.Exception                   (throwIO)
 import           Control.Monad                       (unless, when)
 import           Data.Maybe                          (fromJust, isJust)
+import           System.Exit                         (exitFailure, exitSuccess)
 import           System.IO                           (hPutStrLn, stderr)
 import qualified System.Random                       as R
 
 -- | A data type to represent the options to the CLI module function runCalibrate
 data CalibrateOptions = CalibrateOptions {
-        _calibrateExprs                   :: [NamedCalExpr] -- ^ String listing the uncalibrated dates that should be calibrated
-      , _calibrateExprFiles               :: [FilePath] -- ^ List of files with uncalibrated dates to be calibrated
+        _calibrateInput                   :: CalibrateInput
       , _calibrateCalCurveFile            :: CalCurveSelection -- ^ Either a preloaded calibration curve or a path to a .14c file
       , _calibrateCalibrationMethod       :: CalibrationMethod -- ^ Calibration algorithm that should be used
       , _calibrateAllowOutside            :: Bool -- ^ Allow calibration to run outside of the range of the calibration curve
@@ -35,11 +38,18 @@ data CalibrateOptions = CalibrateOptions {
       , _calibrateCalCurveMatrixFile      :: Maybe FilePath -- ^ Path to an output file
     }
 
+-- | A data type with input options for the calibration
+data CalibrateInput =
+      CalibrateExprs [NamedCalExpr] -- ^ String listing the uncalibrated dates in CalExpr format that should be calibrated
+    | CalibrateExprFile FilePath -- ^ A file with uncalibrated dates in CalExpr to be calibrated
+    | CalibrateTSVFile FilePath CombinationStrategy -- ^ A file with uncalibrated dates in .tsv format to be calibrated and
+                                                    -- a strategy to combine multiple C14 ages
+
 -- | Interface function to trigger calibration from the command line
 runCalibrate :: CalibrateOptions -> IO ()
 runCalibrate (
         CalibrateOptions
-            exprs exprFiles
+            input
             calCurveSelection method allowOutside noInterpolate noTrimCalCurve noTrimOutCalPDF
             quiet encoding
             basicFile densityFile hdrFile
@@ -48,9 +58,17 @@ runCalibrate (
         ) = do
     let ascii = encoding /= "UTF-8"
     -- compile dates
-    exprsFromFile <- mapM readNamedCalExprsFromFile exprFiles
-    let exprsCombined = exprs ++ concat exprsFromFile
-        exprsRenamed = replaceEmptyNames exprsCombined
+    (errOrExprs,_) <- case input of
+        CalibrateExprs exprs -> do
+            return (map Right exprs, Nothing)
+        CalibrateExprFile path -> do
+            exprs <- readNamedCalExprsFromFile path
+            return (map Right exprs, Nothing)
+        CalibrateTSVFile path combStrat -> do
+            tsv <- readTSV path
+            let exprs = tsv2NamedCalExprs combStrat tsv
+            return (exprs, Just tsv)
+    let exprsRenamed = replaceEmptyNames errOrExprs
     if null exprsRenamed
     then hPutStrLn stderr "Nothing to calibrate. See currycarbon -h for help"
     else do
@@ -69,7 +87,8 @@ runCalibrate (
         -- handle the special debug cases
         when (isJust calCurveSegmentFile || isJust calCurveMatrixFile) $ do
             case exprsRenamed of
-                [NamedCalExpr _ (UnCalDate uncal)] -> do
+                [Left e] -> throwIO e
+                [Right (NamedCalExpr _ (UnCalDate uncal))] -> do
                     let calCurveSegment = prepareCalCurveSegment (not noInterpolate) $
                             getRelevantCalCurveSegment uncal calCurve
                     when (isJust calCurveSegmentFile) $
@@ -83,7 +102,7 @@ runCalibrate (
                         \a single uncalibrated radiocarbon date."
         -- run calibration
         hPutStrLn stderr "Calibrating..."
-        let errorOrCalPDFs = map (evalNamedCalExpr method calConf calCurve) exprsRenamed
+        let errorOrCalPDFs = fmap (either Left (evalNamedCalExpr method calConf calCurve)) exprsRenamed
         -- trim output
             calRes = if not noTrimOutCalPDF
                      then map (mapEither id trimLowDensityEdgesCalPDF) errorOrCalPDFs
@@ -95,41 +114,67 @@ runCalibrate (
                 Nothing   -> Just <$> R.initStdGen
                 Just seed -> return $ Just $ R.mkStdGen (fromIntegral seed)
         -- prepare and write the output per expression
-        handleExprs ascii True calCurve maybeRNG $ zip exprsRenamed calRes
-    where
+        handleExprs ascii True maybeRNG calCurve $ zip3 [1..] exprsRenamed calRes
+        -- final conclusion
+        let calibrationErrors =
+                [ (i, e)
+                | (i, Left e) <- zip [1..] calRes
+                ]
+            refinementErrors =
+                [ (i, e)
+                | (i, Right calPDF) <- zip [1..] calRes
+                , Left e <- [validateCalPDF calPDF]
+                ]
+            errors = calibrationErrors ++ refinementErrors
+        if null errors
+        then do
+            hPutStrLn stderr "---"
+            hPutStrLn stderr "No breaking issues."
+            exitSuccess
+        else do
+            hPutStrLn stderr "---"
+            hPutStrLn stderr "Failed expressions:"
+            mapM_ (uncurry printE) errors
+            exitFailure
 
+
+        where
         -- loop over first and subsequent expressions
         handleExprs ::
                Bool -- encoding
             -> Bool -- is this expression the first in the list of expressions?
-            -> CalCurveBP
             -> Maybe R.StdGen -- rng for the age sampling seeds
-            -> [(NamedCalExpr, Either CurrycarbonException CalPDF)]
+            -> CalCurveBP
+            -> [(Integer, Either CurrycarbonException NamedCalExpr, Either CurrycarbonException CalPDF)]
             -> IO ()
         handleExprs _ _ _ _ [] = hPutStrLn stderr "Done."
         -- first expression
-        handleExprs _ascii True calCurve maybeRNG (firstDate:otherDates) =
+        handleExprs _ascii True maybeRNG calCurve (firstDate:otherDates) =
             case firstDate of
-                (_, Left e) -> do
-                    printE e
-                    handleExprs _ascii True calCurve maybeRNG otherDates
-                (namedCalExpr, Right cPDF) -> do
+                (i, Right ex, Right cPDF) -> do
+                    unless quiet $ hPutStrLn stderr $ "--- " ++ show i ++ " ---"
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii namedCalExpr cPDF sampleSeed writeCalPDF writeCalC14CalRangeSummary writeCalC14HDR writeRandomAgeSample
-                    handleExprs _ascii False calCurve newRNG otherDates
+                    flexOut _ascii calCurve i ex cPDF sampleSeed writeCalPDF writeCalC14CalRangeSummary writeCalC14HDR writeRandomAgeSample
+                    handleExprs _ascii False newRNG calCurve otherDates
+                (i, _, Left e) -> do
+                    printE i e
+                    handleExprs _ascii True maybeRNG calCurve otherDates
+                _ -> error "can not happen"
         -- subsequent expression
-        handleExprs _ascii False calCurve maybeRNG (nextDate:otherDates) =
+        handleExprs _ascii False maybeRNG calCurve (nextDate:otherDates) =
             case nextDate of
-                (_, Left e) -> do
-                    printE e
-                    handleExprs _ascii False calCurve maybeRNG otherDates
-                (namedCalExpr, Right cPDF) -> do
+                (i, Right ex, Right cPDF) -> do
+                    unless quiet $ hPutStrLn stderr $ "--- " ++ show i ++ " ---"
                     let (sampleSeed, newRNG) = drawSeed maybeRNG
-                    flexOut _ascii namedCalExpr cPDF sampleSeed appendCalPDF appendCalC14CalRangeSummary appendCalC14HDR appendRandomAgeSample
-                    handleExprs _ascii False calCurve newRNG otherDates
+                    flexOut _ascii calCurve i ex cPDF sampleSeed appendCalPDF appendCalC14CalRangeSummary appendCalC14HDR appendRandomAgeSample
+                    handleExprs _ascii False newRNG calCurve otherDates
+                (i, _, Left e) -> do
+                    printE i e
+                    handleExprs _ascii False maybeRNG calCurve otherDates
+                _ -> error "can not happen"
 
-        printE :: CurrycarbonException -> IO ()
-        printE e = hPutStrLn stderr $ renderCurrycarbonException e
+        printE :: Integer -> CurrycarbonException -> IO ()
+        printE i e = hPutStrLn stderr $ show i ++ ": " ++ renderCurrycarbonException e
 
         drawSeed :: Maybe R.StdGen -> (Maybe Int, Maybe R.StdGen)
         drawSeed maybeRNG = (\x -> (fromIntegral . fst <$> x, snd <$> x)) (R.genWord32 <$> maybeRNG)
@@ -137,6 +182,8 @@ runCalibrate (
         -- flexible expression handler
         flexOut ::
                Bool
+            -> CalCurveBP
+            -> Integer
             -> NamedCalExpr
             -> CalPDF
             -> Maybe Int
@@ -145,19 +192,19 @@ runCalibrate (
             -> (FilePath -> CalC14 -> IO ())
             -> (FilePath -> RandomAgeSample -> IO ())
             -> IO ()
-        flexOut _ascii namedCalExpr calPDF maybeSeed calPDFToFile calC14CalRangeSummaryToFile calC14HDRToFile randomAgeSampleToFile = do
+        flexOut _ascii calCurve i namedCalExpr calPDF maybeSeed calPDFToFile calC14CalRangeSummaryToFile calC14HDRToFile randomAgeSampleToFile = do
             case refineCalDate calPDF of
                 Left e -> do
                     unless quiet $ do
                         putStrLn ("CalEXPR: " ++ renderNamedCalExpr namedCalExpr)
-                        printE e
+                        printE i e
                     when (isJust basicFile) $ unless quiet $
                         hPutStrLn stderr "<!> Error: Can not create --basicFile"
                     when (isJust hdrFile) $ unless quiet $
                         hPutStrLn stderr "<!> Error: Can not create --hdrFile"
                 Right calC14 -> do
                     unless quiet $ do
-                        putStrLn (renderCalDatePretty _ascii (namedCalExpr, calPDF, calC14))
+                        putStrLn (renderCalDatePretty _ascii calCurve (not noInterpolate) (namedCalExpr, calPDF, calC14))
                     when (isJust basicFile) $
                         calC14CalRangeSummaryToFile (fromJust basicFile) calC14
                     when (isJust hdrFile) $
@@ -169,7 +216,7 @@ runCalibrate (
                 case sampleAgesFromCalPDF conf calPDF of
                     Left e -> do
                         unless quiet $ do
-                            printE e
+                            printE i e
                             hPutStrLn stderr "<!> Error: Can not create --samplesFile"
                     Right res -> randomAgeSampleToFile path res
             when (isJust densityFile) $
@@ -177,9 +224,12 @@ runCalibrate (
 
 -- | Helper function to replace empty input names with a sequence of numbers,
 -- to get each input date an unique identifier
-replaceEmptyNames :: [NamedCalExpr] -> [NamedCalExpr]
-replaceEmptyNames = zipWith (modifyNamedExpr . show) ([1..] :: [Integer])
+replaceEmptyNames :: [Either CurrycarbonException NamedCalExpr] -> [Either CurrycarbonException NamedCalExpr]
+replaceEmptyNames = zipWith modify [1..]
     where
+        modify :: Integer -> Either CurrycarbonException NamedCalExpr -> Either CurrycarbonException NamedCalExpr
+        modify _ (Left e)  = Left e
+        modify i (Right x) = Right $ modifyNamedExpr (show i) x
         modifyNamedExpr :: String -> NamedCalExpr -> NamedCalExpr
         modifyNamedExpr i nexpr =
             if _exprID nexpr == ""
