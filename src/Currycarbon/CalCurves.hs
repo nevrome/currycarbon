@@ -109,3 +109,37 @@ marine20 :: CalCurveBP
 marine20 = readCalCurveUnsafe marine20String
 marine20String :: String
 marine20String = $(FE.makeRelativeToProject "data/marine20.14c" >>= FE.embedStringFile)
+
+-- | Calibration curves usually do not have yearly resolution.
+-- This function completes the curves with a most basic linear interpolation.
+interpolateCalCurve :: CalCurveBP -> CalCurveBP
+interpolateCalCurve (CalCurveBP cals uncals sigmas) =
+    let obs = VU.zip3 cals uncals sigmas
+        timeWindows = getTimeWindows obs
+        obsFilled = VU.concatMap fillTimeWindows timeWindows
+    in uncurry3 CalCurveBP $ VU.unzip3 obsFilled
+    where
+        getTimeWindows :: VU.Vector (YearBP,YearBP,YearRange) -> VU.Vector ((YearBP,YearBP,YearRange),(YearBP,YearBP,YearRange))
+        getTimeWindows xs = VU.zipWith (,) (VU.init xs) (VU.tail xs)
+        fillTimeWindows :: ((YearBP,YearBP,YearRange),(YearBP,YearBP,YearRange)) -> VU.Vector (YearBP,YearBP,YearRange)
+        fillTimeWindows ((calbp1,bp1,sigma1),(calbp2,bp2,sigma2)) =
+            if calbp1 == calbp2 || calbp1+1 == calbp2 || calbp1-1 == calbp2
+            then VU.singleton (calbp1,bp1,sigma1)
+            else
+                let newCals = VU.fromList [calbp1,calbp1-1..calbp2+1] -- range definition like this to trigger counting down
+                    newBPs = VU.map (snd . getInBetweenPointsInt (calbp1,bp1) (calbp2,bp2)) newCals
+                    newSigmas = VU.map (snd . getInBetweenPointsInt (calbp1,sigma1) (calbp2,sigma2)) newCals
+                in VU.zip3 newCals newBPs newSigmas
+        getInBetweenPointsInt :: (Word, Word) -> (Word, Word) -> Word -> (Word, Word)
+        getInBetweenPointsInt (x1,y1) (x2,y2) xPred =
+            let (_,yPred) = getInBetweenPoints (fromIntegral x1,fromIntegral y1) (fromIntegral x2,fromIntegral y2) $ fromIntegral xPred
+            in (xPred, round yPred)
+        getInBetweenPoints :: (Double, Double) -> (Double, Double) -> Double -> (Double, Double)
+        getInBetweenPoints (x1,y1) (x2,y2) xPred =
+            let yDiff = y2 - y1
+                xDiff = abs $ x1 - x2
+                yDiffPerxDiff = yDiff/xDiff
+                xPredRel = x1 - xPred
+            in (xPred, y1 + xPredRel * yDiffPerxDiff)
+        uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)
+        uncurry3 f ~(a,b,c) = f a b c

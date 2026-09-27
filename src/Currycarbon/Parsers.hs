@@ -2,7 +2,7 @@
 
 module Currycarbon.Parsers where
 
-import           Currycarbon.CalCurves         (intcal20)
+import           Currycarbon.CalCurves         (interpolateCalCurve)
 import           Currycarbon.Calibration.Utils
 import           Currycarbon.ParserHelpers
 import           Currycarbon.Types
@@ -75,16 +75,25 @@ parseCalibrationMethod = do
 --
 renderCalDatePretty ::
        Bool -- ^ Should the CLI plot be restricted to (boring) ASCII symbols?
+    -> CalCurveBP
+    -> Bool
     -> (NamedCalExpr, CalPDF, CalC14)
     -> String
-renderCalDatePretty ascii (calExpr, calPDF, calC14) =
-    "CalEXPR: " ++ intercalate "\n" [
+renderCalDatePretty ascii calCurve interpolate (calExpr, calPDF, calC14) =
+    "CalEXPR: " ++ intercalate "" [
           renderNamedCalExpr calExpr
+        , "\n"
         , renderCalC14 calC14
-        , ""
-        , renderCLIPlotCalCurve ascii 8 50 calPDF calExpr
-        , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
-        ]
+        , "\n"
+        ] ++
+        if interpolate
+        then intercalate "" [
+              "\n"
+            , renderCLIPlotCalCurve ascii 8 50 calCurve calPDF calExpr
+            , "\n"
+            , renderCLIPlotCalPDF ascii 6 50 calPDF calC14
+            ]
+        else []
 
 -- write and read calibration expressions
 
@@ -117,15 +126,11 @@ parseTimeWindowBP = parseRecordType "rangeBP" $ P.try long P.<|> short
             name  <- parseArgument "id" parseAnyString
             start <- parseArgument "start" parseWord
             stop  <- parseArgument "stop" parseWord
-            construct name start stop
+            eitherToFail $ makeTimeWindowBP name start stop
         short = do
             start <- parseArgument "start" parseWord
             stop  <- parseArgument "stop" parseWord
-            construct "" start stop
-        construct name start stop = do
-            if start >= stop
-            then return (TimeWindowBP name start stop)
-            else fail "the BP stop date can not be larger than the start date"
+            eitherToFail $ makeTimeWindowBP "" start stop
 
 parseTimeWindowBCAD :: P.Parser TimeWindowBCAD
 parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ P.try long P.<|> short
@@ -134,15 +139,11 @@ parseTimeWindowBCAD = parseRecordType "rangeBCAD" $ P.try long P.<|> short
             name  <- parseArgument "id" parseAnyString
             start <- parseArgument "start" parseInt
             stop  <- parseArgument "stop" parseInt
-            construct name start stop
+            eitherToFail $ makeTimeWindowBCAD name start stop
         short = do
             start <- parseArgument "start" parseInt
             stop  <- parseArgument "stop" parseInt
-            construct "" start stop
-        construct name start stop = do
-            if start <= stop
-            then return (TimeWindowBCAD name start stop)
-            else fail "the BC/AD stop date can not be smaller than the start date"
+            eitherToFail $ makeTimeWindowBCAD "" start stop
 
 -- https://gist.github.com/abhin4v/017a36477204a1d57745
 addFun :: P.Parser CalExpr
@@ -500,14 +501,16 @@ roundTo10 x =
         roundedDec = if rest >= 5 then dec + 1 else dec
     in roundedDec * 10 * signum x
 
-renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalPDF -> NamedCalExpr -> String
+renderCLIPlotCalCurve :: Bool -> Int -> Int -> CalCurveBP -> CalPDF -> NamedCalExpr -> String
 renderCLIPlotCalCurve
-    ascii rows cols (CalPDF _ cals _)
+    ascii rows cols
+    calCurve
+    (CalPDF _ cals _)
     (NamedCalExpr _ (UnCalDate (UncalC14 _ yearBP sigma))) =
     let startYear = VU.head cals
         stopYear = VU.last cals
         -- prepare calcurve
-        calcurvePrep = makeBCADCalCurve $ interpolateCalCurve intcal20
+        calcurvePrep = makeBCADCalCurve $ interpolateCalCurve calCurve
         calCurveSegment = punchOutCalCurveBCAD startYear stopYear calcurvePrep
         calCurveUncals = VU.map fromIntegral $ _calCurveBCADUnCals calCurveSegment
         calCurveUncalStart = bcad2BP $ round $ VU.head calCurveUncals
@@ -553,7 +556,7 @@ renderCLIPlotCalCurve
             | otherwise = ' '
         makeTick :: (Integral n) => n -> String
         makeTick n = padString 6 (show $ roundTo10 $ fromIntegral n) ++ " " ++ getSymbol ascii YAxisTick : " "
-renderCLIPlotCalCurve _ _ _ _ _ = ""
+renderCLIPlotCalCurve _ _ _ _ _ _ = ""
 
 renderCLIPlotCalPDF :: Bool -> Int -> Int -> CalPDF -> CalC14 -> String
 renderCLIPlotCalPDF ascii rows cols (CalPDF _ cals dens) c14 =

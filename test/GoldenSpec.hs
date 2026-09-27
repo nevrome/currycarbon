@@ -25,6 +25,7 @@ goldenTest =
             , "hdr_file"
             , "samples_file"
             , "cal_curve_seg_file"
+            , "tsv_file_reading"
             ]
 
     runFileOutputTests file_output_tests

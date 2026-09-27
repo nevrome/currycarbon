@@ -1,9 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import           Currycarbon.CalCurves
-import           Currycarbon.CLI.RunCalibrate (CalibrateOptions (..),
+import           Currycarbon.CLI.RunCalibrate (CalibrateInput (..),
+                                               CalibrateOptions (..),
                                                runCalibrate)
 import           Currycarbon.Parsers
+import           Currycarbon.TSV
 import           Currycarbon.Types
 import           Currycarbon.Utils
 import           Paths_currycarbon            (version)
@@ -57,8 +59,7 @@ optParser :: OP.Parser Options
 optParser = CmdCalibrate <$> calibrateOptParser
 
 calibrateOptParser :: OP.Parser CalibrateOptions
-calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
-                                      <*> optParseNamedCalExprFromFile
+calibrateOptParser = CalibrateOptions <$> optParseCalibrateInput
                                       <*> optParseCalCurveSelection
                                       <*> optParseCalibrationMethod
                                       <*> optParseAllowOutside
@@ -79,6 +80,11 @@ calibrateOptParser = CalibrateOptions <$> optParseNamedCalExprString
 -- $inputParsing
 --
 -- These functions define and handle the CLI input arguments
+optParseCalibrateInput :: OP.Parser CalibrateInput
+optParseCalibrateInput =
+           (CalibrateExprs <$> optParseNamedCalExprString)
+    OP.<|> (CalibrateExprFile <$> optParseNamedCalExprFromFile)
+    OP.<|> (CalibrateTSVFile <$> optParseInputTSVFile <*> optParseCombStrat)
 
 optParseNamedCalExprString :: OP.Parser [NamedCalExpr]
 optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader readNamedCalExprs) (
@@ -132,19 +138,53 @@ optParseNamedCalExprString = concat <$> OP.many (OP.argument (OP.eitherReader re
 s2d :: String -> OH.Doc
 s2d str = OH.fillSep $ map OH.pretty $ words str
 
-optParseNamedCalExprFromFile :: OP.Parser [FilePath]
-optParseNamedCalExprFromFile = OP.many (OP.strOption (
-    OP.long "inputFile" <>
+optParseNamedCalExprFromFile :: OP.Parser FilePath
+optParseNamedCalExprFromFile = OP.strOption (
+    OP.long "inputExprFile" <>
     OP.short 'i' <>
     OP.metavar "FILE" <>
     OP.help "A file with a list of calibration expressions. \
             \Formatted just as CalEXPRs, but with a new line for each input expression. \
-            \CalEXPRs and --inputFile can be combined and you can provide multiple \
-            \instances of --inputFile. \
             \Note that syntactic sugar allows to read simple radiocarbon dates from \
             \a headless .csv file with one sample per row: \
             \<sample name>,<mean age BP>,<one sigma standard deviation>."
-    ))
+    )
+
+optParseInputTSVFile :: OP.Parser FilePath
+optParseInputTSVFile = OP.strOption (
+    OP.long "inputTSVFile" <>
+    OP.short 't' <>
+    OP.metavar "FILE" <>
+    OP.helpDoc ( Just (
+            s2d "A tab-separated file with dates to calibrate. Can read Poseidon .janno files, \
+            \which inspire this input format. The rows are transformed to calibration expressions \
+            \upon reading, following a priority order based on the provided columns:"
+        <> OH.hardline <>
+            s2d "- <Date_ID> (or <Poseidon_ID>):"
+        <> OH.hardline <>
+            s2d "Mandatory identifier, used in calExpr(id = <id>)."
+        <> OH.hardline <>
+            s2d "- <Date_C14_Labnr> <Date_C14_Uncal_BP> <Date_C14_Uncal_BP_Err>:"
+        <> OH.hardline <>
+            s2d "Gets transformed to uncalC14(id = <labnr>, yearBP = <bp>, sigma = <err>). \
+            \Each of these columns can be a list column with multiple entries separated by ;. \
+            \Multiple uncalibrated dates are then combined with the strategy set in --combStrat \
+            \when they are evaluated."
+        <> OH.hardline <>
+            s2d "- <Date_BC_AD_Start> <Date_BC_AD_Stop>:"
+        <> OH.hardline <>
+            s2d "Gets transformed to rangeBCAD(start = <start>, stop = <stop>)."
+   )))
+
+optParseCombStrat :: OP.Parser CombinationStrategy
+optParseCombStrat = OP.option (OP.eitherReader readCombinationStrategy) (
+    OP.long "combStrat" <>
+    OP.metavar "Sum | Product" <>
+    OP.help "Strategy that should be applied to combine multiple C14 ages (uncalC14) \
+            \from one row when reading from --inputTSVFile." <>
+    OP.value CombProduct <>
+    OP.showDefault
+    )
 
 optParseCalCurveSelection :: OP.Parser CalCurveSelection
 optParseCalCurveSelection = OP.option (OP.eitherReader readCalCurveSelection) (

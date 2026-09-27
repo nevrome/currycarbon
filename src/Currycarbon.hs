@@ -5,17 +5,17 @@
 
 module Currycarbon (
 
-    -- * Calibration
+    -- * Basic calibration
     -- $calibration
     calibrateDates,
     -- ** Configuration
     CalibrationMethod (..),
     CalibrateDatesConf (..),
     defaultCalConf,
-    -- ** Input
+    -- ** Basic input
     UncalC14 (..),
     readUncalC14FromFile,
-    -- ** Output
+    -- ** Basic output
     CalPDF (..),
     writeCalPDFs,
 
@@ -42,20 +42,30 @@ module Currycarbon (
     writeCalC14HDRs,
     renderCalDatePretty,
 
+    -- * Drawing random samples from CalPDFs
+    -- $randsamp
+    AgeSamplingConf (..),
+    sampleAgesFromCalPDF,
+    RandomAgeSample (..),
+    writeRandomAgeSamples,
+
     -- * Sum (and product) calibration
     -- $sumcal
     evalCalExpr,
+    evalNamedCalExpr,
     CalExpr (..),
     addPDFs,
     multiplyPDFs,
     normalizeCalPDF,
     trimLowDensityEdgesCalPDF,
 
-    -- * Drawing random samples from CalPDFs
-    -- $randsamp
-    AgeSamplingConf (..),
-    sampleAgesFromCalPDF,
-    RandomAgeSample (..)
+    -- * Reading input from .tsv files
+    -- $tsv
+    TSV (..),
+    TSVRow (..),
+    readTSV,
+    tsv2NamedCalExprs,
+    CombinationStrategy (..)
     ) where
 
 import           Currycarbon.CalCurves
@@ -64,6 +74,7 @@ import           Currycarbon.Calibration.Utils       (normalizeCalPDF,
                                                       trimLowDensityEdgesCalPDF)
 import           Currycarbon.Parsers
 import           Currycarbon.SumCalibration
+import           Currycarbon.TSV
 import           Currycarbon.Types
 
 {- $calibration
@@ -128,6 +139,18 @@ These can also be written to a file with 'writeCalC14s'.
 result for a given sample.
 -}
 
+{- $randsamp
+
+Another common requirement for archaeological data analysis is temporal resampling,
+where random age samples are drawn from 'CalPDF's according to the probability
+density distribution.
+
+currycarbon supports this with 'sampleAgesFromCalPDF', which takes a configuration
+data type 'AgeSamplingConf' including a random number generator and the number of
+requested age samples, and an arbitrary 'CalPDF'. It returns an object of type
+'RandomAgeSample' with a vector of sampled 'YearBCAD's.
+-}
+
 {- $sumcal
 
 Calculating the sum or product of two calibration curves is a common
@@ -142,14 +165,12 @@ and 'trimLowDensityEdgesCalPDF' on the result.
 
 -}
 
-{- $randsamp
+{- $tsv
 
-Another common requirement for archaeological data analysis is temporal resampling,
-where random age samples are drawn from 'CalPDF's according to the probability
-density distribution.
+Currycarbon can read calibration expressions from a tab-separated (.tsv)
+file format inspired by the [Poseidon](https://www.poseidon-adna.org) .janno file.
+`tsv2NamedCalExprs` turns the 'TSV' input to 'NamedCalExpr's, prioritizing
+C14 age information over "contextual" start and stop ranges, to hook it into
+the calibration pipeline.
 
-currycarbon supports this with 'sampleAgesFromCalPDF', which takes a configuration
-data type 'AgeSamplingConf' including a random number generator and the number of
-requested age samples, and an arbitrary 'CalPDF'. It returns an object of type
-'RandomAgeSample' with a vector of sampled 'YearBCAD's.
 -}
