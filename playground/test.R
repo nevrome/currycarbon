@@ -66,13 +66,13 @@ run_currycarbon("--samplesFile /tmp/currySamples.tsv -n 100000")
 age_samples <- readr::read_tsv("/tmp/currySamples.tsv")
 
 year_count <- age_samples |>
-  dplyr::mutate(yearBCAD = round(yearBCAD, -1)) |>
+  dplyr::mutate(yearBCAD = plyr::round_any(yearBCAD, 10, floor)) |>
   dplyr::group_by(yearBCAD) |>
   dplyr::summarise(n = dplyr::n())
 
 year_count |>
   ggplot() +
-  geom_path(aes(x = yearBCAD, y = n))
+  geom_col(aes(x = yearBCAD, y = n))
 
 # Test 2
 
@@ -87,14 +87,14 @@ year_count <- age_samples |>
 
 year_count |>
   ggplot() +
-  geom_bar(aes(x = yearBCAD, y = n), stat = "identity")
+  geom_col(aes(x = yearBCAD, y = n))
 
 #### large test (for memory leaks) ####
 
 calpal <- c14bazAAR::get_calpal()
 calpal |> dplyr::select(c14age, c14std) |> dplyr::slice_head(n = 5000) |> readr::write_csv("/tmp/currycarbon_large_input_test.csv", col_names = F)
 
-system("currycarbon --inputFile /tmp/currycarbon_large_input_test.csv -q")
+system("currycarbon --inputExprFile /tmp/currycarbon_large_input_test.csv -q")
 
 #### cal curve output ####
 

@@ -52,7 +52,7 @@ ggplot() +
 
 #### test two sums ####
 
-# this must not the same as the previous test
+# this must not yield the same as the previous test
 system("currycarbon \"((3000,30) + (3000,30)) + rangeBP(3000,2800)\" --densityFile /tmp/currycarbonOutput.tsv -q")
 calPDFSum <- readr::read_tsv("/tmp/currycarbonOutput.tsv", col_types = readr::cols())
 
