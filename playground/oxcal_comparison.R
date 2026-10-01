@@ -1,6 +1,6 @@
 library(magrittr)
 library(ggplot2)
-oxcAAR::quickSetupOxcal()
+oxcAAR::quickSetupOxcal(version = "4.4.4", force = TRUE)
 
 #### oxcal vs currycarbon for sums and products ####
 
@@ -98,7 +98,7 @@ ggplot(mapping = aes(x = yearBCAD, y = density)) +
 
 oxcal_test3a <- run_oxcal(
 '
-  Sum("(A+B+C)+((D*E)+F)")
+  Sum("(A+B+C+D+E+F)")
   {
     R_Date("A",3000,20);
     R_Date("B",2900,200);
@@ -120,7 +120,7 @@ oxcal_test3b <- run_oxcal(
       R_Date("B",2900,200);
       R_Date("C",2800,70);
     };
-    Sum("(D*E)+F")
+    Sum("(D+E)+F")
     {
       Sum("D*E")
       {
@@ -174,21 +174,20 @@ oxcal_test4 <- run_oxcal(
   '
   Combine("A*(B*C)")
   {
-    R_Date("A",1700,30);
+    R_Date("A",1950,30);
     Combine("B*C")
     {
       R_Date("B",2000,30);
-      R_Date("C",2300,30);
+      R_Date("C",2050,30);
     };
   };
 '
 )
 
 currycarbon_test4 <- run_currycarbon(
-  "A,1700,30*(B,2000,30*C,2300,30)"
+  "A,1950,30*(B,2000,30*C,2050,30)"
 )
 
-# here oxcal behaves really odd
 ggplot(mapping = aes(x = yearBCAD, y = density)) +
   geom_line(data = oxcal_test4) +
   geom_line(data = currycarbon_test4, color = "red")
