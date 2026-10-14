@@ -32,10 +32,11 @@ chmod +x currycarbon-Linux
 ```
 
 ```
-currycarbon v0.4.0.2 (UTF-8)
+currycarbon v0.6.0.0 (UTF-8)
 Method: Bchron {distribution = StudentTDist {ndf = 100.0}}
 Curve: IntCal20
 Calibrating...
+--- 1 ---
 CalEXPR: [1] Sample1:4990±30BP
 Calibrated: 3936BC >> 3794BC > 3757BC < 3662BC << 3654BC
 1-sigma: 3794-3707BC, 3666-3662BC
@@ -63,10 +64,14 @@ Calibrated: 3936BC >> 3794BC > 3757BC < 3662BC << 3654BC
                                    ────────────────      ─
             ───────────           ──────────────────  ──────
 Done.
+---
+No breaking issues.
 ```
 
 ```
-Usage: currycarbon [--version] [CalEXPRs] [-i|--inputFile FILE]
+Usage: currycarbon [--version]
+                   [[CalEXPRs] | (-i|--inputExprFile FILE) |
+                     (-t|--inputTSVFile FILE) [--combStrat Sum | Product]]
                    [--calCurve IntCal20 | SHCal20 | Marine20 | FILE]
                    [--method DSL] [--allowOutside] [--noInterpolation]
                    [--noTrimCalCurve] [--noTrimOutCalPDF] [-q|--quiet]
@@ -120,14 +125,34 @@ Available options:
                            3. Compile a complex, named expression:
                            "Ex3: ((3000,30) + (3100,40)) * rangeBP(3200,3000)"
                            ---
-  -i,--inputFile FILE      A file with a list of calibration expressions.
+  -i,--inputExprFile FILE  A file with a list of calibration expressions.
                            Formatted just as CalEXPRs, but with a new line for
-                           each input expression. CalEXPRs and --inputFile can
-                           be combined and you can provide multiple instances of
-                           --inputFile. Note that syntactic sugar allows to read
-                           simple radiocarbon dates from a headless .csv file
-                           with one sample per row: <sample name>,<mean age
-                           BP>,<one sigma standard deviation>.
+                           each input expression. Note that syntactic sugar
+                           allows to read simple radiocarbon dates from a
+                           headless .csv file with one sample per row: <sample
+                           name>,<mean age BP>,<one sigma standard deviation>.
+  -t,--inputTSVFile FILE   A tab-separated file with dates to calibrate. Can
+                           read Poseidon .janno files, which inspire this input
+                           format. The rows are transformed to calibration
+                           expressions upon reading, following a priority order
+                           based on the provided columns:
+                           - <Date_ID> (or <Poseidon_ID>):
+                           Mandatory identifier, used in calExpr(id = <id>).
+                           - <Date_C14_Labnr> <Date_C14_Uncal_BP>
+                           <Date_C14_Uncal_BP_Err>:
+                           Gets transformed to uncalC14(id = <labnr>, yearBP =
+                           <bp>, sigma = <err>). Each of these columns can be a
+                           list column with multiple entries separated by ;.
+                           Multiple uncalibrated dates are then combined with
+                           the strategy set in --combStrat when they are
+                           evaluated.
+                           - <Date_BC_AD_Start> <Date_BC_AD_Stop>:
+                           Gets transformed to rangeBCAD(start = <start>, stop =
+                           <stop>).
+  --combStrat Sum | Product
+                           Strategy that should be applied to combine multiple
+                           C14 ages (uncalC14) from one row when reading from
+                           --inputTSVFile. (default: Product)
   --calCurve IntCal20 | SHCal20 | Marine20 | FILE
                            Either one of the included calibration curves, or a
                            file path to an calibration curve file in '.14c'
